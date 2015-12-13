@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: MemoryPoolProxy.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MemoryPoolProxy.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/ObjectName.html>javax.management.ObjectName</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/ManagementFactory.html>java.lang.management.ManagementFactory</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/MemoryPoolMXBean.html>java.lang.management.MemoryPoolMXBean</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/MemoryUsage.html>java.lang.management.MemoryUsage</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/management/GarbageCollectorMXBean.html>com.sun.management.GarbageCollectorMXBean</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/management/GcInfo.html>com.sun.management.GcInfo</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/HashMap.html>java.util.HashMap</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/Set.html>java.util.Set</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/Map.html>java.util.Map</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/Map/Entry.html>java.util.Map.Entry</a>;
+   38 &nbsp; 
+   39 &nbsp; import static java.lang.management.ManagementFactory.*;
+   40 &nbsp; 
+<a name='41'>   41 &nbsp; public class MemoryPoolProxy {
+   42 &nbsp;     private String poolName;
+   43 &nbsp;     private ProxyClient client;
+   44 &nbsp;     private ObjectName  objName;
+   45 &nbsp;     private MemoryPoolMXBean pool;
+   46 &nbsp;     private Map&lt;ObjectName,Long&gt; gcMBeans;
+   47 &nbsp;     private GcInfo lastGcInfo;
+   48 &nbsp; 
+   49 &nbsp;     public MemoryPoolProxy(ProxyClient client, ObjectName poolName) throws java.io.IOException {
+   50 &nbsp;         this.client = client;
+<a name='51'>   51 &nbsp;         this.objName = objName;
+   52 &nbsp;         this.pool = client.getMXBean(poolName, MemoryPoolMXBean.class);
+   53 &nbsp;         this.poolName = this.pool.getName();
+   54 &nbsp;         this.gcMBeans = new HashMap&lt;ObjectName,Long&gt;();
+   55 &nbsp;         this.lastGcInfo = null;
+   56 &nbsp; 
+   57 &nbsp;         String[] mgrNames = pool.getMemoryManagerNames();
+   58 &nbsp;         for (String name : mgrNames) {
+   59 &nbsp;             try {
+   60 &nbsp;                 ObjectName mbeanName = new ObjectName(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE +
+<a name='61'>   61 &nbsp;                                                       ",name=" + name);
+   62 &nbsp;                 if (client.isRegistered(mbeanName)) {
+   63 &nbsp;                     gcMBeans.put(mbeanName, new Long(0));
+   64 &nbsp;                 }
+   65 &nbsp;             } catch (Exception e) {
+   66 &nbsp;                 assert false;
+   67 &nbsp;             }
+   68 &nbsp; 
+   69 &nbsp;         }
+   70 &nbsp;     }
+<a name='71'>   71 &nbsp; 
+   72 &nbsp;     public boolean isCollectedMemoryPool() {
+   73 &nbsp;         return (gcMBeans.size() != 0);
+   74 &nbsp;     }
+   75 &nbsp; 
+   76 &nbsp;     public ObjectName getObjectName() {
+   77 &nbsp;         return objName;
+   78 &nbsp;     }
+   79 &nbsp; 
+   80 &nbsp;     public MemoryPoolStat getStat() throws java.io.IOException {
+<a name='81'>   81 &nbsp;         long usageThreshold = (pool.isUsageThresholdSupported()
+   82 &nbsp;                                   ? pool.getUsageThreshold()
+   83 &nbsp;                                   : -1);
+   84 &nbsp;         long collectThreshold = (pool.isCollectionUsageThresholdSupported()
+   85 &nbsp;                                   ? pool.getCollectionUsageThreshold()
+   86 &nbsp;                                   : -1);
+   87 &nbsp;         long lastGcStartTime = 0;
+   88 &nbsp;         long lastGcEndTime = 0;
+   89 &nbsp;         MemoryUsage beforeGcUsage = null;
+   90 &nbsp;         MemoryUsage afterGcUsage = null;
+<a name='91'>   91 &nbsp;         long gcId = 0;
+   92 &nbsp;         if (lastGcInfo != null) {
+   93 &nbsp;             gcId = lastGcInfo.getId();
+   94 &nbsp;             lastGcStartTime = lastGcInfo.getStartTime();
+   95 &nbsp;             lastGcEndTime = lastGcInfo.getEndTime();
+   96 &nbsp;             beforeGcUsage = lastGcInfo.getMemoryUsageBeforeGc().get(poolName);
+   97 &nbsp;             afterGcUsage = lastGcInfo.getMemoryUsageAfterGc().get(poolName);
+   98 &nbsp;         }
+   99 &nbsp; 
+  100 &nbsp;         Set&lt;Map.Entry&lt;ObjectName,Long&gt;&gt; set = gcMBeans.entrySet();
+<a name='101'>  101 &nbsp;         for (Map.Entry&lt;ObjectName,Long&gt; e : set) {
+  102 &nbsp;             GarbageCollectorMXBean gc =
+  103 &nbsp;                 client.getMXBean(e.getKey(),
+  104 &nbsp;                                  com.sun.management.GarbageCollectorMXBean.class);
+  105 &nbsp;             Long gcCount = e.getValue();
+  106 &nbsp;             Long newCount = gc.getCollectionCount();
+  107 &nbsp;             if (newCount &gt; gcCount) {
+  108 &nbsp;                 gcMBeans.put(e.getKey(), new Long(newCount));
+  109 &nbsp;                 lastGcInfo = gc.getLastGcInfo();
+  110 &nbsp;                 if (lastGcInfo.getEndTime() &gt; lastGcEndTime) {
+<a name='111'>  111 &nbsp;                     gcId = lastGcInfo.getId();
+  112 &nbsp;                     lastGcStartTime = lastGcInfo.getStartTime();
+  113 &nbsp;                     lastGcEndTime = lastGcInfo.getEndTime();
+  114 &nbsp;                     beforeGcUsage = lastGcInfo.getMemoryUsageBeforeGc().get(poolName);
+  115 &nbsp;                     afterGcUsage = lastGcInfo.getMemoryUsageAfterGc().get(poolName);
+  116 &nbsp;                     assert(beforeGcUsage != null);
+  117 &nbsp;                     assert(afterGcUsage != null);
+  118 &nbsp;                 }
+  119 &nbsp;             }
+  120 &nbsp;         }
+<a name='121'>  121 &nbsp; 
+  122 &nbsp;         MemoryUsage usage = pool.getUsage();
+  123 &nbsp;         return new MemoryPoolStat(poolName,
+  124 &nbsp;                                   usageThreshold,
+  125 &nbsp;                                   usage,
+  126 &nbsp;                                   gcId,
+  127 &nbsp;                                   lastGcStartTime,
+  128 &nbsp;                                   lastGcEndTime,
+  129 &nbsp;                                   collectThreshold,
+  130 &nbsp;                                   beforeGcUsage,
+<a name='131'>  131 &nbsp;                                   afterGcUsage);
+  132 &nbsp;     }
+  133 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MemoryPoolProxy.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

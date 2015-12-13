@@ -1,0 +1,207 @@
+
+    
+    <!-- classdoc.jsp -->
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>sun.tools.jconsole: public class: MemoryPoolStat</title>
+	<style>
+#jdoc {margin:10px 10px 10px 10px}
+#pkg {font-size:1em;font-weight:bold}
+#cls {font-size:2em;font-weight:bold}
+body {margin:0 0 0 0; padding:0 0 0 0} 
+table {margin-top:10px;background-color:#ffffff;}
+
+th {background:#ddeeff;text-align:left}	
+td {padding:5px 2px 2px 5px;border-top:1px solid #999999;margin:0 0 0 0}
+pre {padding:0;margin:0}
+.withborder {border-left:1px solid #999999;border-right:1px solid #999999;background-color:#eeeeee}
+	</style>
+	
+	<script type="text/javascript">
+	
+	function src(m) {
+	  s = 	document.getElementById(m);
+	  i = document.getElementById(m+"i");
+	  if (s != null && s.style.visibility!='visible') {
+	   s.style.visibility='visible';
+	   s.style.height="auto";
+	   s.style.overflow='auto';
+	   i.src = "/minus.gif";
+	  } else if (s != null) {
+	   s.style.visibility='hidden';
+	   s.style.height="1px";
+	   s.style.overflow='hidden';
+	   i.src = "/plus.gif";
+	  }
+	}
+	
+	</script>
+<style type="text/css">
+#fixme {
+	/* Netscape 4, IE 4.x-5.0/Win and other lesser browsers will use this */
+  position: absolute; left: 0; top: 0;
+}
+body > div#fixme {
+  /* used by Opera 5+, Netscape6+/Mozilla, Konqueror, Safari, OmniWeb 4.5+, iCab, ICEbrowser */
+  position: fixed;
+}
+</style>
+<!--[if gte IE 5.5]>
+<style type="text/css">
+div#fixme {
+  /* IE5.5+/Win - this is more specific than the IE 5.0 version */
+  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
+  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
+}
+</style>
+<![endif]--></head><body>
+<div id="fixme" style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+[javadoc | 
+ <a href="/html/api/sun/tools/jconsole/MemoryPoolStat.java.html">source</a>]
+</div>
+<div style="height:20px"></div>
+<div id="jdoc">
+
+
+<!-- classname.jsp -->
+    
+<span id="pkg">sun.tools.jconsole</span><br>
+    <span id="cls">public class: MemoryPoolStat</span> [javadoc | 
+ <a href="/html/api/sun/tools/jconsole/MemoryPoolStat.java.html">source</a>]
+    
+    	<br><pre><a href=/docs/api/java/lang/Object.html>java.lang.Object</a>
+ &nbsp; <img src=/inherit.gif><b>sun.tools.jconsole.MemoryPoolStat</b></pre>
+    
+
+
+
+
+<!-- end -->
+
+
+<!-- classimplements.jsp -->
+    
+
+
+
+
+<!-- end -->
+
+
+    <!-- classcomment.jsp -->
+    
+
+
+<!-- nestedclass.jsp -->
+    
+
+
+
+<!-- end -->
+
+
+<!-- fieldsummary.jsp -->
+    
+
+
+
+
+
+
+<!-- end -->
+
+
+
+
+<!-- constructsummary.jsp -->
+    <table width='100%'><tr><th>Constructor:</td></tr>
+<tr><td><pre><a href='javascript:src("cs0")'><img id='cs0i' src=/plus.gif border=0></a> <a name='MemoryPoolStat(String, long, MemoryUsage, long, long, long, long, MemoryUsage, MemoryUsage)'><b>MemoryPoolStat</b>(<a href=/docs/api/java/lang/String.html>String</a> name,
+    long usageThreshold,
+    <a href=/docs/api/java/lang/management/MemoryUsage.html>MemoryUsage</a> usage,
+    long lastGcId,
+    long lastGcStartTime,
+    long lastGcEndTime,
+    long collectThreshold,
+    <a href=/docs/api/java/lang/management/MemoryUsage.html>MemoryUsage</a> beforeGcUsage,
+    <a href=/docs/api/java/lang/management/MemoryUsage.html>MemoryUsage</a> afterGcUsage) <pre id='cs0' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this.poolName = name;
+        this.usageThreshold = usageThreshold;
+        this.usage = usage;
+        this.lastGcId = lastGcId;
+        this.lastGcStartTime = lastGcStartTime;
+        this.lastGcEndTime = lastGcEndTime;
+        this.collectThreshold = collectThreshold;
+        this.beforeGcUsage = beforeGcUsage;
+        this.afterGcUsage = afterGcUsage;
+}</pre></pre></pre></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+<!-- methodsummary.jsp -->
+    <table width='100%'><tr><th>Method from <b>sun.tools.jconsole.MemoryPoolStat</b> Summary:</td></tr><tr><td>
+<a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getAfterGcUsage'>getAfterGcUsage</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getBeforeGcUsage'>getBeforeGcUsage</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getCollectionUsageThreshold'>getCollectionUsageThreshold</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getLastGcEndTime'>getLastGcEndTime</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getLastGcId'>getLastGcId</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getLastGcStartTime'>getLastGcStartTime</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getPoolName'>getPoolName</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getUsage'>getUsage</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryPoolStat.html#getUsageThreshold'>getUsageThreshold</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.lang.Object</b>:</td></tr><tr><td>
+<a href='/docs/api/java/lang/Object.html#clone'>clone</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#equals(Object)'>equals</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#finalize'>finalize</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#getClass'>getClass</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#hashCode'>hashCode</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notify'>notify</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notifyAll'>notifyAll</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#toString'>toString</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long)'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long, int)'>wait</a></td></tr></table><table width='100%'><tr><th>Method from <b>sun.tools.jconsole.MemoryPoolStat</b> Detail:</td></tr>
+<tr><td><pre><a href='javascript:src("ms1")'><img id='ms1i' src=/plus.gif border=0></a> public <a href=/docs/api/java/lang/management/MemoryUsage.html>MemoryUsage</a><a name='getAfterGcUsage'> <b>getAfterGcUsage</b>()</a> <pre id='ms1' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return beforeGcUsage;
+}</pre></pre><ul>Returns the memory usage after the most recent GC finished.
+null if no GC occurs.</ul></td></tr><tr><td><pre><a href='javascript:src("ms2")'><img id='ms2i' src=/plus.gif border=0></a> public <a href=/docs/api/java/lang/management/MemoryUsage.html>MemoryUsage</a><a name='getBeforeGcUsage'> <b>getBeforeGcUsage</b>()</a> <pre id='ms2' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return beforeGcUsage;
+}</pre></pre><ul>Returns the memory usage before the most recent GC started.
+null if no GC occurs.</ul></td></tr><tr><td><pre><a href='javascript:src("ms3")'><img id='ms3i' src=/plus.gif border=0></a> public long<a name='getCollectionUsageThreshold'> <b>getCollectionUsageThreshold</b>()</a> <pre id='ms3' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return collectThreshold;
+}</pre></pre><ul>Returns the current collection usage threshold.
+-1 if not supported.</ul></td></tr><tr><td><pre><a href='javascript:src("ms4")'><img id='ms4i' src=/plus.gif border=0></a> public long<a name='getLastGcEndTime'> <b>getLastGcEndTime</b>()</a> <pre id='ms4' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return lastGcEndTime;
+}</pre></pre><ul>Returns the end time of the most recent GC on
+the memory pool for this statistics in milliseconds.
+
+Return 0 if no GC occurs.</ul></td></tr><tr><td><pre><a href='javascript:src("ms5")'><img id='ms5i' src=/plus.gif border=0></a> public long<a name='getLastGcId'> <b>getLastGcId</b>()</a> <pre id='ms5' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return lastGcId;
+}</pre></pre><ul>Returns the Id of GC.</ul></td></tr><tr><td><pre><a href='javascript:src("ms6")'><img id='ms6i' src=/plus.gif border=0></a> public long<a name='getLastGcStartTime'> <b>getLastGcStartTime</b>()</a> <pre id='ms6' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return lastGcStartTime;
+}</pre></pre><ul>Returns the start time of the most recent GC on
+the memory pool for this statistics in milliseconds.
+
+Return 0 if no GC occurs.</ul></td></tr><tr><td><pre><a href='javascript:src("ms7")'><img id='ms7i' src=/plus.gif border=0></a> public <a href=/docs/api/java/lang/String.html>String</a><a name='getPoolName'> <b>getPoolName</b>()</a> <pre id='ms7' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return poolName;
+}</pre></pre><ul>Returns the memory pool name.</ul></td></tr><tr><td><pre><a href='javascript:src("ms8")'><img id='ms8i' src=/plus.gif border=0></a> public <a href=/docs/api/java/lang/management/MemoryUsage.html>MemoryUsage</a><a name='getUsage'> <b>getUsage</b>()</a> <pre id='ms8' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return usage;
+}</pre></pre><ul>Returns the current memory usage.</ul></td></tr><tr><td><pre><a href='javascript:src("ms9")'><img id='ms9i' src=/plus.gif border=0></a> public long<a name='getUsageThreshold'> <b>getUsageThreshold</b>()</a> <pre id='ms9' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return usageThreshold;
+}</pre></pre><ul>Returns the current usage threshold.
+-1 if not supported.</ul></td></tr></table>
+
+
+
+
+
+
+
+
+<!-- end -->
+
+
+</div>
+</body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- end -->
+

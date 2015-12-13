@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: AboutDialog.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/AboutDialog.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2006, 2007, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/PropertyVetoException.html>java.beans.PropertyVetoException</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/net/URI.html>java.net.URI</a>;
+   32 &nbsp; 
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/accessibility/package-index.html>javax.accessibility</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   37 &nbsp; 
+   38 &nbsp; import static java.awt.BorderLayout.*;
+   39 &nbsp; import static sun.tools.jconsole.Resources.*;
+   40 &nbsp; import static sun.tools.jconsole.Utilities.*;
+<a name='41'>   41 &nbsp; 
+   42 &nbsp; @SuppressWarnings("serial")
+   43 &nbsp; public class AboutDialog extends InternalDialog {
+   44 &nbsp; 
+   45 &nbsp;     private static final Color textColor     = new Color(87,   88,  89);
+   46 &nbsp;     private static final Color bgColor       = new Color(232, 237, 241);
+   47 &nbsp;     private static final Color borderColor   = Color.black;
+   48 &nbsp; 
+   49 &nbsp;     private Icon mastheadIcon =
+   50 &nbsp;         new MastheadIcon(getText("Help.AboutDialog.masthead.title"));
+<a name='51'>   51 &nbsp; 
+   52 &nbsp;     private static AboutDialog aboutDialog;
+   53 &nbsp; 
+   54 &nbsp;     private JLabel statusBar;
+   55 &nbsp;     private Action closeAction;
+   56 &nbsp; 
+   57 &nbsp;     public AboutDialog(JConsole jConsole) {
+   58 &nbsp;         super(jConsole, Resources.getText("Help.AboutDialog.title"), false);
+   59 &nbsp; 
+   60 &nbsp;         setAccessibleDescription(this,
+<a name='61'>   61 &nbsp;                                  getText("Help.AboutDialog.accessibleDescription"));
+   62 &nbsp;         setDefaultCloseOperation(HIDE_ON_CLOSE);
+   63 &nbsp;         setResizable(false);
+   64 &nbsp;         JComponent cp = (JComponent)getContentPane();
+   65 &nbsp; 
+   66 &nbsp;         createActions();
+   67 &nbsp; 
+   68 &nbsp;         JLabel mastheadLabel = new JLabel(mastheadIcon);
+   69 &nbsp;         setAccessibleName(mastheadLabel,
+   70 &nbsp;                           getText("Help.AboutDialog.masthead.accessibleName"));
+<a name='71'>   71 &nbsp; 
+   72 &nbsp;         JPanel mainPanel = new TPanel(0, 0);
+   73 &nbsp;         mainPanel.add(mastheadLabel, NORTH);
+   74 &nbsp; 
+   75 &nbsp;         String jConsoleVersion = Version.getVersion();
+   76 &nbsp;         String vmName = System.getProperty("java.vm.name");
+   77 &nbsp;         String vmVersion = System.getProperty("java.vm.version");
+   78 &nbsp;         String urlStr = getText("Help.AboutDialog.userGuideLink.url");
+   79 &nbsp;         if (isBrowseSupported()) {
+   80 &nbsp;             urlStr = "&lt;a style='color:#35556b' href=\"" + urlStr + "\"&gt;" + urlStr + "&lt;/a&gt;";
+<a name='81'>   81 &nbsp;         }
+   82 &nbsp; 
+   83 &nbsp;         JPanel infoAndLogoPanel = new JPanel(new BorderLayout(10, 10));
+   84 &nbsp;         infoAndLogoPanel.setBackground(bgColor);
+   85 &nbsp; 
+   86 &nbsp;         String colorStr = String.format("%06x", textColor.getRGB() &amp; 0xFFFFFF);
+   87 &nbsp;         JEditorPane helpLink = new JEditorPane("text/html",
+   88 &nbsp;                                 "&lt;html&gt;&lt;font color=#"+ colorStr + "&gt;" +
+   89 &nbsp;                         getText("Help.AboutDialog.jConsoleVersion", jConsoleVersion) +
+   90 &nbsp;                 "&lt;p&gt;" + getText("Help.AboutDialog.javaVersion", (vmName +", "+ vmVersion)) +
+<a name='91'>   91 &nbsp;                 "&lt;p&gt;" + getText("Help.AboutDialog.userGuideLink", urlStr) +
+   92 &nbsp;                                                  "&lt;/html&gt;");
+   93 &nbsp;         helpLink.setOpaque(false);
+   94 &nbsp;         helpLink.setEditable(false);
+   95 &nbsp;         helpLink.setForeground(textColor);
+   96 &nbsp;         mainPanel.setBorder(BorderFactory.createLineBorder(borderColor));
+   97 &nbsp;         infoAndLogoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+   98 &nbsp;         helpLink.addHyperlinkListener(new HyperlinkListener() {
+   99 &nbsp;             public void hyperlinkUpdate(HyperlinkEvent e) {
+  100 &nbsp;                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+<a name='101'>  101 &nbsp;                     browse(e.getDescription());
+  102 &nbsp;                 }
+  103 &nbsp;             }
+  104 &nbsp;         });
+  105 &nbsp;         infoAndLogoPanel.add(helpLink, NORTH);
+  106 &nbsp; 
+  107 &nbsp;         ImageIcon brandLogoIcon = new ImageIcon(getClass().getResource("resources/brandlogo.png"));
+  108 &nbsp;         JLabel brandLogo = new JLabel(brandLogoIcon, JLabel.LEADING);
+  109 &nbsp; 
+  110 &nbsp;         JButton closeButton = new JButton(closeAction);
+<a name='111'>  111 &nbsp; 
+  112 &nbsp;         JPanel bottomPanel = new TPanel(0, 0);
+  113 &nbsp;         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+  114 &nbsp;         buttonPanel.setOpaque(false);
+  115 &nbsp; 
+  116 &nbsp;         mainPanel.add(infoAndLogoPanel, CENTER);
+  117 &nbsp;         cp.add(bottomPanel, SOUTH);
+  118 &nbsp; 
+  119 &nbsp;         infoAndLogoPanel.add(brandLogo, SOUTH);
+  120 &nbsp; 
+<a name='121'>  121 &nbsp;         buttonPanel.setBorder(new EmptyBorder(2, 12, 2, 12));
+  122 &nbsp;         buttonPanel.add(closeButton);
+  123 &nbsp;         bottomPanel.add(buttonPanel, NORTH);
+  124 &nbsp; 
+  125 &nbsp;         statusBar = new JLabel(" ");
+  126 &nbsp;         bottomPanel.add(statusBar, SOUTH);
+  127 &nbsp; 
+  128 &nbsp;         cp.add(mainPanel, NORTH);
+  129 &nbsp; 
+  130 &nbsp;         pack();
+<a name='131'>  131 &nbsp;         setLocationRelativeTo(jConsole);
+  132 &nbsp;         Utilities.updateTransparency(this);
+  133 &nbsp;     }
+  134 &nbsp; 
+  135 &nbsp;     public void showDialog() {
+  136 &nbsp;         statusBar.setText(" ");
+  137 &nbsp;         setVisible(true);
+  138 &nbsp;         try {
+  139 &nbsp;             // Bring to front of other dialogs
+  140 &nbsp;             setSelected(true);
+<a name='141'>  141 &nbsp;         } catch (PropertyVetoException e) {
+  142 &nbsp;             // ignore
+  143 &nbsp;         }
+  144 &nbsp;     }
+  145 &nbsp; 
+  146 &nbsp;     private static AboutDialog getAboutDialog(JConsole jConsole) {
+  147 &nbsp;         if (aboutDialog == null) {
+  148 &nbsp;             aboutDialog = new AboutDialog(jConsole);
+  149 &nbsp;         }
+  150 &nbsp;         return aboutDialog;
+<a name='151'>  151 &nbsp;     }
+  152 &nbsp; 
+  153 &nbsp;     static void showAboutDialog(JConsole jConsole) {
+  154 &nbsp;         getAboutDialog(jConsole).showDialog();
+  155 &nbsp;     }
+  156 &nbsp; 
+  157 &nbsp;     static void browseUserGuide(JConsole jConsole) {
+  158 &nbsp;         getAboutDialog(jConsole).browse(getText("Help.AboutDialog.userGuideLink.url"));
+  159 &nbsp;     }
+  160 &nbsp; 
+<a name='161'>  161 &nbsp;     static boolean isBrowseSupported() {
+  162 &nbsp;         return (Desktop.isDesktopSupported() &amp;&amp;
+  163 &nbsp;                 Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+  164 &nbsp;     }
+  165 &nbsp; 
+  166 &nbsp;     void browse(String urlStr) {
+  167 &nbsp;         try {
+  168 &nbsp;             Desktop.getDesktop().browse(new URI(urlStr));
+  169 &nbsp;         } catch (Exception ex) {
+  170 &nbsp;             showDialog();
+<a name='171'>  171 &nbsp;             statusBar.setText(ex.getLocalizedMessage());
+  172 &nbsp;             if (JConsole.isDebug()) {
+  173 &nbsp;                 ex.printStackTrace();
+  174 &nbsp;             }
+  175 &nbsp;         }
+  176 &nbsp;     }
+  177 &nbsp; 
+  178 &nbsp;     private void createActions() {
+  179 &nbsp;         closeAction = new AbstractAction(getText("Close")) {
+  180 &nbsp;             public void actionPerformed(ActionEvent ev) {
+<a name='181'>  181 &nbsp;                 setVisible(false);
+  182 &nbsp;                 statusBar.setText("");
+  183 &nbsp;             }
+  184 &nbsp;         };
+  185 &nbsp;     }
+  186 &nbsp; 
+  187 &nbsp;     private static class TPanel extends JPanel {
+  188 &nbsp;         TPanel(int hgap, int vgap) {
+  189 &nbsp;             super(new BorderLayout(hgap, vgap));
+  190 &nbsp;             setOpaque(false);
+<a name='191'>  191 &nbsp;         }
+  192 &nbsp;     }
+  193 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/AboutDialog.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

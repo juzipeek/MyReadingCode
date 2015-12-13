@@ -1,0 +1,236 @@
+
+    
+    <!-- classdoc.jsp -->
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>sun.tools.jconsole: public class: LocalVirtualMachine</title>
+	<style>
+#jdoc {margin:10px 10px 10px 10px}
+#pkg {font-size:1em;font-weight:bold}
+#cls {font-size:2em;font-weight:bold}
+body {margin:0 0 0 0; padding:0 0 0 0} 
+table {margin-top:10px;background-color:#ffffff;}
+
+th {background:#ddeeff;text-align:left}	
+td {padding:5px 2px 2px 5px;border-top:1px solid #999999;margin:0 0 0 0}
+pre {padding:0;margin:0}
+.withborder {border-left:1px solid #999999;border-right:1px solid #999999;background-color:#eeeeee}
+	</style>
+	
+	<script type="text/javascript">
+	
+	function src(m) {
+	  s = 	document.getElementById(m);
+	  i = document.getElementById(m+"i");
+	  if (s != null && s.style.visibility!='visible') {
+	   s.style.visibility='visible';
+	   s.style.height="auto";
+	   s.style.overflow='auto';
+	   i.src = "/minus.gif";
+	  } else if (s != null) {
+	   s.style.visibility='hidden';
+	   s.style.height="1px";
+	   s.style.overflow='hidden';
+	   i.src = "/plus.gif";
+	  }
+	}
+	
+	</script>
+<style type="text/css">
+#fixme {
+	/* Netscape 4, IE 4.x-5.0/Win and other lesser browsers will use this */
+  position: absolute; left: 0; top: 0;
+}
+body > div#fixme {
+  /* used by Opera 5+, Netscape6+/Mozilla, Konqueror, Safari, OmniWeb 4.5+, iCab, ICEbrowser */
+  position: fixed;
+}
+</style>
+<!--[if gte IE 5.5]>
+<style type="text/css">
+div#fixme {
+  /* IE5.5+/Win - this is more specific than the IE 5.0 version */
+  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
+  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
+}
+</style>
+<![endif]--></head><body>
+<div id="fixme" style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+[javadoc | 
+ <a href="/html/api/sun/tools/jconsole/LocalVirtualMachine.java.html">source</a>]
+</div>
+<div style="height:20px"></div>
+<div id="jdoc">
+
+
+<!-- classname.jsp -->
+    
+<span id="pkg">sun.tools.jconsole</span><br>
+    <span id="cls">public class: LocalVirtualMachine</span> [javadoc | 
+ <a href="/html/api/sun/tools/jconsole/LocalVirtualMachine.java.html">source</a>]
+    
+    	<br><pre><a href=/docs/api/java/lang/Object.html>java.lang.Object</a>
+ &nbsp; <img src=/inherit.gif><b>sun.tools.jconsole.LocalVirtualMachine</b></pre>
+    
+
+
+
+
+<!-- end -->
+
+
+<!-- classimplements.jsp -->
+    
+
+
+
+
+<!-- end -->
+
+
+    <!-- classcomment.jsp -->
+    
+
+
+<!-- nestedclass.jsp -->
+    
+
+
+
+<!-- end -->
+
+
+<!-- fieldsummary.jsp -->
+    
+
+
+
+
+
+
+<!-- end -->
+
+
+
+
+<!-- constructsummary.jsp -->
+    <table width='100%'><tr><th>Constructor:</td></tr>
+<tr><td><pre><a href='javascript:src("cs0")'><img id='cs0i' src=/plus.gif border=0></a> <a name='LocalVirtualMachine(int, String, boolean, String)'>public <b>LocalVirtualMachine</b>(int vmid,
+    <a href=/docs/api/java/lang/String.html>String</a> commandLine,
+    boolean canAttach,
+    <a href=/docs/api/java/lang/String.html>String</a> connectorAddress) <pre id='cs0' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this.vmid = vmid;
+        this.commandLine = commandLine;
+        this.address = connectorAddress;
+        this.isAttachSupported = canAttach;
+        this.displayName = getDisplayName(commandLine);
+}</pre></pre></pre></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+<!-- methodsummary.jsp -->
+    <table width='100%'><tr><th>Method from <b>sun.tools.jconsole.LocalVirtualMachine</b> Summary:</td></tr><tr><td>
+<a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#connectorAddress'>connectorAddress</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#displayName'>displayName</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#getAllVirtualMachines'>getAllVirtualMachines</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#getLocalVirtualMachine(int)'>getLocalVirtualMachine</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#isAttachable'>isAttachable</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#isManageable'>isManageable</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#startManagementAgent'>startManagementAgent</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#toString'>toString</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/LocalVirtualMachine.html#vmid'>vmid</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.lang.Object</b>:</td></tr><tr><td>
+<a href='/docs/api/java/lang/Object.html#clone'>clone</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#equals(Object)'>equals</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#finalize'>finalize</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#getClass'>getClass</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#hashCode'>hashCode</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notify'>notify</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notifyAll'>notifyAll</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#toString'>toString</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long)'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long, int)'>wait</a></td></tr></table><table width='100%'><tr><th>Method from <b>sun.tools.jconsole.LocalVirtualMachine</b> Detail:</td></tr>
+<tr><td><pre><a href='javascript:src("ms1")'><img id='ms1i' src=/plus.gif border=0></a> public <a href=/docs/api/java/lang/String.html>String</a><a name='connectorAddress'> <b>connectorAddress</b>()</a> <pre id='ms1' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        // return null if not available or no JMX agent
+        return address;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms2")'><img id='ms2i' src=/plus.gif border=0></a> public <a href=/docs/api/java/lang/String.html>String</a><a name='displayName'> <b>displayName</b>()</a> <pre id='ms2' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return displayName;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms3")'><img id='ms3i' src=/plus.gif border=0></a> public static <a href=/docs/api/java/util/Map.html>Map</a>&lt;<a href="/docs/api/java/lang/Integer.html">Integer</a>, <a href="/docs/api/sun/tools/jconsole/LocalVirtualMachine.html">LocalVirtualMachine</a>&gt;<a name='getAllVirtualMachines'> <b>getAllVirtualMachines</b>()</a> <pre id='ms3' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        Map< Integer, LocalVirtualMachine > map =
+            new HashMap< Integer, LocalVirtualMachine >();
+        getMonitoredVMs(map);
+        getAttachableVMs(map);
+        return map;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms6")'><img id='ms6i' src=/plus.gif border=0></a> public static <a href=/docs/api/sun/tools/jconsole/LocalVirtualMachine.html>LocalVirtualMachine</a><a name='getLocalVirtualMachine(int)'> <b>getLocalVirtualMachine</b>(int vmid)</a> <pre id='ms6' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        Map< Integer, LocalVirtualMachine > map = getAllVirtualMachines();
+        LocalVirtualMachine lvm = map.get(vmid);
+        if (lvm == null) {
+            // Check if the VM is attachable but not included in the list
+            // if it's running with a different security context.
+            // For example, Windows services running
+            // local SYSTEM account are attachable if you have Adminstrator
+            // privileges.
+            boolean attachable = false;
+            String address = null;
+            String name = String.valueOf(vmid); // default display name to pid
+            try {
+                VirtualMachine vm = VirtualMachine.attach(name);
+                attachable = true;
+                Properties agentProps = vm.getAgentProperties();
+                address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+                vm.detach();
+                lvm = new LocalVirtualMachine(vmid, name, attachable, address);
+            } catch (AttachNotSupportedException x) {
+                // not attachable
+                if (JConsole.isDebug()) {
+                    x.printStackTrace();
+                }
+            } catch (IOException x) {
+                // ignore
+                if (JConsole.isDebug()) {
+                    x.printStackTrace();
+                }
+            }
+        }
+        return lvm;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms8")'><img id='ms8i' src=/plus.gif border=0></a> public boolean<a name='isAttachable'> <b>isAttachable</b>()</a> <pre id='ms8' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return isAttachSupported;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms9")'><img id='ms9i' src=/plus.gif border=0></a> public boolean<a name='isManageable'> <b>isManageable</b>()</a> <pre id='ms9' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return (address != null);
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms11")'><img id='ms11i' src=/plus.gif border=0></a> public  void<a name='startManagementAgent'> <b>startManagementAgent</b>()</a> throws <a href=/docs/api/java/io/IOException.html>IOException</a> <pre id='ms11' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        if (address != null) {
+            // already started
+            return;
+        }
+        if (!isAttachable()) {
+            throw new IOException("This virtual machine \"" + vmid +
+                "\" does not support dynamic attach.");
+        }
+        loadManagementAgent();
+        // fails to load or start the management agent
+        if (address == null) {
+            // should never reach here
+            throw new IOException("Fails to find connector address");
+        }
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms12")'><img id='ms12i' src=/plus.gif border=0></a> public <a href=/docs/api/java/lang/String.html>String</a><a name='toString'> <b>toString</b>()</a> <pre id='ms12' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return commandLine;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms13")'><img id='ms13i' src=/plus.gif border=0></a> public int<a name='vmid'> <b>vmid</b>()</a> <pre id='ms13' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return vmid;
+}</pre></pre></td></tr></table>
+
+
+
+
+
+
+
+
+<!-- end -->
+
+
+</div>
+</body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- end -->
+

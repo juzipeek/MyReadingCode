@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: Utilities.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Utilities.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2005, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; 
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/accessibility/package-index.html>javax.accessibility</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/tree/package-index.html>javax.swing.tree</a>;
+   34 &nbsp; 
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/tools/jconsole/inspector/package-index.html>sun.tools.jconsole.inspector</a>;
+   36 &nbsp; 
+   37 &nbsp; import static java.lang.Math.*;
+   38 &nbsp; 
+   39 &nbsp; /**
+   40 &nbsp;  * Miscellaneous utility methods for JConsole
+<a name='41'>   41 &nbsp;  */
+   42 &nbsp; public class Utilities {
+   43 &nbsp;     private static final String windowsLaF =
+   44 &nbsp;         "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
+   45 &nbsp; 
+   46 &nbsp;     public static void updateTransparency(JComponent comp) {
+   47 &nbsp;         LookAndFeel laf = UIManager.getLookAndFeel();
+   48 &nbsp;         boolean transparent = laf.getClass().getName().equals(windowsLaF);
+   49 &nbsp;         setTabbedPaneTransparency(comp, transparent);
+   50 &nbsp;     }
+<a name='51'>   51 &nbsp; 
+   52 &nbsp;     private static void setTabbedPaneTransparency(JComponent comp, boolean transparent) {
+   53 &nbsp;         for (Component child : comp.getComponents()) {
+   54 &nbsp;             if (comp instanceof JTabbedPane) {
+   55 &nbsp;                 setTransparency((JComponent)child, transparent);
+   56 &nbsp;             } else if (child instanceof JComponent) {
+   57 &nbsp;                 setTabbedPaneTransparency((JComponent)child, transparent);
+   58 &nbsp;             }
+   59 &nbsp;         }
+   60 &nbsp;     }
+<a name='61'>   61 &nbsp; 
+   62 &nbsp;     private static void setTransparency(JComponent comp, boolean transparent) {
+   63 &nbsp;         comp.setOpaque(!transparent);
+   64 &nbsp;         for (Component child : comp.getComponents()) {
+   65 &nbsp;             if (child instanceof JPanel ||
+   66 &nbsp;                 child instanceof JSplitPane ||
+   67 &nbsp;                 child instanceof JScrollPane ||
+   68 &nbsp;                 child instanceof JViewport ||
+   69 &nbsp;                 child instanceof JCheckBox) {
+   70 &nbsp; 
+<a name='71'>   71 &nbsp;                 setTransparency((JComponent)child, transparent);
+   72 &nbsp;             }
+   73 &nbsp;             if (child instanceof XTree) {
+   74 &nbsp;                 XTree t = (XTree)child;
+   75 &nbsp;                 DefaultTreeCellRenderer cr = (DefaultTreeCellRenderer)t.getCellRenderer();
+   76 &nbsp; 
+   77 &nbsp;                 cr.setBackground(null);
+   78 &nbsp;                 cr.setBackgroundNonSelectionColor(new Color(0, 0, 0, 1));
+   79 &nbsp;                 t.setCellRenderer(cr);
+   80 &nbsp;                 setTransparency((JComponent)child, transparent);
+<a name='81'>   81 &nbsp;             }
+   82 &nbsp;         }
+   83 &nbsp;     }
+   84 &nbsp; 
+   85 &nbsp; 
+   86 &nbsp;     /**
+   87 &nbsp;      * A slightly modified border for JScrollPane to be used with a JTable inside
+   88 &nbsp;      * a JTabbedPane. It has only top part and the rest is clipped to make the
+   89 &nbsp;      * overall border less thick.
+   90 &nbsp;      * The top border helps differentiating the containing table from its container.
+<a name='91'>   91 &nbsp;      */
+   92 &nbsp;     public static JScrollPane newTableScrollPane(JComponent comp) {
+   93 &nbsp;         return new TableScrollPane(comp);
+   94 &nbsp;     }
+   95 &nbsp; 
+   96 &nbsp;     @SuppressWarnings("serial")
+   97 &nbsp;     private static class TableScrollPane extends JScrollPane {
+   98 &nbsp;         public TableScrollPane(JComponent comp) {
+   99 &nbsp;             super(comp);
+  100 &nbsp;         }
+<a name='101'>  101 &nbsp; 
+  102 &nbsp;         protected void paintBorder(Graphics g) {
+  103 &nbsp;             Border border = getBorder();
+  104 &nbsp;             if (border != null) {
+  105 &nbsp;                 Insets insets = border.getBorderInsets(this);
+  106 &nbsp;                 if (insets != null) {
+  107 &nbsp;                     Shape oldClip = g.getClip();
+  108 &nbsp;                     g.clipRect(0, 0, getWidth(), insets.top);
+  109 &nbsp;                     super.paintBorder(g);
+  110 &nbsp;                     g.setClip(oldClip);
+<a name='111'>  111 &nbsp;                 }
+  112 &nbsp;             }
+  113 &nbsp;         }
+  114 &nbsp;     }
+  115 &nbsp; 
+  116 &nbsp;     public static void setAccessibleName(Accessible comp, String name) {
+  117 &nbsp;         comp.getAccessibleContext().setAccessibleName(name);
+  118 &nbsp;     }
+  119 &nbsp; 
+  120 &nbsp;     public static void setAccessibleDescription(Accessible comp, String description) {
+<a name='121'>  121 &nbsp;         comp.getAccessibleContext().setAccessibleDescription(description);
+  122 &nbsp;     }
+  123 &nbsp; 
+  124 &nbsp; 
+  125 &nbsp;     /**
+  126 &nbsp;      * Modifies color c1 to ensure it has acceptable contrast
+  127 &nbsp;      * relative to color c2.
+  128 &nbsp;      *
+  129 &nbsp;      * http://www.w3.org/TR/AERT#color-contrast
+  130 &nbsp;      * http://www.cs.rit.edu/~ncs/color/t_convert.html#RGB%20to%20YIQ%20&amp;%20YIQ%20to%20RGB
+<a name='131'>  131 &nbsp;      */
+  132 &nbsp;     public static Color ensureContrast(Color c1, Color c2) {
+  133 &nbsp;         double y1 = getColorBrightness(c1);
+  134 &nbsp;         double y2 = getColorBrightness(c2);
+  135 &nbsp; 
+  136 &nbsp;         if (abs(y1 - y2) &lt; 125.0) {
+  137 &nbsp;             if (y2 &lt; 128.0) {
+  138 &nbsp;                 c1 = setColorBrightness(c1, y2 + 125.0);
+  139 &nbsp;             } else {
+  140 &nbsp;                 c1 = setColorBrightness(c1, y2 - 125.0);
+<a name='141'>  141 &nbsp;             }
+  142 &nbsp;         }
+  143 &nbsp; 
+  144 &nbsp;         return c1;
+  145 &nbsp;     }
+  146 &nbsp; 
+  147 &nbsp;     public static double getColorBrightness(Color c) {
+  148 &nbsp;         // Convert RGB -&gt; YIQ and return the Y value
+  149 &nbsp;         return (c.getRed() * 0.299 + c.getGreen() * 0.587 + c.getBlue() * 0.114);
+  150 &nbsp;     }
+<a name='151'>  151 &nbsp; 
+  152 &nbsp;     private static Color setColorBrightness(Color c, double y) {
+  153 &nbsp;         // Convert YIQ -&gt; RGB
+  154 &nbsp;         double i = (c.getRed() * 0.596 - c.getGreen() * 0.275 - c.getBlue() * 0.321);
+  155 &nbsp;         double q = (c.getRed() * 0.212 - c.getGreen() * 0.523 + c.getBlue() * 0.311);
+  156 &nbsp; 
+  157 &nbsp;         // Keep values in legal range. This may reduce the
+  158 &nbsp;         // achieved contrast somewhat.
+  159 &nbsp;         int r = max(0, min(255, (int)round(y + i * 0.956 + q * 0.621)));
+  160 &nbsp;         int g = max(0, min(255, (int)round(y - i * 0.272 - q * 0.647)));
+<a name='161'>  161 &nbsp;         int b = max(0, min(255, (int)round(y - i * 1.105 + q * 1.702)));
+  162 &nbsp; 
+  163 &nbsp;         return new Color(r, g, b);
+  164 &nbsp;     }
+  165 &nbsp; 
+  166 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Utilities.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

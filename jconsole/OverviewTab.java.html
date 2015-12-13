@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: OverviewTab.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/OverviewTab.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/InvocationTargetException.html>java.lang.reflect.InvocationTargetException</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/ArrayList.html>java.util.ArrayList</a>;
+<a name='31'>   31 &nbsp; 
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   34 &nbsp; 
+   35 &nbsp; import static sun.tools.jconsole.JConsole.*;
+   36 &nbsp; import static sun.tools.jconsole.Resources.*;
+   37 &nbsp; 
+   38 &nbsp; 
+   39 &nbsp; @SuppressWarnings("serial")
+   40 &nbsp; class OverviewTab extends Tab {
+<a name='41'>   41 &nbsp;     JPanel gridPanel;
+   42 &nbsp;     TimeComboBox timeComboBox;
+   43 &nbsp; 
+   44 &nbsp;     public static String getTabName() {
+   45 &nbsp;         return getText("Overview");
+   46 &nbsp;     }
+   47 &nbsp; 
+   48 &nbsp;     public OverviewTab(VMPanel vmPanel) {
+   49 &nbsp;         super(vmPanel, getTabName());
+   50 &nbsp; 
+<a name='51'>   51 &nbsp;         setBorder(new EmptyBorder(4, 4, 3, 4));
+   52 &nbsp;         setLayout(new BorderLayout());
+   53 &nbsp; 
+   54 &nbsp;         JPanel topPanel     = new JPanel(new BorderLayout());
+   55 &nbsp;         add(topPanel, BorderLayout.NORTH);
+   56 &nbsp; 
+   57 &nbsp;         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+   58 &nbsp;         topPanel.add(controlPanel, BorderLayout.CENTER);
+   59 &nbsp; 
+   60 &nbsp;         timeComboBox = new TimeComboBox();
+<a name='61'>   61 &nbsp;         LabeledComponent lc = new LabeledComponent(Resources.getText("Time Range:"),
+   62 &nbsp;                                                    getMnemonicInt("Time Range:"),
+   63 &nbsp;                                                    timeComboBox);
+   64 &nbsp;         controlPanel.add(lc);
+   65 &nbsp; 
+   66 &nbsp;         gridPanel = new JPanel(new AutoGridLayout(10, 6));
+   67 &nbsp;         gridPanel.setBorder(null);
+   68 &nbsp;         JScrollPane sp = new JScrollPane(gridPanel);
+   69 &nbsp;         sp.setBorder(null);
+   70 &nbsp;         sp.setViewportBorder(null);
+<a name='71'>   71 &nbsp;         add(sp, BorderLayout.CENTER);
+   72 &nbsp; 
+   73 &nbsp;         // Note that panels are added on first update
+   74 &nbsp;     }
+   75 &nbsp; 
+   76 &nbsp; 
+   77 &nbsp;     public SwingWorker&lt;?, ?&gt; newSwingWorker() {
+   78 &nbsp;         return new SwingWorker&lt;Object, Object&gt;() {
+   79 &nbsp;             public Object doInBackground() {
+   80 &nbsp;                 return null;
+<a name='81'>   81 &nbsp;             }
+   82 &nbsp; 
+   83 &nbsp;             protected void done() {
+   84 &nbsp;                 if (gridPanel.getComponentCount() == 0) {
+   85 &nbsp;                     final ArrayList&lt;Plotter&gt; plotters = new ArrayList&lt;Plotter&gt;();
+   86 &nbsp;                     for (Tab tab : vmPanel.getTabs()) {
+   87 &nbsp;                         OverviewPanel[] ops = tab.getOverviewPanels();
+   88 &nbsp;                         if (ops != null) {
+   89 &nbsp;                             for (OverviewPanel op : ops) {
+   90 &nbsp;                                 gridPanel.add(op);
+<a name='91'>   91 &nbsp;                                 Plotter plotter = op.getPlotter();
+   92 &nbsp;                                 if (plotter != null) {
+   93 &nbsp;                                     plotters.add(plotter);
+   94 &nbsp;                                     timeComboBox.addPlotter(plotter);
+   95 &nbsp;                                 }
+   96 &nbsp;                             }
+   97 &nbsp;                         }
+   98 &nbsp;                     }
+   99 &nbsp;                     if (plotters.size() &gt; 0) {
+  100 &nbsp;                         workerAdd(new Runnable() {
+<a name='101'>  101 &nbsp;                             public void run() {
+  102 &nbsp;                                 ProxyClient proxyClient = vmPanel.getProxyClient();
+  103 &nbsp;                                 for (Plotter plotter : plotters) {
+  104 &nbsp;                                     proxyClient.addWeakPropertyChangeListener(plotter);
+  105 &nbsp;                                 }
+  106 &nbsp;                             }
+  107 &nbsp;                         });
+  108 &nbsp;                     }
+  109 &nbsp;                     if (getParent() instanceof JTabbedPane) {
+  110 &nbsp;                         Utilities.updateTransparency((JTabbedPane)getParent());
+<a name='111'>  111 &nbsp;                     }
+  112 &nbsp;                 }
+  113 &nbsp;             }
+  114 &nbsp;         };
+  115 &nbsp;     }
+  116 &nbsp; 
+  117 &nbsp; 
+  118 &nbsp; 
+  119 &nbsp;     private class AutoGridLayout extends GridLayout {
+  120 &nbsp;         public AutoGridLayout(int hGap, int vGap) {
+<a name='121'>  121 &nbsp;             super(0, 1, hGap, vGap);
+  122 &nbsp;         }
+  123 &nbsp; 
+  124 &nbsp;         public Dimension preferredLayoutSize(Container parent) {
+  125 &nbsp;             return minimumLayoutSize(parent);
+  126 &nbsp;         }
+  127 &nbsp; 
+  128 &nbsp;         public Dimension minimumLayoutSize(Container parent) {
+  129 &nbsp;             updateColumns(parent);
+  130 &nbsp;             return super.minimumLayoutSize(parent);
+<a name='131'>  131 &nbsp;         }
+  132 &nbsp; 
+  133 &nbsp;         private void updateColumns(Container parent) {
+  134 &nbsp;             // Use the outer panel width, not the scrolling gridPanel
+  135 &nbsp;             int parentWidth = OverviewTab.this.getWidth();
+  136 &nbsp; 
+  137 &nbsp;             int columnWidth = 1;
+  138 &nbsp; 
+  139 &nbsp;             for (Component c : parent.getComponents()) {
+  140 &nbsp;                 columnWidth = Math.max(columnWidth, c.getPreferredSize().width);
+<a name='141'>  141 &nbsp;             }
+  142 &nbsp; 
+  143 &nbsp;             int n = parent.getComponentCount();
+  144 &nbsp;             int maxCols = Math.min(n, parentWidth / columnWidth);
+  145 &nbsp; 
+  146 &nbsp;             for (int columns = maxCols; columns &gt;= 1; columns--) {
+  147 &nbsp;                 if (columns == 1) {
+  148 &nbsp;                     setColumns(maxCols);
+  149 &nbsp;                 } else if ((n % columns) == 0) {
+  150 &nbsp;                     setColumns(columns);
+<a name='151'>  151 &nbsp;                     break;
+  152 &nbsp;                 }
+  153 &nbsp;             }
+  154 &nbsp;         }
+  155 &nbsp;     }
+  156 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/OverviewTab.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

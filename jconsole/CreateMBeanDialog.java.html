@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: CreateMBeanDialog.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/CreateMBeanDialog.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/List.html>java.util.List</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/TreeSet.html>java.util.TreeSet</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/Comparator.html>java.util.Comparator</a>;
+   33 &nbsp; 
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/Timer.html>javax.swing.Timer</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   38 &nbsp; 
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/MBeanServerConnection.html>javax.management.MBeanServerConnection</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/ObjectName.html>javax.management.ObjectName</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/InstanceAlreadyExistsException.html>javax.management.InstanceAlreadyExistsException</a>;
+   42 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/InstanceNotFoundException.html>javax.management.InstanceNotFoundException</a>;
+   43 &nbsp; 
+   44 &nbsp; import static sun.tools.jconsole.Resources.*;
+   45 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   46 &nbsp; 
+   47 &nbsp; @SuppressWarnings("serial")
+   48 &nbsp; public class CreateMBeanDialog extends InternalDialog
+   49 &nbsp;                 implements ActionListener {
+   50 &nbsp;     JConsole jConsole;
+<a name='51'>   51 &nbsp;     JComboBox connections;
+   52 &nbsp;     JButton createMBeanButton, unregisterMBeanButton, cancelButton;
+   53 &nbsp; 
+   54 &nbsp;     private static final String HOTSPOT_MBEAN =
+   55 &nbsp;         "sun.management.HotspotInternal";
+   56 &nbsp;     private static final String HOTSPOT_MBEAN_OBJECTNAME =
+   57 &nbsp;         "sun.management:type=HotspotInternal";
+   58 &nbsp;     public CreateMBeanDialog(JConsole jConsole) {
+   59 &nbsp;         super(jConsole, "JConsole: Hotspot MBeans", true);
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;         this.jConsole = jConsole;
+   62 &nbsp;         setAccessibleDescription(this,
+   63 &nbsp;                                  getText("Hotspot MBeans.dialog.accessibleDescription"));
+   64 &nbsp;         Container cp = getContentPane();
+   65 &nbsp;         ((JComponent)cp).setBorder(new EmptyBorder(10, 10, 4, 10));
+   66 &nbsp; 
+   67 &nbsp;         JPanel centerPanel = new JPanel(new VariableGridLayout(0,
+   68 &nbsp;                                                         1,
+   69 &nbsp;                                                         4,
+   70 &nbsp;                                                         4,
+<a name='71'>   71 &nbsp;                                                         false,
+   72 &nbsp;                                                         true));
+   73 &nbsp;         cp.add(centerPanel, BorderLayout.CENTER);
+   74 &nbsp;         connections = new JComboBox();
+   75 &nbsp;         updateConnections();
+   76 &nbsp; 
+   77 &nbsp;         centerPanel.add(new LabeledComponent(Resources.
+   78 &nbsp;                                              getText("Manage Hotspot MBeans "+
+   79 &nbsp;                                                      "in: "),
+   80 &nbsp;                                              connections));
+<a name='81'>   81 &nbsp; 
+   82 &nbsp;         JPanel bottomPanel = new JPanel(new BorderLayout());
+   83 &nbsp;         cp.add(bottomPanel, BorderLayout.SOUTH);
+   84 &nbsp; 
+   85 &nbsp;         JPanel buttonPanel = new JPanel();
+   86 &nbsp;         bottomPanel.add(buttonPanel, BorderLayout.NORTH);
+   87 &nbsp;         buttonPanel.add(createMBeanButton =
+   88 &nbsp;                         new JButton(Resources.getText("Create")));
+   89 &nbsp;         buttonPanel.add(unregisterMBeanButton =
+   90 &nbsp;                         new JButton(Resources.getText("Unregister")));
+<a name='91'>   91 &nbsp;         buttonPanel.add(cancelButton =
+   92 &nbsp;                         new JButton(Resources.getText("Cancel")));
+   93 &nbsp; 
+   94 &nbsp;         statusBar = new JLabel(" ", JLabel.CENTER);
+   95 &nbsp;         bottomPanel.add(statusBar, BorderLayout.SOUTH);
+   96 &nbsp; 
+   97 &nbsp;         createMBeanButton.addActionListener(this);
+   98 &nbsp;         unregisterMBeanButton.addActionListener(this);
+   99 &nbsp;         cancelButton.addActionListener(this);
+  100 &nbsp; 
+<a name='101'>  101 &nbsp;         LabeledComponent.layout(centerPanel);
+  102 &nbsp;         pack();
+  103 &nbsp;         setLocationRelativeTo(jConsole);
+  104 &nbsp;     }
+  105 &nbsp; 
+  106 &nbsp;     private void updateConnections() {
+  107 &nbsp;         List&lt;VMInternalFrame&gt; frames = jConsole.getInternalFrames();
+  108 &nbsp;         TreeSet&lt;ProxyClient&gt; data =
+  109 &nbsp;             new TreeSet&lt;ProxyClient&gt;(new Comparator&lt;ProxyClient&gt;() {
+  110 &nbsp;             public int compare(ProxyClient o1, ProxyClient o2) {
+<a name='111'>  111 &nbsp;                 // TODO: Need to understand how this method being used?
+  112 &nbsp;                 return o1.connectionName().compareTo(o2.connectionName());
+  113 &nbsp;             }
+  114 &nbsp;         });
+  115 &nbsp; 
+  116 &nbsp;         if (frames.size() == 0) {
+  117 &nbsp;             JComponent cp = (JComponent)jConsole.getContentPane();
+  118 &nbsp;             Component comp = ((BorderLayout)cp.getLayout()).
+  119 &nbsp;                 getLayoutComponent(BorderLayout.CENTER);
+  120 &nbsp;             if (comp instanceof VMPanel) {
+<a name='121'>  121 &nbsp;                 VMPanel vmpanel = (VMPanel) comp;
+  122 &nbsp;                 ProxyClient client = vmpanel.getProxyClient(false);
+  123 &nbsp;                 if (client != null &amp;&amp; client.hasPlatformMXBeans()) {
+  124 &nbsp;                     data.add(client);
+  125 &nbsp;                 }
+  126 &nbsp;             }
+  127 &nbsp;         } else {
+  128 &nbsp;             for (VMInternalFrame f : frames) {
+  129 &nbsp;                 ProxyClient client = f.getVMPanel().getProxyClient(false);
+  130 &nbsp;                 if (client != null &amp;&amp; client.hasPlatformMXBeans()) {
+<a name='131'>  131 &nbsp;                     data.add(client);
+  132 &nbsp;                 }
+  133 &nbsp;             }
+  134 &nbsp;         }
+  135 &nbsp;         connections.invalidate();
+  136 &nbsp;         connections.setModel(new DefaultComboBoxModel(data.toArray()));
+  137 &nbsp;         connections.validate();
+  138 &nbsp;     }
+  139 &nbsp; 
+  140 &nbsp;     public void actionPerformed(final ActionEvent ev) {
+<a name='141'>  141 &nbsp;         setVisible(false);
+  142 &nbsp;         statusBar.setText("");
+  143 &nbsp;         if (ev.getSource() != cancelButton) {
+  144 &nbsp;             new Thread("CreateMBeanDialog.actionPerformed") {
+  145 &nbsp;                     public void run() {
+  146 &nbsp;                         try {
+  147 &nbsp;                             StringBuffer buff = null;
+  148 &nbsp;                             Object c = connections.getSelectedItem();
+  149 &nbsp;                             if(c == null) return;
+  150 &nbsp;                             if(ev.getSource() == createMBeanButton) {
+<a name='151'>  151 &nbsp;                                 MBeanServerConnection connection =
+  152 &nbsp;                                     ((ProxyClient) c).
+  153 &nbsp;                                     getMBeanServerConnection();
+  154 &nbsp;                                 connection.createMBean(HOTSPOT_MBEAN, null);
+  155 &nbsp;                             } else {
+  156 &nbsp;                                 if(ev.getSource() == unregisterMBeanButton) {
+  157 &nbsp;                                     MBeanServerConnection connection =
+  158 &nbsp;                                         ((ProxyClient) c).
+  159 &nbsp;                                         getMBeanServerConnection();
+  160 &nbsp;                                     connection.unregisterMBean(new
+<a name='161'>  161 &nbsp;                                         ObjectName(HOTSPOT_MBEAN_OBJECTNAME));
+  162 &nbsp;                                 }
+  163 &nbsp;                             }
+  164 &nbsp;                             return;
+  165 &nbsp;                         } catch(InstanceAlreadyExistsException e) {
+  166 &nbsp;                             statusBar.setText(Resources.
+  167 &nbsp;                                               getText("Error: MBeans already "
+  168 &nbsp;                                                       + "exist"));
+  169 &nbsp;                         } catch(InstanceNotFoundException e) {
+  170 &nbsp;                             statusBar.setText(Resources.
+<a name='171'>  171 &nbsp;                                               getText("Error: MBeans do not "
+  172 &nbsp;                                                       + "exist"));
+  173 &nbsp;                         } catch(Exception e) {
+  174 &nbsp;                             statusBar.setText(e.toString());
+  175 &nbsp;                         }
+  176 &nbsp;                         setVisible(true);
+  177 &nbsp;                     }
+  178 &nbsp;                 }.start();
+  179 &nbsp;         }
+  180 &nbsp;     }
+<a name='181'>  181 &nbsp; 
+  182 &nbsp;     public void setVisible(boolean b) {
+  183 &nbsp;         boolean wasVisible = isVisible();
+  184 &nbsp; 
+  185 &nbsp;         if(b) {
+  186 &nbsp;             setLocationRelativeTo(jConsole);
+  187 &nbsp;             invalidate();
+  188 &nbsp;             updateConnections();
+  189 &nbsp;             validate();
+  190 &nbsp;             repaint();
+<a name='191'>  191 &nbsp;         }
+  192 &nbsp; 
+  193 &nbsp;         super.setVisible(b);
+  194 &nbsp; 
+  195 &nbsp; 
+  196 &nbsp;         if (b &amp;&amp; !wasVisible) {
+  197 &nbsp;             // Need to delay this to make focus stick
+  198 &nbsp;             SwingUtilities.invokeLater(new Runnable() {
+  199 &nbsp;                 public void run() {
+  200 &nbsp;                     connections.requestFocus();
+<a name='201'>  201 &nbsp;                 }
+  202 &nbsp;             });
+  203 &nbsp;         }
+  204 &nbsp;     }
+  205 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/CreateMBeanDialog.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

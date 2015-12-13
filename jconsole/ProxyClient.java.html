@@ -1,0 +1,1105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: ProxyClient.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ProxyClient.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2008, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/management/HotSpotDiagnosticMXBean.html>com.sun.management.HotSpotDiagnosticMXBean</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/jconsole/JConsoleContext.html>com.sun.tools.jconsole.JConsoleContext</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/jconsole/JConsoleContext/ConnectionState.html>com.sun.tools.jconsole.JConsoleContext.ConnectionState</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/PropertyChangeListener.html>java.beans.PropertyChangeListener</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/PropertyChangeEvent.html>java.beans.PropertyChangeEvent</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/IOException.html>java.io.IOException</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/package-index.html>java.lang.management</a>;
+   35 &nbsp; import static java.lang.management.ManagementFactory.*;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/ref/WeakReference.html>java.lang.ref.WeakReference</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/package-index.html>java.lang.reflect</a>;
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/rmi/package-index.html>java.rmi</a>;
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/rmi/registry/package-index.html>java.rmi.registry</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/rmi/server/package-index.html>java.rmi.server</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   42 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/package-index.html>javax.management</a>;
+   43 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/remote/package-index.html>javax.management.remote</a>;
+   44 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/remote/rmi/package-index.html>javax.management.remote.rmi</a>;
+   45 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/rmi/ssl/SslRMIClientSocketFactory.html>javax.rmi.ssl.SslRMIClientSocketFactory</a>;
+   46 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/SwingPropertyChangeSupport.html>javax.swing.event.SwingPropertyChangeSupport</a>;
+   47 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/rmi/server/UnicastRef2.html>sun.rmi.server.UnicastRef2</a>;
+   48 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/rmi/transport/LiveRef.html>sun.rmi.transport.LiveRef</a>;
+   49 &nbsp; 
+   50 &nbsp; public class ProxyClient implements JConsoleContext {
+<a name='51'>   51 &nbsp; 
+   52 &nbsp;     private ConnectionState connectionState = ConnectionState.DISCONNECTED;
+   53 &nbsp; 
+   54 &nbsp;     // The SwingPropertyChangeSupport will fire events on the EDT
+   55 &nbsp;     private SwingPropertyChangeSupport propertyChangeSupport =
+   56 &nbsp;                                 new SwingPropertyChangeSupport(this, true);
+   57 &nbsp; 
+   58 &nbsp;     private static Map&lt;String, ProxyClient&gt; cache =
+   59 &nbsp;         Collections.synchronizedMap(new HashMap&lt;String, ProxyClient&gt;());
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;     private volatile boolean isDead = true;
+   62 &nbsp;     private String hostName = null;
+   63 &nbsp;     private int port = 0;
+   64 &nbsp;     private String userName = null;
+   65 &nbsp;     private String password = null;
+   66 &nbsp;     private boolean hasPlatformMXBeans = false;
+   67 &nbsp;     private boolean hasHotSpotDiagnosticMXBean= false;
+   68 &nbsp;     private boolean hasCompilationMXBean = false;
+   69 &nbsp;     private boolean supportsLockUsage = false;
+   70 &nbsp; 
+<a name='71'>   71 &nbsp;     // REVISIT: VMPanel and other places relying using getUrl().
+   72 &nbsp; 
+   73 &nbsp;     // set only if it's created for local monitoring
+   74 &nbsp;     private LocalVirtualMachine lvm;
+   75 &nbsp; 
+   76 &nbsp;     // set only if it's created from a given URL via the Advanced tab
+   77 &nbsp;     private String advancedUrl = null;
+   78 &nbsp; 
+   79 &nbsp;     private JMXServiceURL jmxUrl = null;
+   80 &nbsp;     private MBeanServerConnection mbsc = null;
+<a name='81'>   81 &nbsp;     private SnapshotMBeanServerConnection server = null;
+   82 &nbsp;     private JMXConnector jmxc = null;
+   83 &nbsp;     private RMIServer stub = null;
+   84 &nbsp;     private static final SslRMIClientSocketFactory sslRMIClientSocketFactory =
+   85 &nbsp;             new SslRMIClientSocketFactory();
+   86 &nbsp;     private String registryHostName = null;
+   87 &nbsp;     private int registryPort = 0;
+   88 &nbsp;     private boolean vmConnector = false;
+   89 &nbsp;     private boolean sslRegistry = false;
+   90 &nbsp;     private boolean sslStub = false;
+<a name='91'>   91 &nbsp;     final private String connectionName;
+   92 &nbsp;     final private String displayName;
+   93 &nbsp; 
+   94 &nbsp;     private ClassLoadingMXBean    classLoadingMBean = null;
+   95 &nbsp;     private CompilationMXBean     compilationMBean = null;
+   96 &nbsp;     private MemoryMXBean          memoryMBean = null;
+   97 &nbsp;     private OperatingSystemMXBean operatingSystemMBean = null;
+   98 &nbsp;     private RuntimeMXBean         runtimeMBean = null;
+   99 &nbsp;     private ThreadMXBean          threadMBean = null;
+  100 &nbsp; 
+<a name='101'>  101 &nbsp;     private com.sun.management.OperatingSystemMXBean sunOperatingSystemMXBean = null;
+  102 &nbsp;     private HotSpotDiagnosticMXBean                  hotspotDiagnosticMXBean = null;
+  103 &nbsp; 
+  104 &nbsp;     private List&lt;MemoryPoolProxy&gt;           memoryPoolProxies = null;
+  105 &nbsp;     private List&lt;GarbageCollectorMXBean&gt;    garbageCollectorMBeans = null;
+  106 &nbsp; 
+  107 &nbsp;     final static private String HOTSPOT_DIAGNOSTIC_MXBEAN_NAME =
+  108 &nbsp;         "com.sun.management:type=HotSpotDiagnostic";
+  109 &nbsp; 
+  110 &nbsp;     private ProxyClient(String hostName, int port,
+<a name='111'>  111 &nbsp;                         String userName, String password) throws IOException {
+  112 &nbsp;         this.connectionName = getConnectionName(hostName, port, userName);
+  113 &nbsp;         this.displayName = connectionName;
+  114 &nbsp;         if (hostName.equals("localhost") &amp;&amp; port == 0) {
+  115 &nbsp;             // Monitor self
+  116 &nbsp;             this.hostName = hostName;
+  117 &nbsp;             this.port = port;
+  118 &nbsp;         } else {
+  119 &nbsp;             // Create an RMI connector client and connect it to
+  120 &nbsp;             // the RMI connector server
+<a name='121'>  121 &nbsp;             final String urlPath = "/jndi/rmi://" + hostName + ":" + port +
+  122 &nbsp;                                    "/jmxrmi";
+  123 &nbsp;             JMXServiceURL url = new JMXServiceURL("rmi", "", 0, urlPath);
+  124 &nbsp;             setParameters(url, userName, password);
+  125 &nbsp;             vmConnector = true;
+  126 &nbsp;             registryHostName = hostName;
+  127 &nbsp;             registryPort = port;
+  128 &nbsp;             checkSslConfig();
+  129 &nbsp;         }
+  130 &nbsp;     }
+<a name='131'>  131 &nbsp; 
+  132 &nbsp;     private ProxyClient(String url,
+  133 &nbsp;                         String userName, String password) throws IOException {
+  134 &nbsp;         this.advancedUrl = url;
+  135 &nbsp;         this.connectionName = getConnectionName(url, userName);
+  136 &nbsp;         this.displayName = connectionName;
+  137 &nbsp;         setParameters(new JMXServiceURL(url), userName, password);
+  138 &nbsp;     }
+  139 &nbsp; 
+  140 &nbsp;     private ProxyClient(LocalVirtualMachine lvm) throws IOException {
+<a name='141'>  141 &nbsp;         this.lvm = lvm;
+  142 &nbsp;         this.connectionName = getConnectionName(lvm);
+  143 &nbsp;         this.displayName = "pid: " + lvm.vmid() + " " + lvm.displayName();
+  144 &nbsp;     }
+  145 &nbsp; 
+  146 &nbsp;     private void setParameters(JMXServiceURL url, String userName, String password) {
+  147 &nbsp;         this.jmxUrl = url;
+  148 &nbsp;         this.hostName = jmxUrl.getHost();
+  149 &nbsp;         this.port = jmxUrl.getPort();
+  150 &nbsp;         this.userName = userName;
+<a name='151'>  151 &nbsp;         this.password = password;
+  152 &nbsp;     }
+  153 &nbsp; 
+  154 &nbsp;     private static void checkStub(Remote stub,
+  155 &nbsp;                                   Class&lt;? extends Remote&gt; stubClass) {
+  156 &nbsp;         // Check remote stub is from the expected class.
+  157 &nbsp;         //
+  158 &nbsp;         if (stub.getClass() != stubClass) {
+  159 &nbsp;             if (!Proxy.isProxyClass(stub.getClass())) {
+  160 &nbsp;                 throw new SecurityException(
+<a name='161'>  161 &nbsp;                     "Expecting a " + stubClass.getName() + " stub!");
+  162 &nbsp;             } else {
+  163 &nbsp;                 InvocationHandler handler = Proxy.getInvocationHandler(stub);
+  164 &nbsp;                 if (handler.getClass() != RemoteObjectInvocationHandler.class) {
+  165 &nbsp;                     throw new SecurityException(
+  166 &nbsp;                         "Expecting a dynamic proxy instance with a " +
+  167 &nbsp;                         RemoteObjectInvocationHandler.class.getName() +
+  168 &nbsp;                         " invocation handler!");
+  169 &nbsp;                 } else {
+  170 &nbsp;                     stub = (Remote) handler;
+<a name='171'>  171 &nbsp;                 }
+  172 &nbsp;             }
+  173 &nbsp;         }
+  174 &nbsp;         // Check RemoteRef in stub is from the expected class
+  175 &nbsp;         // "sun.rmi.server.UnicastRef2".
+  176 &nbsp;         //
+  177 &nbsp;         RemoteRef ref = ((RemoteObject)stub).getRef();
+  178 &nbsp;         if (ref.getClass() != UnicastRef2.class) {
+  179 &nbsp;             throw new SecurityException(
+  180 &nbsp;                 "Expecting a " + UnicastRef2.class.getName() +
+<a name='181'>  181 &nbsp;                 " remote reference in stub!");
+  182 &nbsp;         }
+  183 &nbsp;         // Check RMIClientSocketFactory in stub is from the expected class
+  184 &nbsp;         // "javax.rmi.ssl.SslRMIClientSocketFactory".
+  185 &nbsp;         //
+  186 &nbsp;         LiveRef liveRef = ((UnicastRef2)ref).getLiveRef();
+  187 &nbsp;         RMIClientSocketFactory csf = liveRef.getClientSocketFactory();
+  188 &nbsp;         if (csf == null || csf.getClass() != SslRMIClientSocketFactory.class) {
+  189 &nbsp;             throw new SecurityException(
+  190 &nbsp;                 "Expecting a " + SslRMIClientSocketFactory.class.getName() +
+<a name='191'>  191 &nbsp;                 " RMI client socket factory in stub!");
+  192 &nbsp;         }
+  193 &nbsp;     }
+  194 &nbsp; 
+  195 &nbsp;     private static final String rmiServerImplStubClassName =
+  196 &nbsp;         "javax.management.remote.rmi.RMIServerImpl_Stub";
+  197 &nbsp;     private static final Class&lt;? extends Remote&gt; rmiServerImplStubClass;
+  198 &nbsp; 
+  199 &nbsp;     static {
+  200 &nbsp;         // FIXME: RMIServerImpl_Stub is generated at build time
+<a name='201'>  201 &nbsp;         // after jconsole is built.  We need to investigate if
+  202 &nbsp;         // the Makefile can be fixed to build jconsole in the
+  203 &nbsp;         // right order.  As a workaround for now, we dynamically
+  204 &nbsp;         // load RMIServerImpl_Stub class instead of statically
+  205 &nbsp;         // referencing it.
+  206 &nbsp;         Class&lt;? extends Remote&gt; serverStubClass = null;
+  207 &nbsp;         try {
+  208 &nbsp;             serverStubClass = Class.forName(rmiServerImplStubClassName).asSubclass(Remote.class);
+  209 &nbsp;         } catch (ClassNotFoundException e) {
+  210 &nbsp;             // should never reach here
+<a name='211'>  211 &nbsp;             throw (InternalError) new InternalError(e.getMessage()).initCause(e);
+  212 &nbsp;         }
+  213 &nbsp;         rmiServerImplStubClass = serverStubClass;
+  214 &nbsp;     }
+  215 &nbsp; 
+  216 &nbsp;     private void checkSslConfig() throws IOException {
+  217 &nbsp;         // Get the reference to the RMI Registry and lookup RMIServer stub
+  218 &nbsp;         //
+  219 &nbsp;         Registry registry;
+  220 &nbsp;         try {
+<a name='221'>  221 &nbsp;             registry =
+  222 &nbsp;                 LocateRegistry.getRegistry(registryHostName, registryPort,
+  223 &nbsp;                                            sslRMIClientSocketFactory);
+  224 &nbsp;             try {
+  225 &nbsp;                 stub = (RMIServer) registry.lookup("jmxrmi");
+  226 &nbsp;             } catch (NotBoundException nbe) {
+  227 &nbsp;                 throw (IOException)
+  228 &nbsp;                     new IOException(nbe.getMessage()).initCause(nbe);
+  229 &nbsp;             }
+  230 &nbsp;             sslRegistry = true;
+<a name='231'>  231 &nbsp;         } catch (IOException e) {
+  232 &nbsp;             registry =
+  233 &nbsp;                 LocateRegistry.getRegistry(registryHostName, registryPort);
+  234 &nbsp;             try {
+  235 &nbsp;                 stub = (RMIServer) registry.lookup("jmxrmi");
+  236 &nbsp;             } catch (NotBoundException nbe) {
+  237 &nbsp;                 throw (IOException)
+  238 &nbsp;                     new IOException(nbe.getMessage()).initCause(nbe);
+  239 &nbsp;             }
+  240 &nbsp;             sslRegistry = false;
+<a name='241'>  241 &nbsp;         }
+  242 &nbsp;         // Perform the checks for secure stub
+  243 &nbsp;         //
+  244 &nbsp;         try {
+  245 &nbsp;             checkStub(stub, rmiServerImplStubClass);
+  246 &nbsp;             sslStub = true;
+  247 &nbsp;         } catch (SecurityException e) {
+  248 &nbsp;             sslStub = false;
+  249 &nbsp;         }
+  250 &nbsp;     }
+<a name='251'>  251 &nbsp; 
+  252 &nbsp;     /**
+  253 &nbsp;      * Returns true if the underlying RMI registry is SSL-protected.
+  254 &nbsp;      *
+  255 &nbsp;      * @exception UnsupportedOperationException If this {@code ProxyClient}
+  256 &nbsp;      * does not denote a JMX connector for a JMX VM agent.
+  257 &nbsp;      */
+  258 &nbsp;     public boolean isSslRmiRegistry() {
+  259 &nbsp;         // Check for VM connector
+  260 &nbsp;         //
+<a name='261'>  261 &nbsp;         if (!isVmConnector()) {
+  262 &nbsp;             throw new UnsupportedOperationException(
+  263 &nbsp;                 "ProxyClient.isSslRmiRegistry() is only supported if this " +
+  264 &nbsp;                 "ProxyClient is a JMX connector for a JMX VM agent");
+  265 &nbsp;         }
+  266 &nbsp;         return sslRegistry;
+  267 &nbsp;     }
+  268 &nbsp; 
+  269 &nbsp;     /**
+  270 &nbsp;      * Returns true if the retrieved RMI stub is SSL-protected.
+<a name='271'>  271 &nbsp;      *
+  272 &nbsp;      * @exception UnsupportedOperationException If this {@code ProxyClient}
+  273 &nbsp;      * does not denote a JMX connector for a JMX VM agent.
+  274 &nbsp;      */
+  275 &nbsp;     public boolean isSslRmiStub() {
+  276 &nbsp;         // Check for VM connector
+  277 &nbsp;         //
+  278 &nbsp;         if (!isVmConnector()) {
+  279 &nbsp;             throw new UnsupportedOperationException(
+  280 &nbsp;                 "ProxyClient.isSslRmiStub() is only supported if this " +
+<a name='281'>  281 &nbsp;                 "ProxyClient is a JMX connector for a JMX VM agent");
+  282 &nbsp;         }
+  283 &nbsp;         return sslStub;
+  284 &nbsp;     }
+  285 &nbsp; 
+  286 &nbsp;     /**
+  287 &nbsp;      * Returns true if this {@code ProxyClient} denotes
+  288 &nbsp;      * a JMX connector for a JMX VM agent.
+  289 &nbsp;      */
+  290 &nbsp;     public boolean isVmConnector() {
+<a name='291'>  291 &nbsp;         return vmConnector;
+  292 &nbsp;     }
+  293 &nbsp; 
+  294 &nbsp;     private void setConnectionState(ConnectionState state) {
+  295 &nbsp;         ConnectionState oldState = this.connectionState;
+  296 &nbsp;         this.connectionState = state;
+  297 &nbsp;         propertyChangeSupport.firePropertyChange(CONNECTION_STATE_PROPERTY,
+  298 &nbsp;                                                  oldState, state);
+  299 &nbsp;     }
+  300 &nbsp; 
+<a name='301'>  301 &nbsp;     public ConnectionState getConnectionState() {
+  302 &nbsp;         return this.connectionState;
+  303 &nbsp;     }
+  304 &nbsp; 
+  305 &nbsp;     void flush() {
+  306 &nbsp;         if (server != null) {
+  307 &nbsp;             server.flush();
+  308 &nbsp;         }
+  309 &nbsp;     }
+  310 &nbsp; 
+<a name='311'>  311 &nbsp;     void connect() {
+  312 &nbsp;         setConnectionState(ConnectionState.CONNECTING);
+  313 &nbsp;         try {
+  314 &nbsp;             tryConnect();
+  315 &nbsp;             setConnectionState(ConnectionState.CONNECTED);
+  316 &nbsp;         } catch (Exception e) {
+  317 &nbsp;             if (JConsole.isDebug()) {
+  318 &nbsp;                 e.printStackTrace();
+  319 &nbsp;             }
+  320 &nbsp;             setConnectionState(ConnectionState.DISCONNECTED);
+<a name='321'>  321 &nbsp;         }
+  322 &nbsp;     }
+  323 &nbsp; 
+  324 &nbsp;     private void tryConnect() throws IOException {
+  325 &nbsp;         if (jmxUrl == null &amp;&amp; "localhost".equals(hostName) &amp;&amp; port == 0) {
+  326 &nbsp;             // Monitor self
+  327 &nbsp;             this.jmxc = null;
+  328 &nbsp;             this.mbsc = ManagementFactory.getPlatformMBeanServer();
+  329 &nbsp;             this.server = Snapshot.newSnapshot(mbsc);
+  330 &nbsp;         } else {
+<a name='331'>  331 &nbsp;             // Monitor another process
+  332 &nbsp;             if (lvm != null) {
+  333 &nbsp;                 if (!lvm.isManageable()) {
+  334 &nbsp;                     lvm.startManagementAgent();
+  335 &nbsp;                     if (!lvm.isManageable()) {
+  336 &nbsp;                         // FIXME: what to throw
+  337 &nbsp;                         throw new IOException(lvm + "not manageable");
+  338 &nbsp;                     }
+  339 &nbsp;                 }
+  340 &nbsp;                 if (this.jmxUrl == null) {
+<a name='341'>  341 &nbsp;                     this.jmxUrl = new JMXServiceURL(lvm.connectorAddress());
+  342 &nbsp;                 }
+  343 &nbsp;             }
+  344 &nbsp;             // Need to pass in credentials ?
+  345 &nbsp;             if (userName == null &amp;&amp; password == null) {
+  346 &nbsp;                 if (isVmConnector()) {
+  347 &nbsp;                     // Check for SSL config on reconnection only
+  348 &nbsp;                     if (stub == null) {
+  349 &nbsp;                         checkSslConfig();
+  350 &nbsp;                     }
+<a name='351'>  351 &nbsp;                     this.jmxc = new RMIConnector(stub, null);
+  352 &nbsp;                     jmxc.connect();
+  353 &nbsp;                 } else {
+  354 &nbsp;                     this.jmxc = JMXConnectorFactory.connect(jmxUrl);
+  355 &nbsp;                 }
+  356 &nbsp;             } else {
+  357 &nbsp;                 Map&lt;String, String[]&gt; env = new HashMap&lt;String, String[]&gt;();
+  358 &nbsp;                 env.put(JMXConnector.CREDENTIALS,
+  359 &nbsp;                         new String[] {userName, password});
+  360 &nbsp;                 if (isVmConnector()) {
+<a name='361'>  361 &nbsp;                     // Check for SSL config on reconnection only
+  362 &nbsp;                     if (stub == null) {
+  363 &nbsp;                         checkSslConfig();
+  364 &nbsp;                     }
+  365 &nbsp;                     this.jmxc = new RMIConnector(stub, null);
+  366 &nbsp;                     jmxc.connect(env);
+  367 &nbsp;                 } else {
+  368 &nbsp;                     this.jmxc = JMXConnectorFactory.connect(jmxUrl, env);
+  369 &nbsp;                 }
+  370 &nbsp;             }
+<a name='371'>  371 &nbsp;             this.mbsc = jmxc.getMBeanServerConnection();
+  372 &nbsp;             this.server = Snapshot.newSnapshot(mbsc);
+  373 &nbsp;         }
+  374 &nbsp;         this.isDead = false;
+  375 &nbsp; 
+  376 &nbsp;         try {
+  377 &nbsp;             ObjectName on = new ObjectName(THREAD_MXBEAN_NAME);
+  378 &nbsp;             this.hasPlatformMXBeans = server.isRegistered(on);
+  379 &nbsp;             this.hasHotSpotDiagnosticMXBean =
+  380 &nbsp;                 server.isRegistered(new ObjectName(HOTSPOT_DIAGNOSTIC_MXBEAN_NAME));
+<a name='381'>  381 &nbsp;             // check if it has 6.0 new APIs
+  382 &nbsp;             if (this.hasPlatformMXBeans) {
+  383 &nbsp;                 MBeanOperationInfo[] mopis = server.getMBeanInfo(on).getOperations();
+  384 &nbsp;                 // look for findDeadlockedThreads operations;
+  385 &nbsp;                 for (MBeanOperationInfo op : mopis) {
+  386 &nbsp;                     if (op.getName().equals("findDeadlockedThreads")) {
+  387 &nbsp;                         this.supportsLockUsage = true;
+  388 &nbsp;                         break;
+  389 &nbsp;                     }
+  390 &nbsp;                 }
+<a name='391'>  391 &nbsp; 
+  392 &nbsp;                 on = new ObjectName(COMPILATION_MXBEAN_NAME);
+  393 &nbsp;                 this.hasCompilationMXBean = server.isRegistered(on);
+  394 &nbsp;             }
+  395 &nbsp;         } catch (MalformedObjectNameException e) {
+  396 &nbsp;             // should not reach here
+  397 &nbsp;             throw new InternalError(e.getMessage());
+  398 &nbsp;         } catch (IntrospectionException e) {
+  399 &nbsp;             InternalError ie = new InternalError(e.getMessage());
+  400 &nbsp;             ie.initCause(e);
+<a name='401'>  401 &nbsp;             throw ie;
+  402 &nbsp;         } catch (InstanceNotFoundException e) {
+  403 &nbsp;             InternalError ie = new InternalError(e.getMessage());
+  404 &nbsp;             ie.initCause(e);
+  405 &nbsp;             throw ie;
+  406 &nbsp;         } catch (ReflectionException e) {
+  407 &nbsp;             InternalError ie = new InternalError(e.getMessage());
+  408 &nbsp;             ie.initCause(e);
+  409 &nbsp;             throw ie;
+  410 &nbsp;         }
+<a name='411'>  411 &nbsp; 
+  412 &nbsp;         if (hasPlatformMXBeans) {
+  413 &nbsp;             // WORKAROUND for bug 5056632
+  414 &nbsp;             // Check if the access role is correct by getting a RuntimeMXBean
+  415 &nbsp;             getRuntimeMXBean();
+  416 &nbsp;         }
+  417 &nbsp;     }
+  418 &nbsp; 
+  419 &nbsp;     /**
+  420 &nbsp;      * Gets a proxy client for a given local virtual machine.
+<a name='421'>  421 &nbsp;      */
+  422 &nbsp;     public static ProxyClient getProxyClient(LocalVirtualMachine lvm)
+  423 &nbsp;         throws IOException {
+  424 &nbsp;         final String key = getCacheKey(lvm);
+  425 &nbsp;         ProxyClient proxyClient = cache.get(key);
+  426 &nbsp;         if (proxyClient == null) {
+  427 &nbsp;             proxyClient = new ProxyClient(lvm);
+  428 &nbsp;             cache.put(key, proxyClient);
+  429 &nbsp;         }
+  430 &nbsp;         return proxyClient;
+<a name='431'>  431 &nbsp;     }
+  432 &nbsp; 
+  433 &nbsp;     public static String getConnectionName(LocalVirtualMachine lvm) {
+  434 &nbsp;         return Integer.toString(lvm.vmid());
+  435 &nbsp;     }
+  436 &nbsp; 
+  437 &nbsp;     private static String getCacheKey(LocalVirtualMachine lvm) {
+  438 &nbsp;         return Integer.toString(lvm.vmid());
+  439 &nbsp;     }
+  440 &nbsp; 
+<a name='441'>  441 &nbsp;     /**
+  442 &nbsp;      * Gets a proxy client for a given JMXServiceURL.
+  443 &nbsp;      */
+  444 &nbsp;     public static ProxyClient getProxyClient(String url,
+  445 &nbsp;                                              String userName, String password)
+  446 &nbsp;         throws IOException {
+  447 &nbsp;         final String key = getCacheKey(url, userName, password);
+  448 &nbsp;         ProxyClient proxyClient = cache.get(key);
+  449 &nbsp;         if (proxyClient == null) {
+  450 &nbsp;             proxyClient = new ProxyClient(url, userName, password);
+<a name='451'>  451 &nbsp;             cache.put(key, proxyClient);
+  452 &nbsp;         }
+  453 &nbsp;         return proxyClient;
+  454 &nbsp;     }
+  455 &nbsp; 
+  456 &nbsp;     public static String getConnectionName(String url,
+  457 &nbsp;                                            String userName) {
+  458 &nbsp;         if (userName != null &amp;&amp; userName.length() &gt; 0) {
+  459 &nbsp;             return userName + "@" + url;
+  460 &nbsp;         } else {
+<a name='461'>  461 &nbsp;             return url;
+  462 &nbsp;         }
+  463 &nbsp;     }
+  464 &nbsp; 
+  465 &nbsp;     private static String getCacheKey(String url,
+  466 &nbsp;                                       String userName, String password) {
+  467 &nbsp;         return (url == null ? "" : url) + ":" +
+  468 &nbsp;                (userName == null ? "" : userName) + ":" +
+  469 &nbsp;                (password == null ? "" : password);
+  470 &nbsp;     }
+<a name='471'>  471 &nbsp; 
+  472 &nbsp;     /**
+  473 &nbsp;      * Gets a proxy client for a given "hostname:port".
+  474 &nbsp;      */
+  475 &nbsp;     public static ProxyClient getProxyClient(String hostName, int port,
+  476 &nbsp;                                              String userName, String password)
+  477 &nbsp;         throws IOException {
+  478 &nbsp;         final String key = getCacheKey(hostName, port, userName, password);
+  479 &nbsp;         ProxyClient proxyClient = cache.get(key);
+  480 &nbsp;         if (proxyClient == null) {
+<a name='481'>  481 &nbsp;             proxyClient = new ProxyClient(hostName, port, userName, password);
+  482 &nbsp;             cache.put(key, proxyClient);
+  483 &nbsp;         }
+  484 &nbsp;         return proxyClient;
+  485 &nbsp;     }
+  486 &nbsp; 
+  487 &nbsp;     public static String getConnectionName(String hostName, int port,
+  488 &nbsp;                                            String userName) {
+  489 &nbsp;         String name = hostName + ":" + port;
+  490 &nbsp;         if (userName != null &amp;&amp; userName.length() &gt; 0) {
+<a name='491'>  491 &nbsp;             return userName + "@" + name;
+  492 &nbsp;         } else {
+  493 &nbsp;             return name;
+  494 &nbsp;         }
+  495 &nbsp;     }
+  496 &nbsp; 
+  497 &nbsp;     private static String getCacheKey(String hostName, int port,
+  498 &nbsp;                                       String userName, String password) {
+  499 &nbsp;         return (hostName == null ? "" : hostName) + ":" +
+  500 &nbsp;                port + ":" +
+<a name='501'>  501 &nbsp;                (userName == null ? "" : userName) + ":" +
+  502 &nbsp;                (password == null ? "" : password);
+  503 &nbsp;     }
+  504 &nbsp; 
+  505 &nbsp;     public String connectionName() {
+  506 &nbsp;         return connectionName;
+  507 &nbsp;     }
+  508 &nbsp; 
+  509 &nbsp;     public String getDisplayName() {
+  510 &nbsp;         return displayName;
+<a name='511'>  511 &nbsp;     }
+  512 &nbsp; 
+  513 &nbsp;     public String toString() {
+  514 &nbsp;         if (!isConnected()) {
+  515 &nbsp;             return Resources.getText("ConnectionName (disconnected)", displayName);
+  516 &nbsp;         } else {
+  517 &nbsp;             return displayName;
+  518 &nbsp;         }
+  519 &nbsp;     }
+  520 &nbsp; 
+<a name='521'>  521 &nbsp;    public MBeanServerConnection getMBeanServerConnection() {
+  522 &nbsp;        return mbsc;
+  523 &nbsp;    }
+  524 &nbsp; 
+  525 &nbsp;     public SnapshotMBeanServerConnection getSnapshotMBeanServerConnection() {
+  526 &nbsp;         return server;
+  527 &nbsp;     }
+  528 &nbsp; 
+  529 &nbsp;     public String getUrl() {
+  530 &nbsp;         return advancedUrl;
+<a name='531'>  531 &nbsp;     }
+  532 &nbsp; 
+  533 &nbsp;     public String getHostName() {
+  534 &nbsp;         return hostName;
+  535 &nbsp;     }
+  536 &nbsp; 
+  537 &nbsp;     public int getPort() {
+  538 &nbsp;         return port;
+  539 &nbsp;     }
+  540 &nbsp; 
+<a name='541'>  541 &nbsp;     public int getVmid() {
+  542 &nbsp;         return (lvm != null) ? lvm.vmid() : 0;
+  543 &nbsp;     }
+  544 &nbsp; 
+  545 &nbsp;     public String getUserName() {
+  546 &nbsp;         return userName;
+  547 &nbsp;     }
+  548 &nbsp; 
+  549 &nbsp;     public String getPassword() {
+  550 &nbsp;         return password;
+<a name='551'>  551 &nbsp;     }
+  552 &nbsp; 
+  553 &nbsp;     public void disconnect() {
+  554 &nbsp;         // Reset remote stub
+  555 &nbsp;         stub = null;
+  556 &nbsp;         // Close MBeanServer connection
+  557 &nbsp;         if (jmxc != null) {
+  558 &nbsp;             try {
+  559 &nbsp;                 jmxc.close();
+  560 &nbsp;             } catch (IOException e) {
+<a name='561'>  561 &nbsp;                 // Ignore ???
+  562 &nbsp;             }
+  563 &nbsp;         }
+  564 &nbsp;         // Reset platform MBean references
+  565 &nbsp;         classLoadingMBean = null;
+  566 &nbsp;         compilationMBean = null;
+  567 &nbsp;         memoryMBean = null;
+  568 &nbsp;         operatingSystemMBean = null;
+  569 &nbsp;         runtimeMBean = null;
+  570 &nbsp;         threadMBean = null;
+<a name='571'>  571 &nbsp;         sunOperatingSystemMXBean = null;
+  572 &nbsp;         garbageCollectorMBeans = null;
+  573 &nbsp;         // Set connection state to DISCONNECTED
+  574 &nbsp;         if (!isDead) {
+  575 &nbsp;             isDead = true;
+  576 &nbsp;             setConnectionState(ConnectionState.DISCONNECTED);
+  577 &nbsp;         }
+  578 &nbsp;     }
+  579 &nbsp; 
+  580 &nbsp;     /**
+<a name='581'>  581 &nbsp;      * Returns the list of domains in which any MBean is
+  582 &nbsp;      * currently registered.
+  583 &nbsp;      */
+  584 &nbsp;     public String[] getDomains() throws IOException {
+  585 &nbsp;         return server.getDomains();
+  586 &nbsp;     }
+  587 &nbsp; 
+  588 &nbsp;     /**
+  589 &nbsp;      * Returns a map of MBeans with ObjectName as the key and MBeanInfo value
+  590 &nbsp;      * of a given domain.  If domain is &lt;tt&gt;null&lt;/tt&gt;, all MBeans
+<a name='591'>  591 &nbsp;      * are returned.  If no MBean found, an empty map is returned.
+  592 &nbsp;      *
+  593 &nbsp;      */
+  594 &nbsp;     public Map&lt;ObjectName, MBeanInfo&gt; getMBeans(String domain)
+  595 &nbsp;         throws IOException {
+  596 &nbsp; 
+  597 &nbsp;         ObjectName name = null;
+  598 &nbsp;         if (domain != null) {
+  599 &nbsp;             try {
+  600 &nbsp;                 name = new ObjectName(domain + ":*");
+<a name='601'>  601 &nbsp;             } catch (MalformedObjectNameException e) {
+  602 &nbsp;                 // should not reach here
+  603 &nbsp;                 assert(false);
+  604 &nbsp;             }
+  605 &nbsp;         }
+  606 &nbsp;         Set mbeans = server.queryNames(name, null);
+  607 &nbsp;         Map&lt;ObjectName,MBeanInfo&gt; result =
+  608 &nbsp;             new HashMap&lt;ObjectName,MBeanInfo&gt;(mbeans.size());
+  609 &nbsp;         Iterator iterator = mbeans.iterator();
+  610 &nbsp;         while (iterator.hasNext()) {
+<a name='611'>  611 &nbsp;             Object object = iterator.next();
+  612 &nbsp;             if (object instanceof ObjectName) {
+  613 &nbsp;                 ObjectName o = (ObjectName)object;
+  614 &nbsp;                 try {
+  615 &nbsp;                     MBeanInfo info = server.getMBeanInfo(o);
+  616 &nbsp;                     result.put(o, info);
+  617 &nbsp;                 } catch (IntrospectionException e) {
+  618 &nbsp;                     // TODO: should log the error
+  619 &nbsp;                 } catch (InstanceNotFoundException e) {
+  620 &nbsp;                     // TODO: should log the error
+<a name='621'>  621 &nbsp;                 } catch (ReflectionException e) {
+  622 &nbsp;                     // TODO: should log the error
+  623 &nbsp;                 }
+  624 &nbsp;             }
+  625 &nbsp;         }
+  626 &nbsp;         return result;
+  627 &nbsp;     }
+  628 &nbsp; 
+  629 &nbsp;     /**
+  630 &nbsp;      * Returns a list of attributes of a named MBean.
+<a name='631'>  631 &nbsp;      *
+  632 &nbsp;      */
+  633 &nbsp;     public AttributeList getAttributes(ObjectName name, String[] attributes)
+  634 &nbsp;         throws IOException {
+  635 &nbsp;         AttributeList list = null;
+  636 &nbsp;         try {
+  637 &nbsp;             list = server.getAttributes(name, attributes);
+  638 &nbsp;         } catch (InstanceNotFoundException e) {
+  639 &nbsp;             // TODO: A MBean may have been unregistered.
+  640 &nbsp;             // need to set up listener to listen for MBeanServerNotification.
+<a name='641'>  641 &nbsp;         } catch (ReflectionException e) {
+  642 &nbsp;             // TODO: should log the error
+  643 &nbsp;         }
+  644 &nbsp;         return list;
+  645 &nbsp;     }
+  646 &nbsp; 
+  647 &nbsp;     /**
+  648 &nbsp;      * Set the value of a specific attribute of a named MBean.
+  649 &nbsp;      */
+  650 &nbsp;     public void setAttribute(ObjectName name, Attribute attribute)
+<a name='651'>  651 &nbsp;         throws InvalidAttributeValueException,
+  652 &nbsp;                MBeanException,
+  653 &nbsp;                IOException {
+  654 &nbsp;         try {
+  655 &nbsp;             server.setAttribute(name, attribute);
+  656 &nbsp;         } catch (InstanceNotFoundException e) {
+  657 &nbsp;             // TODO: A MBean may have been unregistered.
+  658 &nbsp;         } catch (AttributeNotFoundException e) {
+  659 &nbsp;             assert(false);
+  660 &nbsp;         } catch (ReflectionException e) {
+<a name='661'>  661 &nbsp;             // TODO: should log the error
+  662 &nbsp;         }
+  663 &nbsp;     }
+  664 &nbsp; 
+  665 &nbsp;     /**
+  666 &nbsp;      * Invokes an operation of a named MBean.
+  667 &nbsp;      *
+  668 &nbsp;      * @throws MBeanException Wraps an exception thrown by
+  669 &nbsp;      *      the MBean's invoked method.
+  670 &nbsp;      */
+<a name='671'>  671 &nbsp;     public Object invoke(ObjectName name, String operationName,
+  672 &nbsp;                          Object[] params, String[] signature)
+  673 &nbsp;         throws IOException, MBeanException {
+  674 &nbsp;         Object result = null;
+  675 &nbsp;         try {
+  676 &nbsp;             result = server.invoke(name, operationName, params, signature);
+  677 &nbsp;         } catch (InstanceNotFoundException e) {
+  678 &nbsp;             // TODO: A MBean may have been unregistered.
+  679 &nbsp;         } catch (ReflectionException e) {
+  680 &nbsp;             // TODO: should log the error
+<a name='681'>  681 &nbsp;         }
+  682 &nbsp;         return result;
+  683 &nbsp;     }
+  684 &nbsp; 
+  685 &nbsp;     public synchronized ClassLoadingMXBean getClassLoadingMXBean() throws IOException {
+  686 &nbsp;         if (hasPlatformMXBeans &amp;&amp; classLoadingMBean == null) {
+  687 &nbsp;             classLoadingMBean =
+  688 &nbsp;                 newPlatformMXBeanProxy(server, CLASS_LOADING_MXBEAN_NAME,
+  689 &nbsp;                                        ClassLoadingMXBean.class);
+  690 &nbsp;         }
+<a name='691'>  691 &nbsp;         return classLoadingMBean;
+  692 &nbsp;     }
+  693 &nbsp; 
+  694 &nbsp;     public synchronized CompilationMXBean getCompilationMXBean() throws IOException {
+  695 &nbsp;         if (hasCompilationMXBean &amp;&amp; compilationMBean == null) {
+  696 &nbsp;             compilationMBean =
+  697 &nbsp;                 newPlatformMXBeanProxy(server, COMPILATION_MXBEAN_NAME,
+  698 &nbsp;                                        CompilationMXBean.class);
+  699 &nbsp;         }
+  700 &nbsp;         return compilationMBean;
+<a name='701'>  701 &nbsp;     }
+  702 &nbsp; 
+  703 &nbsp;     public Collection&lt;MemoryPoolProxy&gt; getMemoryPoolProxies()
+  704 &nbsp;         throws IOException {
+  705 &nbsp; 
+  706 &nbsp;         // TODO: How to deal with changes to the list??
+  707 &nbsp;         if (memoryPoolProxies == null) {
+  708 &nbsp;             ObjectName poolName = null;
+  709 &nbsp;             try {
+  710 &nbsp;                 poolName = new ObjectName(MEMORY_POOL_MXBEAN_DOMAIN_TYPE + ",*");
+<a name='711'>  711 &nbsp;             } catch (MalformedObjectNameException e) {
+  712 &nbsp;                 // should not reach here
+  713 &nbsp;                 assert(false);
+  714 &nbsp;             }
+  715 &nbsp;             Set mbeans = server.queryNames(poolName, null);
+  716 &nbsp;             if (mbeans != null) {
+  717 &nbsp;                 memoryPoolProxies = new ArrayList&lt;MemoryPoolProxy&gt;();
+  718 &nbsp;                 Iterator iterator = mbeans.iterator();
+  719 &nbsp;                 while (iterator.hasNext()) {
+  720 &nbsp;                     ObjectName objName = (ObjectName) iterator.next();
+<a name='721'>  721 &nbsp;                     MemoryPoolProxy p = new MemoryPoolProxy(this, objName);
+  722 &nbsp;                     memoryPoolProxies.add(p);
+  723 &nbsp;                 }
+  724 &nbsp;             }
+  725 &nbsp;         }
+  726 &nbsp;         return memoryPoolProxies;
+  727 &nbsp;     }
+  728 &nbsp; 
+  729 &nbsp;     public synchronized Collection&lt;GarbageCollectorMXBean&gt; getGarbageCollectorMXBeans()
+  730 &nbsp;         throws IOException {
+<a name='731'>  731 &nbsp; 
+  732 &nbsp;         // TODO: How to deal with changes to the list??
+  733 &nbsp;         if (garbageCollectorMBeans == null) {
+  734 &nbsp;             ObjectName gcName = null;
+  735 &nbsp;             try {
+  736 &nbsp;                 gcName = new ObjectName(GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE + ",*");
+  737 &nbsp;             } catch (MalformedObjectNameException e) {
+  738 &nbsp;                 // should not reach here
+  739 &nbsp;                 assert(false);
+  740 &nbsp;             }
+<a name='741'>  741 &nbsp;             Set mbeans = server.queryNames(gcName, null);
+  742 &nbsp;             if (mbeans != null) {
+  743 &nbsp;                 garbageCollectorMBeans = new ArrayList&lt;GarbageCollectorMXBean&gt;();
+  744 &nbsp;                 Iterator iterator = mbeans.iterator();
+  745 &nbsp;                 while (iterator.hasNext()) {
+  746 &nbsp;                     ObjectName on = (ObjectName) iterator.next();
+  747 &nbsp;                     String name = GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE +
+  748 &nbsp;                         ",name=" + on.getKeyProperty("name");
+  749 &nbsp; 
+  750 &nbsp;                     GarbageCollectorMXBean mBean =
+<a name='751'>  751 &nbsp;                         newPlatformMXBeanProxy(server, name,
+  752 &nbsp;                                                GarbageCollectorMXBean.class);
+  753 &nbsp;                         garbageCollectorMBeans.add(mBean);
+  754 &nbsp;                 }
+  755 &nbsp;             }
+  756 &nbsp;         }
+  757 &nbsp;         return garbageCollectorMBeans;
+  758 &nbsp;     }
+  759 &nbsp; 
+  760 &nbsp;     public synchronized MemoryMXBean getMemoryMXBean() throws IOException {
+<a name='761'>  761 &nbsp;         if (hasPlatformMXBeans &amp;&amp; memoryMBean == null) {
+  762 &nbsp;             memoryMBean =
+  763 &nbsp;                 newPlatformMXBeanProxy(server, MEMORY_MXBEAN_NAME,
+  764 &nbsp;                                        MemoryMXBean.class);
+  765 &nbsp;         }
+  766 &nbsp;         return memoryMBean;
+  767 &nbsp;     }
+  768 &nbsp; 
+  769 &nbsp;     public synchronized RuntimeMXBean getRuntimeMXBean() throws IOException {
+  770 &nbsp;         if (hasPlatformMXBeans &amp;&amp; runtimeMBean == null) {
+<a name='771'>  771 &nbsp;             runtimeMBean =
+  772 &nbsp;                 newPlatformMXBeanProxy(server, RUNTIME_MXBEAN_NAME,
+  773 &nbsp;                                        RuntimeMXBean.class);
+  774 &nbsp;         }
+  775 &nbsp;         return runtimeMBean;
+  776 &nbsp;     }
+  777 &nbsp; 
+  778 &nbsp; 
+  779 &nbsp;     public synchronized ThreadMXBean getThreadMXBean() throws IOException {
+  780 &nbsp;         if (hasPlatformMXBeans &amp;&amp; threadMBean == null) {
+<a name='781'>  781 &nbsp;             threadMBean =
+  782 &nbsp;                 newPlatformMXBeanProxy(server, THREAD_MXBEAN_NAME,
+  783 &nbsp;                                        ThreadMXBean.class);
+  784 &nbsp;         }
+  785 &nbsp;         return threadMBean;
+  786 &nbsp;     }
+  787 &nbsp; 
+  788 &nbsp;     public synchronized OperatingSystemMXBean getOperatingSystemMXBean() throws IOException {
+  789 &nbsp;         if (hasPlatformMXBeans &amp;&amp; operatingSystemMBean == null) {
+  790 &nbsp;             operatingSystemMBean =
+<a name='791'>  791 &nbsp;                 newPlatformMXBeanProxy(server, OPERATING_SYSTEM_MXBEAN_NAME,
+  792 &nbsp;                                        OperatingSystemMXBean.class);
+  793 &nbsp;         }
+  794 &nbsp;         return operatingSystemMBean;
+  795 &nbsp;     }
+  796 &nbsp; 
+  797 &nbsp;     public synchronized com.sun.management.OperatingSystemMXBean
+  798 &nbsp;         getSunOperatingSystemMXBean() throws IOException {
+  799 &nbsp; 
+  800 &nbsp;         try {
+<a name='801'>  801 &nbsp;             ObjectName on = new ObjectName(OPERATING_SYSTEM_MXBEAN_NAME);
+  802 &nbsp;             if (sunOperatingSystemMXBean == null) {
+  803 &nbsp;                 if (server.isInstanceOf(on,
+  804 &nbsp;                         "com.sun.management.OperatingSystemMXBean")) {
+  805 &nbsp;                     sunOperatingSystemMXBean =
+  806 &nbsp;                         newPlatformMXBeanProxy(server,
+  807 &nbsp;                             OPERATING_SYSTEM_MXBEAN_NAME,
+  808 &nbsp;                             com.sun.management.OperatingSystemMXBean.class);
+  809 &nbsp;                 }
+  810 &nbsp;             }
+<a name='811'>  811 &nbsp;         } catch (InstanceNotFoundException e) {
+  812 &nbsp;              return null;
+  813 &nbsp;         } catch (MalformedObjectNameException e) {
+  814 &nbsp;              return null; // should never reach here
+  815 &nbsp;         }
+  816 &nbsp;         return sunOperatingSystemMXBean;
+  817 &nbsp;     }
+  818 &nbsp; 
+  819 &nbsp;     public synchronized HotSpotDiagnosticMXBean getHotSpotDiagnosticMXBean() throws IOException {
+  820 &nbsp;         if (hasHotSpotDiagnosticMXBean &amp;&amp; hotspotDiagnosticMXBean == null) {
+<a name='821'>  821 &nbsp;             hotspotDiagnosticMXBean =
+  822 &nbsp;                 newPlatformMXBeanProxy(server, HOTSPOT_DIAGNOSTIC_MXBEAN_NAME,
+  823 &nbsp;                                        HotSpotDiagnosticMXBean.class);
+  824 &nbsp;         }
+  825 &nbsp;         return hotspotDiagnosticMXBean;
+  826 &nbsp;     }
+  827 &nbsp; 
+  828 &nbsp;     public &lt;T&gt; T getMXBean(ObjectName objName, Class&lt;T&gt; interfaceClass)
+  829 &nbsp;         throws IOException {
+  830 &nbsp;         return newPlatformMXBeanProxy(server,
+<a name='831'>  831 &nbsp;                                       objName.toString(),
+  832 &nbsp;                                       interfaceClass);
+  833 &nbsp; 
+  834 &nbsp;     }
+  835 &nbsp; 
+  836 &nbsp;     // Return thread IDs of deadlocked threads or null if any.
+  837 &nbsp;     // It finds deadlocks involving only monitors if it's a Tiger VM.
+  838 &nbsp;     // Otherwise, it finds deadlocks involving both monitors and
+  839 &nbsp;     // the concurrent locks.
+  840 &nbsp;     public long[] findDeadlockedThreads() throws IOException {
+<a name='841'>  841 &nbsp;         ThreadMXBean tm = getThreadMXBean();
+  842 &nbsp;         if (supportsLockUsage &amp;&amp; tm.isSynchronizerUsageSupported()) {
+  843 &nbsp;             return tm.findDeadlockedThreads();
+  844 &nbsp;         } else {
+  845 &nbsp;             return tm.findMonitorDeadlockedThreads();
+  846 &nbsp;         }
+  847 &nbsp;     }
+  848 &nbsp; 
+  849 &nbsp;     public synchronized void markAsDead() {
+  850 &nbsp;         disconnect();
+<a name='851'>  851 &nbsp;     }
+  852 &nbsp; 
+  853 &nbsp;     public boolean isDead() {
+  854 &nbsp;         return isDead;
+  855 &nbsp;     }
+  856 &nbsp; 
+  857 &nbsp;     boolean isConnected() {
+  858 &nbsp;         return !isDead();
+  859 &nbsp;     }
+  860 &nbsp; 
+<a name='861'>  861 &nbsp;     boolean hasPlatformMXBeans() {
+  862 &nbsp;         return this.hasPlatformMXBeans;
+  863 &nbsp;     }
+  864 &nbsp; 
+  865 &nbsp;     boolean hasHotSpotDiagnosticMXBean() {
+  866 &nbsp;         return this.hasHotSpotDiagnosticMXBean;
+  867 &nbsp;     }
+  868 &nbsp; 
+  869 &nbsp;     boolean isLockUsageSupported() {
+  870 &nbsp;         return supportsLockUsage;
+<a name='871'>  871 &nbsp;     }
+  872 &nbsp; 
+  873 &nbsp;     public boolean isRegistered(ObjectName name) throws IOException {
+  874 &nbsp;         return server.isRegistered(name);
+  875 &nbsp;     }
+  876 &nbsp; 
+  877 &nbsp;     public void addPropertyChangeListener(PropertyChangeListener listener) {
+  878 &nbsp;         propertyChangeSupport.addPropertyChangeListener(listener);
+  879 &nbsp;     }
+  880 &nbsp; 
+<a name='881'>  881 &nbsp;     public void addWeakPropertyChangeListener(PropertyChangeListener listener) {
+  882 &nbsp;         if (!(listener instanceof WeakPCL)) {
+  883 &nbsp;             listener = new WeakPCL(listener);
+  884 &nbsp;         }
+  885 &nbsp;         propertyChangeSupport.addPropertyChangeListener(listener);
+  886 &nbsp;     }
+  887 &nbsp; 
+  888 &nbsp;     public void removePropertyChangeListener(PropertyChangeListener listener) {
+  889 &nbsp;         if (!(listener instanceof WeakPCL)) {
+  890 &nbsp;             // Search for the WeakPCL holding this listener (if any)
+<a name='891'>  891 &nbsp;             for (PropertyChangeListener pcl : propertyChangeSupport.getPropertyChangeListeners()) {
+  892 &nbsp;                 if (pcl instanceof WeakPCL &amp;&amp; ((WeakPCL)pcl).get() == listener) {
+  893 &nbsp;                     listener = pcl;
+  894 &nbsp;                     break;
+  895 &nbsp;                 }
+  896 &nbsp;             }
+  897 &nbsp;         }
+  898 &nbsp;         propertyChangeSupport.removePropertyChangeListener(listener);
+  899 &nbsp;     }
+  900 &nbsp; 
+<a name='901'>  901 &nbsp;     /**
+  902 &nbsp;      * The PropertyChangeListener is handled via a WeakReference
+  903 &nbsp;      * so as not to pin down the listener.
+  904 &nbsp;      */
+  905 &nbsp;     private class WeakPCL extends WeakReference&lt;PropertyChangeListener&gt;
+  906 &nbsp;                           implements PropertyChangeListener {
+  907 &nbsp;         WeakPCL(PropertyChangeListener referent) {
+  908 &nbsp;             super(referent);
+  909 &nbsp;         }
+  910 &nbsp; 
+<a name='911'>  911 &nbsp;         public void propertyChange(PropertyChangeEvent pce) {
+  912 &nbsp;             PropertyChangeListener pcl = get();
+  913 &nbsp; 
+  914 &nbsp;             if (pcl == null) {
+  915 &nbsp;                 // The referent listener was GC'ed, we're no longer
+  916 &nbsp;                 // interested in PropertyChanges, remove the listener.
+  917 &nbsp;                 dispose();
+  918 &nbsp;             } else {
+  919 &nbsp;                 pcl.propertyChange(pce);
+  920 &nbsp;             }
+<a name='921'>  921 &nbsp;         }
+  922 &nbsp; 
+  923 &nbsp;         private void dispose() {
+  924 &nbsp;             removePropertyChangeListener(this);
+  925 &nbsp;         }
+  926 &nbsp;     }
+  927 &nbsp; 
+  928 &nbsp;     //
+  929 &nbsp;     // Snapshot MBeanServerConnection:
+  930 &nbsp;     //
+<a name='931'>  931 &nbsp;     // This is an object that wraps an existing MBeanServerConnection and adds
+  932 &nbsp;     // caching to it, as follows:
+  933 &nbsp;     //
+  934 &nbsp;     // - The first time an attribute is called in a given MBean, the result is
+  935 &nbsp;     //   cached. Every subsequent time getAttribute is called for that attribute
+  936 &nbsp;     //   the cached result is returned.
+  937 &nbsp;     //
+  938 &nbsp;     // - Before every call to VMPanel.update() or when the Refresh button in the
+  939 &nbsp;     //   Attributes table is pressed down the attributes cache is flushed. Then
+  940 &nbsp;     //   any subsequent call to getAttribute will retrieve all the values for
+<a name='941'>  941 &nbsp;     //   the attributes that are known to the cache.
+  942 &nbsp;     //
+  943 &nbsp;     // - The attributes cache uses a learning approach and only the attributes
+  944 &nbsp;     //   that are in the cache will be retrieved between two subsequent updates.
+  945 &nbsp;     //
+  946 &nbsp; 
+  947 &nbsp;     public interface SnapshotMBeanServerConnection
+  948 &nbsp;             extends MBeanServerConnection {
+  949 &nbsp;         /**
+  950 &nbsp;          * Flush all cached values of attributes.
+<a name='951'>  951 &nbsp;          */
+  952 &nbsp;         public void flush();
+  953 &nbsp;     }
+  954 &nbsp; 
+  955 &nbsp;     public static class Snapshot {
+  956 &nbsp;         private Snapshot() {
+  957 &nbsp;         }
+  958 &nbsp;         public static SnapshotMBeanServerConnection
+  959 &nbsp;                 newSnapshot(MBeanServerConnection mbsc) {
+  960 &nbsp;             final InvocationHandler ih = new SnapshotInvocationHandler(mbsc);
+<a name='961'>  961 &nbsp;             return (SnapshotMBeanServerConnection) Proxy.newProxyInstance(
+  962 &nbsp;                     Snapshot.class.getClassLoader(),
+  963 &nbsp;                     new Class[] {SnapshotMBeanServerConnection.class},
+  964 &nbsp;                     ih);
+  965 &nbsp;         }
+  966 &nbsp;     }
+  967 &nbsp; 
+  968 &nbsp;     static class SnapshotInvocationHandler implements InvocationHandler {
+  969 &nbsp; 
+  970 &nbsp;         private final MBeanServerConnection conn;
+<a name='971'>  971 &nbsp;         private Map&lt;ObjectName, NameValueMap&gt; cachedValues = newMap();
+  972 &nbsp;         private Map&lt;ObjectName, Set&lt;String&gt;&gt; cachedNames = newMap();
+  973 &nbsp; 
+  974 &nbsp;         @SuppressWarnings("serial")
+  975 &nbsp;         private static final class NameValueMap
+  976 &nbsp;                 extends HashMap&lt;String, Object&gt; {}
+  977 &nbsp; 
+  978 &nbsp;         SnapshotInvocationHandler(MBeanServerConnection conn) {
+  979 &nbsp;             this.conn = conn;
+  980 &nbsp;         }
+<a name='981'>  981 &nbsp; 
+  982 &nbsp;         synchronized void flush() {
+  983 &nbsp;             cachedValues = newMap();
+  984 &nbsp;         }
+  985 &nbsp; 
+  986 &nbsp;         public Object invoke(Object proxy, Method method, Object[] args)
+  987 &nbsp;                 throws Throwable {
+  988 &nbsp;             final String methodName = method.getName();
+  989 &nbsp;             if (methodName.equals("getAttribute")) {
+  990 &nbsp;                 return getAttribute((ObjectName) args[0], (String) args[1]);
+<a name='991'>  991 &nbsp;             } else if (methodName.equals("getAttributes")) {
+  992 &nbsp;                 return getAttributes((ObjectName) args[0], (String[]) args[1]);
+  993 &nbsp;             } else if (methodName.equals("flush")) {
+  994 &nbsp;                 flush();
+  995 &nbsp;                 return null;
+  996 &nbsp;             } else {
+  997 &nbsp;                 try {
+  998 &nbsp;                     return method.invoke(conn, args);
+  999 &nbsp;                 } catch (InvocationTargetException e) {
+ 1000 &nbsp;                     throw e.getCause();
+<a name='1001'> 1001 &nbsp;                 }
+ 1002 &nbsp;             }
+ 1003 &nbsp;         }
+ 1004 &nbsp; 
+ 1005 &nbsp;         private Object getAttribute(ObjectName objName, String attrName)
+ 1006 &nbsp;                 throws MBeanException, InstanceNotFoundException,
+ 1007 &nbsp;                 AttributeNotFoundException, ReflectionException, IOException {
+ 1008 &nbsp;             final NameValueMap values = getCachedAttributes(
+ 1009 &nbsp;                     objName, Collections.singleton(attrName));
+ 1010 &nbsp;             Object value = values.get(attrName);
+<a name='1011'> 1011 &nbsp;             if (value != null || values.containsKey(attrName)) {
+ 1012 &nbsp;                 return value;
+ 1013 &nbsp;             }
+ 1014 &nbsp;             // Not in cache, presumably because it was omitted from the
+ 1015 &nbsp;             // getAttributes result because of an exception.  Following
+ 1016 &nbsp;             // call will probably provoke the same exception.
+ 1017 &nbsp;             return conn.getAttribute(objName, attrName);
+ 1018 &nbsp;         }
+ 1019 &nbsp; 
+ 1020 &nbsp;         private AttributeList getAttributes(
+<a name='1021'> 1021 &nbsp;                 ObjectName objName, String[] attrNames) throws
+ 1022 &nbsp;                 InstanceNotFoundException, ReflectionException, IOException {
+ 1023 &nbsp;             final NameValueMap values = getCachedAttributes(
+ 1024 &nbsp;                     objName,
+ 1025 &nbsp;                     new TreeSet&lt;String&gt;(Arrays.asList(attrNames)));
+ 1026 &nbsp;             final AttributeList list = new AttributeList();
+ 1027 &nbsp;             for (String attrName : attrNames) {
+ 1028 &nbsp;                 final Object value = values.get(attrName);
+ 1029 &nbsp;                 if (value != null || values.containsKey(attrName)) {
+ 1030 &nbsp;                     list.add(new Attribute(attrName, value));
+<a name='1031'> 1031 &nbsp;                 }
+ 1032 &nbsp;             }
+ 1033 &nbsp;             return list;
+ 1034 &nbsp;         }
+ 1035 &nbsp; 
+ 1036 &nbsp;         private synchronized NameValueMap getCachedAttributes(
+ 1037 &nbsp;                 ObjectName objName, Set&lt;String&gt; attrNames) throws
+ 1038 &nbsp;                 InstanceNotFoundException, ReflectionException, IOException {
+ 1039 &nbsp;             NameValueMap values = cachedValues.get(objName);
+ 1040 &nbsp;             if (values != null &amp;&amp; values.keySet().containsAll(attrNames)) {
+<a name='1041'> 1041 &nbsp;                 return values;
+ 1042 &nbsp;             }
+ 1043 &nbsp;             attrNames = new TreeSet&lt;String&gt;(attrNames);
+ 1044 &nbsp;             Set&lt;String&gt; oldNames = cachedNames.get(objName);
+ 1045 &nbsp;             if (oldNames != null) {
+ 1046 &nbsp;                 attrNames.addAll(oldNames);
+ 1047 &nbsp;             }
+ 1048 &nbsp;             values = new NameValueMap();
+ 1049 &nbsp;             final AttributeList attrs = conn.getAttributes(
+ 1050 &nbsp;                     objName,
+<a name='1051'> 1051 &nbsp;                     attrNames.toArray(new String[attrNames.size()]));
+ 1052 &nbsp;             for (Attribute attr : attrs.asList()) {
+ 1053 &nbsp;                 values.put(attr.getName(), attr.getValue());
+ 1054 &nbsp;             }
+ 1055 &nbsp;             cachedValues.put(objName, values);
+ 1056 &nbsp;             cachedNames.put(objName, attrNames);
+ 1057 &nbsp;             return values;
+ 1058 &nbsp;         }
+ 1059 &nbsp; 
+ 1060 &nbsp;         // See http://www.artima.com/weblogs/viewpost.jsp?thread=79394
+<a name='1061'> 1061 &nbsp;         private static &lt;K, V&gt; Map&lt;K, V&gt; newMap() {
+ 1062 &nbsp;             return new HashMap&lt;K, V&gt;();
+ 1063 &nbsp;         }
+ 1064 &nbsp;     }
+ 1065 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ProxyClient.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

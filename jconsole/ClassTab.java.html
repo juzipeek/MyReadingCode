@@ -1,0 +1,297 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: ClassTab.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ClassTab.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2007, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/package-index.html>java.lang.management</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/package-index.html>java.lang.reflect</a>;
+   33 &nbsp; 
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/text/package-index.html>javax.swing.text</a>;
+   38 &nbsp; 
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/List.html>java.util.List</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/concurrent/package-index.html>java.util.concurrent</a>;
+   42 &nbsp; 
+   43 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/awt/package-index.html>sun.awt</a>;
+   44 &nbsp; 
+   45 &nbsp; import static sun.tools.jconsole.Formatter.*;
+   46 &nbsp; import static sun.tools.jconsole.Resources.*;
+   47 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   48 &nbsp; 
+   49 &nbsp; 
+   50 &nbsp; @SuppressWarnings("serial")
+<a name='51'>   51 &nbsp; class ClassTab extends Tab implements ActionListener {
+   52 &nbsp;     PlotterPanel loadedClassesMeter;
+   53 &nbsp;     TimeComboBox timeComboBox;
+   54 &nbsp;     private JCheckBox verboseCheckBox;
+   55 &nbsp;     private HTMLPane details;
+   56 &nbsp;     private ClassOverviewPanel overviewPanel;
+   57 &nbsp;     private boolean plotterListening = false;
+   58 &nbsp; 
+   59 &nbsp;     private static final String loadedPlotterKey        = "loaded";
+   60 &nbsp;     private static final String totalLoadedPlotterKey   = "totalLoaded";
+<a name='61'>   61 &nbsp;     private static final String loadedPlotterName       = Resources.getText("Loaded");
+   62 &nbsp;     private static final String totalLoadedPlotterName  = Resources.getText("Total Loaded");
+   63 &nbsp;     private static final Color  loadedPlotterColor      = Plotter.defaultColor;
+   64 &nbsp;     private static final Color  totalLoadedPlotterColor = Color.red;
+   65 &nbsp; 
+   66 &nbsp;     private static final String infoLabelFormat = "ClassTab.infoLabelFormat";
+   67 &nbsp; 
+   68 &nbsp;     /*
+   69 &nbsp;       Hierarchy of panels and layouts for this tab:
+   70 &nbsp; 
+<a name='71'>   71 &nbsp;         ClassTab (BorderLayout)
+   72 &nbsp; 
+   73 &nbsp;             North:  topPanel (BorderLayout)
+   74 &nbsp; 
+   75 &nbsp;                         Center: controlPanel (FlowLayout)
+   76 &nbsp;                                     timeComboBox
+   77 &nbsp; 
+   78 &nbsp;                         East:   topRightPanel (FlowLayout)
+   79 &nbsp;                                     verboseCheckBox
+   80 &nbsp; 
+<a name='81'>   81 &nbsp;             Center: plotterPanel (BorderLayout)
+   82 &nbsp; 
+   83 &nbsp;                         Center: plotter
+   84 &nbsp; 
+   85 &nbsp;             South:  bottomPanel (BorderLayout)
+   86 &nbsp; 
+   87 &nbsp;                         Center: details
+   88 &nbsp;     */
+   89 &nbsp; 
+   90 &nbsp;     public static String getTabName() {
+<a name='91'>   91 &nbsp;         return Resources.getText("Classes");
+   92 &nbsp;     }
+   93 &nbsp; 
+   94 &nbsp;     public ClassTab(VMPanel vmPanel) {
+   95 &nbsp;         super(vmPanel, getTabName());
+   96 &nbsp; 
+   97 &nbsp;         setLayout(new BorderLayout(0, 0));
+   98 &nbsp;         setBorder(new EmptyBorder(4, 4, 3, 4));
+   99 &nbsp; 
+  100 &nbsp;         JPanel topPanel     = new JPanel(new BorderLayout());
+<a name='101'>  101 &nbsp;         JPanel plotterPanel = new JPanel(new BorderLayout());
+  102 &nbsp;         JPanel bottomPanel  = new JPanel(new BorderLayout());
+  103 &nbsp; 
+  104 &nbsp;         add(topPanel,     BorderLayout.NORTH);
+  105 &nbsp;         add(plotterPanel, BorderLayout.CENTER);
+  106 &nbsp;         add(bottomPanel,  BorderLayout.SOUTH);
+  107 &nbsp; 
+  108 &nbsp;         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+  109 &nbsp;         topPanel.add(controlPanel, BorderLayout.CENTER);
+  110 &nbsp; 
+<a name='111'>  111 &nbsp;         verboseCheckBox = new JCheckBox(Resources.getText("Verbose Output"));
+  112 &nbsp;         verboseCheckBox.addActionListener(this);
+  113 &nbsp;         verboseCheckBox.setToolTipText(getText("Verbose Output.toolTip"));
+  114 &nbsp;         JPanel topRightPanel = new JPanel();
+  115 &nbsp;         topRightPanel.setBorder(new EmptyBorder(0, 65-8, 0, 70));
+  116 &nbsp;         topRightPanel.add(verboseCheckBox);
+  117 &nbsp;         topPanel.add(topRightPanel, BorderLayout.AFTER_LINE_ENDS);
+  118 &nbsp; 
+  119 &nbsp;         loadedClassesMeter = new PlotterPanel(Resources.getText("Number of Loaded Classes"),
+  120 &nbsp;                                               Plotter.Unit.NONE, false);
+<a name='121'>  121 &nbsp;         loadedClassesMeter.plotter.createSequence(loadedPlotterKey,
+  122 &nbsp;                                                   loadedPlotterName,
+  123 &nbsp;                                                   loadedPlotterColor,
+  124 &nbsp;                                                   true);
+  125 &nbsp;         loadedClassesMeter.plotter.createSequence(totalLoadedPlotterKey,
+  126 &nbsp;                                                   totalLoadedPlotterName,
+  127 &nbsp;                                                   totalLoadedPlotterColor,
+  128 &nbsp;                                                   true);
+  129 &nbsp;         setAccessibleName(loadedClassesMeter.plotter,
+  130 &nbsp;                           getText("ClassTab.loadedClassesPlotter.accessibleName"));
+<a name='131'>  131 &nbsp;         plotterPanel.add(loadedClassesMeter);
+  132 &nbsp; 
+  133 &nbsp;         timeComboBox = new TimeComboBox(loadedClassesMeter.plotter);
+  134 &nbsp;         controlPanel.add(new LabeledComponent(Resources.getText("Time Range:"),
+  135 &nbsp;                                               getMnemonicInt("Time Range:"),
+  136 &nbsp;                                               timeComboBox));
+  137 &nbsp; 
+  138 &nbsp;         LabeledComponent.layout(plotterPanel);
+  139 &nbsp; 
+  140 &nbsp;         bottomPanel.setBorder(new CompoundBorder(new TitledBorder(Resources.getText("Details")),
+<a name='141'>  141 &nbsp;                                                   new EmptyBorder(10, 10, 10, 10)));
+  142 &nbsp; 
+  143 &nbsp;         details = new HTMLPane();
+  144 &nbsp;         setAccessibleName(details, getText("Details"));
+  145 &nbsp;         JScrollPane scrollPane = new JScrollPane(details);
+  146 &nbsp;         scrollPane.setPreferredSize(new Dimension(0, 150));
+  147 &nbsp;         bottomPanel.add(scrollPane, BorderLayout.SOUTH);
+  148 &nbsp; 
+  149 &nbsp;     }
+  150 &nbsp; 
+<a name='151'>  151 &nbsp;     public void actionPerformed(ActionEvent ev) {
+  152 &nbsp;         final boolean b = verboseCheckBox.isSelected();
+  153 &nbsp;         workerAdd(new Runnable() {
+  154 &nbsp;             public void run() {
+  155 &nbsp;                 ProxyClient proxyClient = vmPanel.getProxyClient();
+  156 &nbsp;                 try {
+  157 &nbsp;                     proxyClient.getClassLoadingMXBean().setVerbose(b);
+  158 &nbsp;                 } catch (UndeclaredThrowableException e) {
+  159 &nbsp;                     proxyClient.markAsDead();
+  160 &nbsp;                 } catch (IOException ex) {
+<a name='161'>  161 &nbsp;                     // Ignore
+  162 &nbsp;                 }
+  163 &nbsp;             }
+  164 &nbsp;         });
+  165 &nbsp;     }
+  166 &nbsp; 
+  167 &nbsp; 
+  168 &nbsp;     public SwingWorker&lt;?, ?&gt; newSwingWorker() {
+  169 &nbsp;         final ProxyClient proxyClient = vmPanel.getProxyClient();
+  170 &nbsp; 
+<a name='171'>  171 &nbsp;         if (!plotterListening) {
+  172 &nbsp;             proxyClient.addWeakPropertyChangeListener(loadedClassesMeter.plotter);
+  173 &nbsp;             plotterListening = true;
+  174 &nbsp;         }
+  175 &nbsp; 
+  176 &nbsp;         return new SwingWorker&lt;Boolean, Object&gt;() {
+  177 &nbsp;             private long clCount, cuCount, ctCount;
+  178 &nbsp;             private boolean isVerbose;
+  179 &nbsp;             private String detailsStr;
+  180 &nbsp;             private long timeStamp;
+<a name='181'>  181 &nbsp; 
+  182 &nbsp;             public Boolean doInBackground() {
+  183 &nbsp;                 try {
+  184 &nbsp;                     ClassLoadingMXBean classLoadingMBean = proxyClient.getClassLoadingMXBean();
+  185 &nbsp; 
+  186 &nbsp;                     clCount = classLoadingMBean.getLoadedClassCount();
+  187 &nbsp;                     cuCount = classLoadingMBean.getUnloadedClassCount();
+  188 &nbsp;                     ctCount = classLoadingMBean.getTotalLoadedClassCount();
+  189 &nbsp;                     isVerbose = classLoadingMBean.isVerbose();
+  190 &nbsp;                     detailsStr = formatDetails();
+<a name='191'>  191 &nbsp;                     timeStamp = System.currentTimeMillis();
+  192 &nbsp; 
+  193 &nbsp;                     return true;
+  194 &nbsp;                 } catch (UndeclaredThrowableException e) {
+  195 &nbsp;                     proxyClient.markAsDead();
+  196 &nbsp;                     return false;
+  197 &nbsp;                 } catch (IOException e) {
+  198 &nbsp;                     return false;
+  199 &nbsp;                 }
+  200 &nbsp;             }
+<a name='201'>  201 &nbsp; 
+  202 &nbsp;             protected void done() {
+  203 &nbsp;                 try {
+  204 &nbsp;                     if (get()) {
+  205 &nbsp;                         loadedClassesMeter.plotter.addValues(timeStamp, clCount, ctCount);
+  206 &nbsp; 
+  207 &nbsp;                         if (overviewPanel != null) {
+  208 &nbsp;                             overviewPanel.updateClassInfo(ctCount, clCount);
+  209 &nbsp;                             overviewPanel.getPlotter().addValues(timeStamp, clCount);
+  210 &nbsp;                         }
+<a name='211'>  211 &nbsp; 
+  212 &nbsp;                         loadedClassesMeter.setValueLabel(clCount + "");
+  213 &nbsp;                         verboseCheckBox.setSelected(isVerbose);
+  214 &nbsp;                         details.setText(detailsStr);
+  215 &nbsp;                     }
+  216 &nbsp;                 } catch (InterruptedException ex) {
+  217 &nbsp;                 } catch (ExecutionException ex) {
+  218 &nbsp;                     if (JConsole.isDebug()) {
+  219 &nbsp;                         ex.printStackTrace();
+  220 &nbsp;                     }
+<a name='221'>  221 &nbsp;                 }
+  222 &nbsp;             }
+  223 &nbsp; 
+  224 &nbsp;             private String formatDetails() {
+  225 &nbsp;                 String text = "&lt;table cellspacing=0 cellpadding=0&gt;";
+  226 &nbsp; 
+  227 &nbsp;                 long time = System.currentTimeMillis();
+  228 &nbsp;                 String timeStamp = formatDateTime(time);
+  229 &nbsp;                 text += newRow(Resources.getText("Time"), timeStamp);
+  230 &nbsp;                 text += newRow(Resources.getText("Current classes loaded"), justify(clCount, 5));
+<a name='231'>  231 &nbsp;                 text += newRow(Resources.getText("Total classes loaded"),   justify(ctCount, 5));
+  232 &nbsp;                 text += newRow(Resources.getText("Total classes unloaded"), justify(cuCount, 5));
+  233 &nbsp; 
+  234 &nbsp;                 return text;
+  235 &nbsp;             }
+  236 &nbsp;         };
+  237 &nbsp;     }
+  238 &nbsp; 
+  239 &nbsp; 
+  240 &nbsp;     OverviewPanel[] getOverviewPanels() {
+<a name='241'>  241 &nbsp;         if (overviewPanel == null) {
+  242 &nbsp;             overviewPanel = new ClassOverviewPanel();
+  243 &nbsp;         }
+  244 &nbsp;         return new OverviewPanel[] { overviewPanel };
+  245 &nbsp;     }
+  246 &nbsp; 
+  247 &nbsp;     private static class ClassOverviewPanel extends OverviewPanel {
+  248 &nbsp;         ClassOverviewPanel() {
+  249 &nbsp;             super(getText("Classes"), loadedPlotterKey, loadedPlotterName, null);
+  250 &nbsp;         }
+<a name='251'>  251 &nbsp; 
+  252 &nbsp;         private void updateClassInfo(long total, long loaded) {
+  253 &nbsp;             long unloaded = (total - loaded);
+  254 &nbsp;             getInfoLabel().setText(getText(infoLabelFormat, loaded, unloaded, total));
+  255 &nbsp;         }
+  256 &nbsp;     }
+  257 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ClassTab.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

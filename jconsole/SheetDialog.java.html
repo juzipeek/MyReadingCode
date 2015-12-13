@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: SheetDialog.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/SheetDialog.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2005, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/package-index.html>java.beans</a>;
+<a name='31'>   31 &nbsp; 
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/text/package-index.html>javax.swing.text</a>;
+   35 &nbsp; 
+   36 &nbsp; import static javax.swing.JOptionPane.*;
+   37 &nbsp; 
+   38 &nbsp; @SuppressWarnings("serial")
+   39 &nbsp; public final class SheetDialog {
+   40 &nbsp;     // Reusable objects
+<a name='41'>   41 &nbsp;     private static Rectangle iconR = new Rectangle();
+   42 &nbsp;     private static Rectangle textR = new Rectangle();
+   43 &nbsp;     private static Rectangle viewR = new Rectangle();
+   44 &nbsp;     private static Insets viewInsets = new Insets(0, 0, 0, 0);
+   45 &nbsp; 
+   46 &nbsp;     /** Don't let anyone instantiate this class */
+   47 &nbsp;     private SheetDialog() {
+   48 &nbsp;     }
+   49 &nbsp; 
+   50 &nbsp;     static JOptionPane showOptionDialog(final VMPanel vmPanel, Object message,
+<a name='51'>   51 &nbsp;                                         int optionType, int messageType,
+   52 &nbsp;                                         Icon icon, Object[] options, Object initialValue) {
+   53 &nbsp; 
+   54 &nbsp;         JRootPane rootPane = SwingUtilities.getRootPane(vmPanel);
+   55 &nbsp;         JPanel glassPane = (JPanel)rootPane.getGlassPane();
+   56 &nbsp; 
+   57 &nbsp;         if (!(glassPane instanceof SlideAndFadeGlassPane)) {
+   58 &nbsp;             glassPane = new SlideAndFadeGlassPane();
+   59 &nbsp;             glassPane.setName(rootPane.getName()+".glassPane");
+   60 &nbsp;             rootPane.setGlassPane(glassPane);
+<a name='61'>   61 &nbsp;             rootPane.revalidate();
+   62 &nbsp;         }
+   63 &nbsp; 
+   64 &nbsp;         final SlideAndFadeGlassPane safGlassPane = (SlideAndFadeGlassPane)glassPane;
+   65 &nbsp; 
+   66 &nbsp;         // Workaround for the fact that JOptionPane does not handle
+   67 &nbsp;         // limiting the width when using multi-line html messages.
+   68 &nbsp;         // See Swing bug 5074006 and JConsole bug 6426317
+   69 &nbsp;         message = fixWrapping(message, rootPane.getWidth() - 75); // Leave room for icon
+   70 &nbsp; 
+<a name='71'>   71 &nbsp;         final SheetOptionPane optionPane = new SheetOptionPane(message, messageType, optionType,
+   72 &nbsp;                                                            icon, options, initialValue);
+   73 &nbsp; 
+   74 &nbsp;         optionPane.setComponentOrientation(vmPanel.getComponentOrientation());
+   75 &nbsp;         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
+   76 &nbsp;             public void propertyChange(PropertyChangeEvent event) {
+   77 &nbsp;                 if (event.getPropertyName().equals(VALUE_PROPERTY) &amp;&amp;
+   78 &nbsp;                     event.getNewValue() != null &amp;&amp;
+   79 &nbsp;                     event.getNewValue() != UNINITIALIZED_VALUE) {
+   80 &nbsp;                     ((SlideAndFadeGlassPane)optionPane.getParent()).hide(optionPane);
+<a name='81'>   81 &nbsp;                 }
+   82 &nbsp;             }
+   83 &nbsp;         });
+   84 &nbsp; 
+   85 &nbsp;         // Delay this (even though we're already on the EDT)
+   86 &nbsp;         EventQueue.invokeLater(new Runnable() {
+   87 &nbsp;             public void run() {
+   88 &nbsp;                 safGlassPane.show(optionPane);
+   89 &nbsp;             }
+   90 &nbsp;         });
+<a name='91'>   91 &nbsp; 
+   92 &nbsp;         return optionPane;
+   93 &nbsp;     }
+   94 &nbsp; 
+   95 &nbsp;     private static Object fixWrapping(Object message, final int maxWidth) {
+   96 &nbsp;         if (message instanceof Object[]) {
+   97 &nbsp;             Object[] arr = (Object[])message;
+   98 &nbsp;             for (int i = 0; i &lt; arr.length; i++) {
+   99 &nbsp;                 arr[i] = fixWrapping(arr[i], maxWidth);
+  100 &nbsp;             }
+<a name='101'>  101 &nbsp;         } else if (message instanceof String &amp;&amp;
+  102 &nbsp;                    ((String)message).startsWith("&lt;html&gt;")) {
+  103 &nbsp;             message = new JLabel((String)message) {
+  104 &nbsp;                 public Dimension getPreferredSize() {
+  105 &nbsp;                     String text = getText();
+  106 &nbsp;                     Insets insets = getInsets(viewInsets);
+  107 &nbsp;                     FontMetrics fm = getFontMetrics(getFont());
+  108 &nbsp;                     Dimension pref = super.getPreferredSize();
+  109 &nbsp;                     Dimension min = getMinimumSize();
+  110 &nbsp; 
+<a name='111'>  111 &nbsp;                     iconR.x = iconR.y = iconR.width = iconR.height = 0;
+  112 &nbsp;                     textR.x = textR.y = textR.width = textR.height = 0;
+  113 &nbsp;                     int dx = insets.left + insets.right;
+  114 &nbsp;                     int dy = insets.top + insets.bottom;
+  115 &nbsp;                     viewR.x = dx;
+  116 &nbsp;                     viewR.y = dy;
+  117 &nbsp;                     viewR.width = viewR.height = Short.MAX_VALUE;
+  118 &nbsp; 
+  119 &nbsp;                     View v = (View)getClientProperty("html");
+  120 &nbsp;                     if (v != null) {
+<a name='121'>  121 &nbsp;                         // Use pref width if less than 300, otherwise
+  122 &nbsp;                         // min width up to size of window.
+  123 &nbsp;                         int w = Math.min(maxWidth,
+  124 &nbsp;                                          Math.min(pref.width,
+  125 &nbsp;                                                   Math.max(min.width, 300)));
+  126 &nbsp;                         v.setSize((float)w, 0F);
+  127 &nbsp; 
+  128 &nbsp;                         SwingUtilities.layoutCompoundLabel(this, fm, text, null,
+  129 &nbsp;                                                            getVerticalAlignment(),
+  130 &nbsp;                                                            getHorizontalAlignment(),
+<a name='131'>  131 &nbsp;                                                            getVerticalTextPosition(),
+  132 &nbsp;                                                            getHorizontalTextPosition(),
+  133 &nbsp;                                                            viewR, iconR, textR,
+  134 &nbsp;                                                            getIconTextGap());
+  135 &nbsp;                         return new Dimension(textR.width + dx,
+  136 &nbsp;                                              textR.height + dy);
+  137 &nbsp;                     } else {
+  138 &nbsp;                         return pref; //  Should not happen
+  139 &nbsp;                     }
+  140 &nbsp;                 }
+<a name='141'>  141 &nbsp;             };
+  142 &nbsp;         }
+  143 &nbsp;         return message;
+  144 &nbsp;     }
+  145 &nbsp; 
+  146 &nbsp;     private static class SlideAndFadeGlassPane extends JPanel {
+  147 &nbsp;         SheetOptionPane optionPane;
+  148 &nbsp; 
+  149 &nbsp;         int fade = 20;
+  150 &nbsp;         boolean slideIn = true;
+<a name='151'>  151 &nbsp; 
+  152 &nbsp;         SlideAndFadeGlassPane() {
+  153 &nbsp;             super(null);
+  154 &nbsp;             setVisible(false);
+  155 &nbsp;             setOpaque(false);
+  156 &nbsp; 
+  157 &nbsp;             // Grab mouse input, making the dialog modal
+  158 &nbsp;             addMouseListener(new MouseAdapter() {});
+  159 &nbsp;         }
+  160 &nbsp; 
+<a name='161'>  161 &nbsp;         public void show(SheetOptionPane optionPane) {
+  162 &nbsp;             this.optionPane = optionPane;
+  163 &nbsp;             removeAll();
+  164 &nbsp;             add(optionPane);
+  165 &nbsp;             setVisible(true);
+  166 &nbsp;             slideIn = true;
+  167 &nbsp;             revalidate();
+  168 &nbsp;             repaint();
+  169 &nbsp;             doSlide();
+  170 &nbsp;         }
+<a name='171'>  171 &nbsp; 
+  172 &nbsp;         public void hide(SheetOptionPane optionPane) {
+  173 &nbsp;             if (optionPane != this.optionPane) {
+  174 &nbsp;                 return;
+  175 &nbsp;             }
+  176 &nbsp; 
+  177 &nbsp;             slideIn = false;
+  178 &nbsp;             revalidate();
+  179 &nbsp;             repaint();
+  180 &nbsp;             doSlide();
+<a name='181'>  181 &nbsp;         }
+  182 &nbsp; 
+  183 &nbsp;         private void doSlide() {
+  184 &nbsp;             if (optionPane.getParent() == null) {
+  185 &nbsp;                 return;
+  186 &nbsp;             }
+  187 &nbsp; 
+  188 &nbsp;             if (optionPane.getWidth() == 0) {
+  189 &nbsp;                 optionPane.setSize(optionPane.getPreferredSize());
+  190 &nbsp;             }
+<a name='191'>  191 &nbsp; 
+  192 &nbsp;             int glassPaneWidth = getWidth();
+  193 &nbsp;             if (glassPaneWidth == 0 &amp;&amp; getParent() != null) {
+  194 &nbsp;                 glassPaneWidth = getParent().getWidth();
+  195 &nbsp;             }
+  196 &nbsp; 
+  197 &nbsp;             int x = (glassPaneWidth - optionPane.getWidth()) / 2;
+  198 &nbsp; 
+  199 &nbsp;             if (!slideIn) {
+  200 &nbsp;                     remove(optionPane);
+<a name='201'>  201 &nbsp;                     setVisible(false);
+  202 &nbsp;                     return;
+  203 &nbsp;             } else {
+  204 &nbsp;                     optionPane.setLocation(x, 0);
+  205 &nbsp;                     setGrayLevel(fade);
+  206 &nbsp;                     return;
+  207 &nbsp;             }
+  208 &nbsp;         }
+  209 &nbsp; 
+  210 &nbsp;         public void setGrayLevel(int gray) {
+<a name='211'>  211 &nbsp;             gray = gray * 255 / 100;
+  212 &nbsp;             setBackground(new Color(0, 0, 0, gray));
+  213 &nbsp;         }
+  214 &nbsp; 
+  215 &nbsp;         public void paint(Graphics g) {
+  216 &nbsp;             g.setColor(getBackground());
+  217 &nbsp;             g.fillRect(0, 0, getWidth(), getHeight());
+  218 &nbsp;             super.paint(g);
+  219 &nbsp;         }
+  220 &nbsp;     }
+<a name='221'>  221 &nbsp; 
+  222 &nbsp; 
+  223 &nbsp; 
+  224 &nbsp;     static class SheetOptionPane extends JOptionPane {
+  225 &nbsp;         SheetOptionPane(Object message, int messageType, int optionType,
+  226 &nbsp;                         Icon icon, Object[] options, Object initialValue) {
+  227 &nbsp;             super(message, messageType, optionType, icon, options, initialValue);
+  228 &nbsp; 
+  229 &nbsp;             setBorder(new CompoundBorder(new LineBorder(new Color(204, 204, 204), 1),
+  230 &nbsp;                                          new EmptyBorder(4, 4, 4, 4)));
+<a name='231'>  231 &nbsp;         }
+  232 &nbsp; 
+  233 &nbsp; 
+  234 &nbsp;         private static Composite comp =
+  235 &nbsp;             AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8F);
+  236 &nbsp; 
+  237 &nbsp;         private static Color bgColor = new Color(241, 239, 239);
+  238 &nbsp; 
+  239 &nbsp;         public void setVisible(boolean visible) {
+  240 &nbsp;             SlideAndFadeGlassPane glassPane = (SlideAndFadeGlassPane)getParent();
+<a name='241'>  241 &nbsp;             if (glassPane != null) {
+  242 &nbsp;                 if (visible) {
+  243 &nbsp;                     glassPane.show(this);
+  244 &nbsp;                 } else {
+  245 &nbsp;                     glassPane.hide(this);
+  246 &nbsp;                 }
+  247 &nbsp;             }
+  248 &nbsp;         }
+  249 &nbsp; 
+  250 &nbsp;         public void paint(Graphics g) {
+<a name='251'>  251 &nbsp;             Graphics2D g2d = (Graphics2D)g;
+  252 &nbsp;             Composite oldComp = g2d.getComposite();
+  253 &nbsp;             g2d.setComposite(comp);
+  254 &nbsp;             Color oldColor = g2d.getColor();
+  255 &nbsp;             g2d.setColor(bgColor);
+  256 &nbsp;             g2d.fillRect(0, 0, getWidth(), getHeight());
+  257 &nbsp;             g2d.setColor(oldColor);
+  258 &nbsp;             g2d.setComposite(oldComp);
+  259 &nbsp;             super.paint(g);
+  260 &nbsp;         }
+<a name='261'>  261 &nbsp;     }
+  262 &nbsp; 
+  263 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/SheetDialog.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

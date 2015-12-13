@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: Formatter.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Formatter.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/text/package-index.html>java.text</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   30 &nbsp; 
+<a name='31'>   31 &nbsp; import static sun.tools.jconsole.Resources.*;
+   32 &nbsp; 
+   33 &nbsp; class Formatter {
+   34 &nbsp;     final static long SECOND = 1000;
+   35 &nbsp;     final static long MINUTE = 60 * SECOND;
+   36 &nbsp;     final static long HOUR   = 60 * MINUTE;
+   37 &nbsp;     final static long DAY    = 24 * HOUR;
+   38 &nbsp; 
+   39 &nbsp;     final static String cr = System.getProperty("line.separator");
+   40 &nbsp; 
+<a name='41'>   41 &nbsp;     final static DateFormat timeDF            = new SimpleDateFormat("HH:mm");
+   42 &nbsp;     private final static DateFormat timeWithSecondsDF = new SimpleDateFormat("HH:mm:ss");
+   43 &nbsp;     private final static DateFormat dateDF            = new SimpleDateFormat("yyyy-MM-dd");
+   44 &nbsp;     private final static String decimalZero =
+   45 &nbsp;                                 new DecimalFormatSymbols().getDecimalSeparator() + "0";
+   46 &nbsp; 
+   47 &nbsp;     static String formatTime(long t) {
+   48 &nbsp;         String str;
+   49 &nbsp;         if (t &lt; 1 * MINUTE) {
+   50 &nbsp;             String seconds = String.format("%.3f", t / (double)SECOND);
+<a name='51'>   51 &nbsp;             str = Resources.getText("DurationSeconds", seconds);
+   52 &nbsp;         } else {
+   53 &nbsp;             long remaining = t;
+   54 &nbsp;             long days = remaining / DAY;
+   55 &nbsp;             remaining %= 1 * DAY;
+   56 &nbsp;             long hours = remaining / HOUR;
+   57 &nbsp;             remaining %= 1 * HOUR;
+   58 &nbsp;             long minutes = remaining / MINUTE;
+   59 &nbsp; 
+   60 &nbsp;             if (t &gt;= 1 * DAY) {
+<a name='61'>   61 &nbsp;                 str = Resources.getText("DurationDaysHoursMinutes",
+   62 &nbsp;                                         days, hours, minutes);
+   63 &nbsp;             } else if (t &gt;= 1 * HOUR) {
+   64 &nbsp;                 str = Resources.getText("DurationHoursMinutes",
+   65 &nbsp;                                         hours, minutes);
+   66 &nbsp;             } else {
+   67 &nbsp;                 str = Resources.getText("DurationMinutes", minutes);
+   68 &nbsp;             }
+   69 &nbsp;         }
+   70 &nbsp;         return str;
+<a name='71'>   71 &nbsp;     }
+   72 &nbsp; 
+   73 &nbsp;     static String formatNanoTime(long t) {
+   74 &nbsp;         long ms = t / 1000000;
+   75 &nbsp;         return formatTime(ms);
+   76 &nbsp;     }
+   77 &nbsp; 
+   78 &nbsp; 
+   79 &nbsp;     static String formatClockTime(long time) {
+   80 &nbsp;         return timeDF.format(time);
+<a name='81'>   81 &nbsp;     }
+   82 &nbsp; 
+   83 &nbsp;     static String formatDate(long time) {
+   84 &nbsp;         return dateDF.format(time);
+   85 &nbsp;     }
+   86 &nbsp; 
+   87 &nbsp;     static String formatDateTime(long time) {
+   88 &nbsp;         return dateDF.format(time) + " " + timeWithSecondsDF.format(time);
+   89 &nbsp;     }
+   90 &nbsp; 
+<a name='91'>   91 &nbsp;     static DateFormat getDateTimeFormat(String key) {
+   92 &nbsp;         String dtfStr = getText(key);
+   93 &nbsp;         int dateStyle = -1;
+   94 &nbsp;         int timeStyle = -1;
+   95 &nbsp; 
+   96 &nbsp;         if (dtfStr.startsWith("SHORT")) {
+   97 &nbsp;             dateStyle = DateFormat.SHORT;
+   98 &nbsp;         } else if (dtfStr.startsWith("MEDIUM")) {
+   99 &nbsp;             dateStyle = DateFormat.MEDIUM;
+  100 &nbsp;         } else if (dtfStr.startsWith("LONG")) {
+<a name='101'>  101 &nbsp;             dateStyle = DateFormat.LONG;
+  102 &nbsp;         } else if (dtfStr.startsWith("FULL")) {
+  103 &nbsp;             dateStyle = DateFormat.FULL;
+  104 &nbsp;         }
+  105 &nbsp; 
+  106 &nbsp;         if (dtfStr.endsWith("SHORT")) {
+  107 &nbsp;             timeStyle = DateFormat.SHORT;
+  108 &nbsp;         } else if (dtfStr.endsWith("MEDIUM")) {
+  109 &nbsp;             timeStyle = DateFormat.MEDIUM;
+  110 &nbsp;         } else if (dtfStr.endsWith("LONG")) {
+<a name='111'>  111 &nbsp;             timeStyle = DateFormat.LONG;
+  112 &nbsp;         } else if (dtfStr.endsWith("FULL")) {
+  113 &nbsp;             timeStyle = DateFormat.FULL;
+  114 &nbsp;         }
+  115 &nbsp; 
+  116 &nbsp;         if (dateStyle != -1 &amp;&amp; timeStyle != -1) {
+  117 &nbsp;             return DateFormat.getDateTimeInstance(dateStyle, timeStyle);
+  118 &nbsp;         } else if (dtfStr.length() &gt; 0) {
+  119 &nbsp;             return new SimpleDateFormat(dtfStr);
+  120 &nbsp;         } else {
+<a name='121'>  121 &nbsp;             return DateFormat.getDateTimeInstance();
+  122 &nbsp;         }
+  123 &nbsp;     }
+  124 &nbsp; 
+  125 &nbsp;     static double toExcelTime(long time) {
+  126 &nbsp;         // Excel is bug compatible with Lotus 1-2-3 and pretends
+  127 &nbsp;         // that 1900 was a leap year, so count from 1899-12-30.
+  128 &nbsp;         // Note that the month index is zero-based in Calendar.
+  129 &nbsp;         Calendar cal = new GregorianCalendar(1899, 11, 30);
+  130 &nbsp; 
+<a name='131'>  131 &nbsp;         // Adjust for the fact that now may be DST but then wasn't
+  132 &nbsp;         Calendar tmpCal = new GregorianCalendar();
+  133 &nbsp;         tmpCal.setTimeInMillis(time);
+  134 &nbsp;         int dst = tmpCal.get(Calendar.DST_OFFSET);
+  135 &nbsp;         if (dst &gt; 0) {
+  136 &nbsp;             cal.set(Calendar.DST_OFFSET, dst);
+  137 &nbsp;         }
+  138 &nbsp; 
+  139 &nbsp;         long millisSince1900 = time - cal.getTimeInMillis();
+  140 &nbsp;         double value = (double)millisSince1900 / (24 * 60 * 60 * 1000);
+<a name='141'>  141 &nbsp; 
+  142 &nbsp;         return value;
+  143 &nbsp;     }
+  144 &nbsp; 
+  145 &nbsp; 
+  146 &nbsp; 
+  147 &nbsp;     static String[] formatKByteStrings(long... bytes) {
+  148 &nbsp;         int n = bytes.length;
+  149 &nbsp;         for (int i = 0; i &lt; n; i++) {
+  150 &nbsp;             if (bytes[i] &gt; 0) {
+<a name='151'>  151 &nbsp;                 bytes[i] /= 1024;
+  152 &nbsp;             }
+  153 &nbsp;         }
+  154 &nbsp;         String[] strings = formatLongs(bytes);
+  155 &nbsp;         for (int i = 0; i &lt; n; i++) {
+  156 &nbsp;             strings[i] = getText("kbytes", strings[i]);
+  157 &nbsp;         }
+  158 &nbsp;         return strings;
+  159 &nbsp;     }
+  160 &nbsp; 
+<a name='161'>  161 &nbsp;     static String formatKBytes(long bytes) {
+  162 &nbsp;         if (bytes == -1) {
+  163 &nbsp;             return getText("kbytes", "-1");
+  164 &nbsp;         }
+  165 &nbsp; 
+  166 &nbsp;         long kb = bytes / 1024;
+  167 &nbsp;         return getText("kbytes", justify(kb, 10));
+  168 &nbsp;     }
+  169 &nbsp; 
+  170 &nbsp; 
+<a name='171'>  171 &nbsp;     static String formatBytes(long v, boolean html) {
+  172 &nbsp;         return formatBytes(v, v, html);
+  173 &nbsp;     }
+  174 &nbsp; 
+  175 &nbsp;     static String formatBytes(long v, long vMax) {
+  176 &nbsp;         return formatBytes(v, vMax, false);
+  177 &nbsp;     }
+  178 &nbsp; 
+  179 &nbsp;     static String formatBytes(long v, long vMax, boolean html) {
+  180 &nbsp;         String s;
+<a name='181'>  181 &nbsp; 
+  182 &nbsp;         int exp = (int)Math.log10((double)vMax);
+  183 &nbsp; 
+  184 &nbsp;         if (exp &lt; 3) {
+  185 &nbsp;             s = Resources.getText("Size Bytes", v);
+  186 &nbsp;         } else if (exp &lt; 6) {
+  187 &nbsp;             s = Resources.getText("Size Kb", trimDouble(v / Math.pow(10.0, 3)));
+  188 &nbsp;         } else if (exp &lt; 9) {
+  189 &nbsp;             s = Resources.getText("Size Mb", trimDouble(v / Math.pow(10.0, 6)));
+  190 &nbsp;         } else {
+<a name='191'>  191 &nbsp;             s = Resources.getText("Size Gb", trimDouble(v / Math.pow(10.0, 9)));
+  192 &nbsp;         }
+  193 &nbsp;         if (html) {
+  194 &nbsp;             s = s.replace(" ", "&amp;nbsp;");
+  195 &nbsp;         }
+  196 &nbsp;         return s;
+  197 &nbsp;     }
+  198 &nbsp; 
+  199 &nbsp;     /*
+  200 &nbsp;      * Return the input value rounded to one decimal place.  If after
+<a name='201'>  201 &nbsp;      * rounding the string ends in the (locale-specific) decimal point
+  202 &nbsp;      * followed by a zero then trim that off as well.
+  203 &nbsp;      */
+  204 &nbsp;     private static String trimDouble(double d) {
+  205 &nbsp;         String s = String.format("%.1f", d);
+  206 &nbsp;         if (s.length() &gt; 3 &amp;&amp; s.endsWith(decimalZero)) {
+  207 &nbsp;             s = s.substring(0, s.length()-2);
+  208 &nbsp;         }
+  209 &nbsp;         return s;
+  210 &nbsp;     }
+<a name='211'>  211 &nbsp; 
+  212 &nbsp;     static String formatLong(long value) {
+  213 &nbsp;         return String.format("%,d", value);
+  214 &nbsp;     }
+  215 &nbsp; 
+  216 &nbsp;     static String[] formatLongs(long... longs) {
+  217 &nbsp;         int n = longs.length;
+  218 &nbsp;         int size = 0;
+  219 &nbsp;         String[] strings = new String[n];
+  220 &nbsp;         for (int i = 0; i &lt; n; i++) {
+<a name='221'>  221 &nbsp;             strings[i] = formatLong(longs[i]);
+  222 &nbsp;             size = Math.max(size, strings[i].length());
+  223 &nbsp;         }
+  224 &nbsp;         for (int i = 0; i &lt; n; i++) {
+  225 &nbsp;             strings[i] = justify(strings[i], size);
+  226 &nbsp;         }
+  227 &nbsp;         return strings;
+  228 &nbsp;     }
+  229 &nbsp; 
+  230 &nbsp; 
+<a name='231'>  231 &nbsp;     // A poor attempt at right-justifying for numerical data
+  232 &nbsp;     static String justify(long value, int size) {
+  233 &nbsp;         return justify(formatLong(value), size);
+  234 &nbsp;     }
+  235 &nbsp; 
+  236 &nbsp;     static String justify(String str, int size) {
+  237 &nbsp;         StringBuffer buf = new StringBuffer();
+  238 &nbsp;         buf.append("&lt;TT&gt;");
+  239 &nbsp;         int n = size - str.length();
+  240 &nbsp;         for (int i = 0; i &lt; n; i++) {
+<a name='241'>  241 &nbsp;             buf.append("&amp;nbsp;");
+  242 &nbsp;         }
+  243 &nbsp;         buf.append(str);
+  244 &nbsp;         buf.append("&lt;/TT&gt;");
+  245 &nbsp;         return buf.toString();
+  246 &nbsp;     }
+  247 &nbsp; 
+  248 &nbsp;     static String newRow(String label, String value) {
+  249 &nbsp;         return newRow(label, value, 2);
+  250 &nbsp;     }
+<a name='251'>  251 &nbsp; 
+  252 &nbsp;     static String newRow(String label, String value, int columnPerRow) {
+  253 &nbsp;         if (label == null) {
+  254 &nbsp;             label = "";
+  255 &nbsp;         } else {
+  256 &nbsp;             label += ":&amp;nbsp;";
+  257 &nbsp;         }
+  258 &nbsp;         label = "&lt;th nowrap align=right valign=top&gt;" + label;
+  259 &nbsp;         value = "&lt;td colspan=" + (columnPerRow-1) + "&gt; &lt;font size =-1&gt;" + value;
+  260 &nbsp; 
+<a name='261'>  261 &nbsp;         return "&lt;tr&gt;" + label + value + "&lt;/tr&gt;";
+  262 &nbsp;     }
+  263 &nbsp; 
+  264 &nbsp;     static String newRow(String label1, String value1,
+  265 &nbsp;                          String label2, String value2) {
+  266 &nbsp;         label1 = "&lt;th nowrap align=right valign=top&gt;" + label1 + ":&amp;nbsp;";
+  267 &nbsp;         value1 = "&lt;td&gt;&lt;font size =-1&gt;" + value1;
+  268 &nbsp;         label2 = "&lt;th nowrap align=right valign=top&gt;" + label2 + ":&amp;nbsp;";
+  269 &nbsp;         value2 = "&lt;td&gt;&lt;font size =-1&gt;" + value2;
+  270 &nbsp; 
+<a name='271'>  271 &nbsp;         return "&lt;tr&gt;" + label1 + value1 + label2 + value2 + "&lt;/tr&gt;";
+  272 &nbsp;     }
+  273 &nbsp; 
+  274 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Formatter.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

@@ -1,0 +1,608 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: BorderedComponent.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/BorderedComponent.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; 
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/plaf/package-index.html>javax.swing.plaf</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/plaf/basic/BasicGraphicsUtils.html>javax.swing.plaf.basic.BasicGraphicsUtils</a>;
+   35 &nbsp; 
+   36 &nbsp; import static javax.swing.SwingConstants.*;
+   37 &nbsp; 
+   38 &nbsp; import static sun.tools.jconsole.JConsole.*;
+   39 &nbsp; import static sun.tools.jconsole.Resources.*;
+   40 &nbsp; import static sun.tools.jconsole.Utilities.*;
+<a name='41'>   41 &nbsp; 
+   42 &nbsp; @SuppressWarnings("serial")
+   43 &nbsp; public class BorderedComponent extends JPanel implements ActionListener {
+   44 &nbsp;     JButton moreOrLessButton;
+   45 &nbsp;     String valueLabelStr;
+   46 &nbsp;     JLabel label;
+   47 &nbsp;     JComponent comp;
+   48 &nbsp;     boolean collapsed = false;
+   49 &nbsp; 
+   50 &nbsp;     private JPopupMenu popupMenu;
+<a name='51'>   51 &nbsp; 
+   52 &nbsp;     private Icon collapseIcon;
+   53 &nbsp;     private Icon expandIcon;
+   54 &nbsp; 
+   55 &nbsp;     private static Image getImage(String name) {
+   56 &nbsp;         Toolkit tk = Toolkit.getDefaultToolkit();
+   57 &nbsp;         name = "resources/" + name + ".png";
+   58 &nbsp;         return tk.getImage(BorderedComponent.class.getResource(name));
+   59 &nbsp;     }
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;     public BorderedComponent(String text) {
+   62 &nbsp;         this(text, null, false);
+   63 &nbsp;     }
+   64 &nbsp; 
+   65 &nbsp;     public BorderedComponent(String text, JComponent comp) {
+   66 &nbsp;         this(text, comp, false);
+   67 &nbsp;     }
+   68 &nbsp; 
+   69 &nbsp;     public BorderedComponent(String text, JComponent comp, boolean collapsible) {
+   70 &nbsp;         super(null);
+<a name='71'>   71 &nbsp; 
+   72 &nbsp;         this.comp = comp;
+   73 &nbsp; 
+   74 &nbsp;         // Only add border if text is not null
+   75 &nbsp;         if (text != null) {
+   76 &nbsp;             TitledBorder border;
+   77 &nbsp;             if (collapsible) {
+   78 &nbsp;                 final JLabel textLabel = new JLabel(text);
+   79 &nbsp;                 JPanel borderLabel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0)) {
+   80 &nbsp;                     public int getBaseline(int w, int h) {
+<a name='81'>   81 &nbsp;                         Dimension dim = textLabel.getPreferredSize();
+   82 &nbsp;                         return textLabel.getBaseline(dim.width, dim.height) + textLabel.getY();
+   83 &nbsp;                     }
+   84 &nbsp;                 };
+   85 &nbsp;                 borderLabel.add(textLabel);
+   86 &nbsp;                 border = new LabeledBorder(borderLabel);
+   87 &nbsp;                 textLabel.setForeground(border.getTitleColor());
+   88 &nbsp; 
+   89 &nbsp;                 if (IS_WIN) {
+   90 &nbsp;                     collapseIcon = new ImageIcon(getImage("collapse-winlf"));
+<a name='91'>   91 &nbsp;                     expandIcon = new ImageIcon(getImage("expand-winlf"));
+   92 &nbsp;                 } else {
+   93 &nbsp;                     collapseIcon = new ArrowIcon(SOUTH, textLabel);
+   94 &nbsp;                     expandIcon = new ArrowIcon(EAST, textLabel);
+   95 &nbsp;                 }
+   96 &nbsp; 
+   97 &nbsp;                 moreOrLessButton = new JButton(collapseIcon);
+   98 &nbsp;                 moreOrLessButton.setContentAreaFilled(false);
+   99 &nbsp;                 moreOrLessButton.setBorderPainted(false);
+  100 &nbsp;                 moreOrLessButton.setMargin(new Insets(0, 0, 0, 0));
+<a name='101'>  101 &nbsp;                 moreOrLessButton.addActionListener(this);
+  102 &nbsp;                 String toolTip =
+  103 &nbsp;                     getText("BorderedComponent.moreOrLessButton.toolTip");
+  104 &nbsp;                 moreOrLessButton.setToolTipText(toolTip);
+  105 &nbsp;                 borderLabel.add(moreOrLessButton);
+  106 &nbsp;                 borderLabel.setSize(borderLabel.getPreferredSize());
+  107 &nbsp;                 add(borderLabel);
+  108 &nbsp;             } else {
+  109 &nbsp;                 border = new TitledBorder(text);
+  110 &nbsp;             }
+<a name='111'>  111 &nbsp;             setBorder(new CompoundBorder(new FocusBorder(this), border));
+  112 &nbsp;         } else {
+  113 &nbsp;             setBorder(new FocusBorder(this));
+  114 &nbsp;         }
+  115 &nbsp;         if (comp != null) {
+  116 &nbsp;             add(comp);
+  117 &nbsp;         }
+  118 &nbsp;     }
+  119 &nbsp; 
+  120 &nbsp;     public void setComponent(JComponent comp) {
+<a name='121'>  121 &nbsp;         if (this.comp != null) {
+  122 &nbsp;             remove(this.comp);
+  123 &nbsp;         }
+  124 &nbsp;         this.comp = comp;
+  125 &nbsp;         if (!collapsed) {
+  126 &nbsp;             LayoutManager lm = getLayout();
+  127 &nbsp;             if (lm instanceof BorderLayout) {
+  128 &nbsp;                 add(comp, BorderLayout.CENTER);
+  129 &nbsp;             } else {
+  130 &nbsp;                 add(comp);
+<a name='131'>  131 &nbsp;             }
+  132 &nbsp;         }
+  133 &nbsp;         revalidate();
+  134 &nbsp;     }
+  135 &nbsp; 
+  136 &nbsp;     public void setValueLabel(String str) {
+  137 &nbsp;         this.valueLabelStr = str;
+  138 &nbsp;         if (label != null) {
+  139 &nbsp;             label.setText(Resources.getText("Current value",valueLabelStr));
+  140 &nbsp;         }
+<a name='141'>  141 &nbsp;     }
+  142 &nbsp; 
+  143 &nbsp;     public void actionPerformed(ActionEvent ev) {
+  144 &nbsp;         if (collapsed) {
+  145 &nbsp;             if (label != null) {
+  146 &nbsp;                 remove(label);
+  147 &nbsp;             }
+  148 &nbsp;             add(comp);
+  149 &nbsp;             moreOrLessButton.setIcon(collapseIcon);
+  150 &nbsp;         } else {
+<a name='151'>  151 &nbsp;             remove(comp);
+  152 &nbsp;             if (valueLabelStr != null) {
+  153 &nbsp;                 if (label == null) {
+  154 &nbsp;                     label = new JLabel(Resources.getText("Current value",
+  155 &nbsp;                                                          valueLabelStr));
+  156 &nbsp;                 }
+  157 &nbsp;                 add(label);
+  158 &nbsp;             }
+  159 &nbsp;             moreOrLessButton.setIcon(expandIcon);
+  160 &nbsp;         }
+<a name='161'>  161 &nbsp;         collapsed = !collapsed;
+  162 &nbsp; 
+  163 &nbsp;         JComponent container = (JComponent)getParent();
+  164 &nbsp;         if (container != null &amp;&amp;
+  165 &nbsp;             container.getLayout() instanceof VariableGridLayout) {
+  166 &nbsp; 
+  167 &nbsp;             ((VariableGridLayout)container.getLayout()).setFillRow(this, !collapsed);
+  168 &nbsp;             container.revalidate();
+  169 &nbsp;         }
+  170 &nbsp;     }
+<a name='171'>  171 &nbsp; 
+  172 &nbsp;     public Dimension getMinimumSize() {
+  173 &nbsp;         if (getLayout() != null) {
+  174 &nbsp;             // A layout manager has been set, so delegate to it
+  175 &nbsp;             return super.getMinimumSize();
+  176 &nbsp;         }
+  177 &nbsp; 
+  178 &nbsp;         if (moreOrLessButton != null) {
+  179 &nbsp;             Dimension d = moreOrLessButton.getMinimumSize();
+  180 &nbsp;             Insets i = getInsets();
+<a name='181'>  181 &nbsp;             d.width  += i.left + i.right;
+  182 &nbsp;             d.height += i.top + i.bottom;
+  183 &nbsp;             return d;
+  184 &nbsp;         } else {
+  185 &nbsp;             return super.getMinimumSize();
+  186 &nbsp;         }
+  187 &nbsp;     }
+  188 &nbsp; 
+  189 &nbsp;     public void doLayout() {
+  190 &nbsp;         if (getLayout() != null) {
+<a name='191'>  191 &nbsp;             // A layout manager has been set, so delegate to it
+  192 &nbsp;             super.doLayout();
+  193 &nbsp;             return;
+  194 &nbsp;         }
+  195 &nbsp; 
+  196 &nbsp;         Dimension d = getSize();
+  197 &nbsp;         Insets i = getInsets();
+  198 &nbsp; 
+  199 &nbsp;         if (collapsed) {
+  200 &nbsp;             if (label != null) {
+<a name='201'>  201 &nbsp;                 Dimension p = label.getPreferredSize();
+  202 &nbsp;                 label.setBounds(i.left,
+  203 &nbsp;                                 i.top + (d.height - i.top - i.bottom - p.height) / 2,
+  204 &nbsp;                                 p.width,
+  205 &nbsp;                                 p.height);
+  206 &nbsp;             }
+  207 &nbsp;         } else {
+  208 &nbsp;             if (comp != null) {
+  209 &nbsp;                 comp.setBounds(i.left,
+  210 &nbsp;                                i.top,
+<a name='211'>  211 &nbsp;                                d.width - i.left - i.right,
+  212 &nbsp;                                d.height - i.top - i.bottom);
+  213 &nbsp;             }
+  214 &nbsp;         }
+  215 &nbsp;     }
+  216 &nbsp; 
+  217 &nbsp;     private static class ArrowIcon implements Icon {
+  218 &nbsp;         private int direction;
+  219 &nbsp;         private JLabel textLabel;
+  220 &nbsp; 
+<a name='221'>  221 &nbsp;         public ArrowIcon(int direction, JLabel textLabel) {
+  222 &nbsp;             this.direction = direction;
+  223 &nbsp;             this.textLabel = textLabel;
+  224 &nbsp;         }
+  225 &nbsp; 
+  226 &nbsp;         public void paintIcon(Component c, Graphics g, int x, int y) {
+  227 &nbsp;             int w = getIconWidth();
+  228 &nbsp;             int h = w;
+  229 &nbsp;             Polygon p = new Polygon();
+  230 &nbsp;             switch (direction) {
+<a name='231'>  231 &nbsp;               case EAST:
+  232 &nbsp;                 p.addPoint(x + 2,     y);
+  233 &nbsp;                 p.addPoint(x + w - 2, y + h / 2);
+  234 &nbsp;                 p.addPoint(x + 2,     y + h - 1);
+  235 &nbsp;                 break;
+  236 &nbsp; 
+  237 &nbsp;               case SOUTH:
+  238 &nbsp;                 p.addPoint(x,         y + 2);
+  239 &nbsp;                 p.addPoint(x + w / 2, y + h - 2);
+  240 &nbsp;                 p.addPoint(x + w - 1, y + 2);
+<a name='241'>  241 &nbsp;                 break;
+  242 &nbsp;             }
+  243 &nbsp;             g.fillPolygon(p);
+  244 &nbsp;         }
+  245 &nbsp; 
+  246 &nbsp;         public int getIconWidth() {
+  247 &nbsp;             return getIconHeight();
+  248 &nbsp;         }
+  249 &nbsp; 
+  250 &nbsp;         public int getIconHeight() {
+<a name='251'>  251 &nbsp;             Graphics g = textLabel.getGraphics();
+  252 &nbsp;             if (g != null) {
+  253 &nbsp;                 int h = g.getFontMetrics(textLabel.getFont()).getAscent() * 6/10;
+  254 &nbsp;                 if (h % 2 == 0) {
+  255 &nbsp;                     h += 1;     // Make it odd
+  256 &nbsp;                 }
+  257 &nbsp;                 return h;
+  258 &nbsp;             } else {
+  259 &nbsp;                 return 7;
+  260 &nbsp;             }
+<a name='261'>  261 &nbsp;         }
+  262 &nbsp;     }
+  263 &nbsp; 
+  264 &nbsp; 
+  265 &nbsp;     /**
+  266 &nbsp;      * A subclass of &lt;code&gt;TitledBorder&lt;/code&gt; which implements an arbitrary border
+  267 &nbsp;      * with the addition of a JComponent (JLabel, JPanel, etc) in the
+  268 &nbsp;      * default position.
+  269 &nbsp;      * &lt;p&gt;
+  270 &nbsp;      * If the border property value is not
+<a name='271'>  271 &nbsp;      * specified in the constuctor or by invoking the appropriate
+  272 &nbsp;      * set method, the property value will be defined by the current
+  273 &nbsp;      * look and feel, using the following property name in the
+  274 &nbsp;      * Defaults Table:
+  275 &nbsp;      * &lt;ul&gt;
+  276 &nbsp;      * &lt;li&gt;&amp;quot;TitledBorder.border&amp;quot;
+  277 &nbsp;      * &lt;/ul&gt;
+  278 &nbsp;      */
+  279 &nbsp;     protected static class LabeledBorder extends TitledBorder {
+  280 &nbsp;         protected JComponent label;
+<a name='281'>  281 &nbsp; 
+  282 &nbsp;         private Point compLoc = new Point();
+  283 &nbsp; 
+  284 &nbsp;         /**
+  285 &nbsp;          * Creates a LabeledBorder instance.
+  286 &nbsp;          *
+  287 &nbsp;          * @param label  the label the border should display
+  288 &nbsp;          */
+  289 &nbsp;         public LabeledBorder(JComponent label)     {
+  290 &nbsp;             this(null, label);
+<a name='291'>  291 &nbsp;         }
+  292 &nbsp; 
+  293 &nbsp;         /**
+  294 &nbsp;          * Creates a LabeledBorder instance with the specified border
+  295 &nbsp;          * and an empty label.
+  296 &nbsp;          *
+  297 &nbsp;          * @param border  the border
+  298 &nbsp;          */
+  299 &nbsp;         public LabeledBorder(Border border)       {
+  300 &nbsp;             this(border, null);
+<a name='301'>  301 &nbsp;         }
+  302 &nbsp; 
+  303 &nbsp;         /**
+  304 &nbsp;          * Creates a LabeledBorder instance with the specified border and
+  305 &nbsp;          * label.
+  306 &nbsp;          *
+  307 &nbsp;          * @param border  the border
+  308 &nbsp;          * @param label  the label the border should display
+  309 &nbsp;          */
+  310 &nbsp;         public LabeledBorder(Border border, JComponent label) {
+<a name='311'>  311 &nbsp;             super(border);
+  312 &nbsp; 
+  313 &nbsp;             this.label = label;
+  314 &nbsp; 
+  315 &nbsp;             if (label instanceof JLabel &amp;&amp;
+  316 &nbsp;                 label.getForeground() instanceof ColorUIResource) {
+  317 &nbsp; 
+  318 &nbsp;                 label.setForeground(getTitleColor());
+  319 &nbsp;             }
+  320 &nbsp; 
+<a name='321'>  321 &nbsp;         }
+  322 &nbsp; 
+  323 &nbsp;         /**
+  324 &nbsp;          * Paints the border for the specified component with the
+  325 &nbsp;          * specified position and size.
+  326 &nbsp;          * @param c the component for which this border is being painted
+  327 &nbsp;          * @param g the paint graphics
+  328 &nbsp;          * @param x the x position of the painted border
+  329 &nbsp;          * @param y the y position of the painted border
+  330 &nbsp;          * @param width the width of the painted border
+<a name='331'>  331 &nbsp;          * @param height the height of the painted border
+  332 &nbsp;          */
+  333 &nbsp;         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+  334 &nbsp; 
+  335 &nbsp;             Border border = getBorder();
+  336 &nbsp; 
+  337 &nbsp;             if (label == null) {
+  338 &nbsp;                 if (border != null) {
+  339 &nbsp;                     border.paintBorder(c, g, x, y, width, height);
+  340 &nbsp;                 }
+<a name='341'>  341 &nbsp;                 return;
+  342 &nbsp;             }
+  343 &nbsp; 
+  344 &nbsp;             Rectangle grooveRect = new Rectangle(x + EDGE_SPACING, y + EDGE_SPACING,
+  345 &nbsp;                                                  width - (EDGE_SPACING * 2),
+  346 &nbsp;                                                  height - (EDGE_SPACING * 2));
+  347 &nbsp; 
+  348 &nbsp;             Dimension   labelDim = label.getPreferredSize();
+  349 &nbsp;             int baseline = label.getBaseline(labelDim.width, labelDim.height);
+  350 &nbsp;             int         ascent = Math.max(0, baseline);
+<a name='351'>  351 &nbsp;             int         descent = labelDim.height - ascent;
+  352 &nbsp;             int         diff;
+  353 &nbsp;             Insets      insets;
+  354 &nbsp; 
+  355 &nbsp;             if (border != null) {
+  356 &nbsp;                 insets = border.getBorderInsets(c);
+  357 &nbsp;             } else {
+  358 &nbsp;                 insets = new Insets(0, 0, 0, 0);
+  359 &nbsp;             }
+  360 &nbsp; 
+<a name='361'>  361 &nbsp;             diff = Math.max(0, ascent/2 + TEXT_SPACING - EDGE_SPACING);
+  362 &nbsp;             grooveRect.y += diff;
+  363 &nbsp;             grooveRect.height -= diff;
+  364 &nbsp;             compLoc.y = grooveRect.y + insets.top/2 - (ascent + descent) / 2 - 1;
+  365 &nbsp; 
+  366 &nbsp;             int justification;
+  367 &nbsp;             if (c.getComponentOrientation().isLeftToRight()) {
+  368 &nbsp;                 justification = LEFT;
+  369 &nbsp;             } else {
+  370 &nbsp;                 justification = RIGHT;
+<a name='371'>  371 &nbsp;             }
+  372 &nbsp; 
+  373 &nbsp;             switch (justification) {
+  374 &nbsp;                 case LEFT:
+  375 &nbsp;                     compLoc.x = grooveRect.x + TEXT_INSET_H + insets.left;
+  376 &nbsp;                     break;
+  377 &nbsp;                 case RIGHT:
+  378 &nbsp;                     compLoc.x = (grooveRect.x + grooveRect.width
+  379 &nbsp;                                  - (labelDim.width + TEXT_INSET_H + insets.right));
+  380 &nbsp;                     break;
+<a name='381'>  381 &nbsp;             }
+  382 &nbsp; 
+  383 &nbsp;             // If title is positioned in middle of border AND its fontsize
+  384 &nbsp;             // is greater than the border's thickness, we'll need to paint
+  385 &nbsp;             // the border in sections to leave space for the component's background
+  386 &nbsp;             // to show through the title.
+  387 &nbsp;             //
+  388 &nbsp;             if (border != null) {
+  389 &nbsp;                 if (grooveRect.y &gt; compLoc.y - ascent) {
+  390 &nbsp;                     Rectangle clipRect = new Rectangle();
+<a name='391'>  391 &nbsp; 
+  392 &nbsp;                     // save original clip
+  393 &nbsp;                     Rectangle saveClip = g.getClipBounds();
+  394 &nbsp; 
+  395 &nbsp;                     // paint strip left of text
+  396 &nbsp;                     clipRect.setBounds(saveClip);
+  397 &nbsp;                     if (computeIntersection(clipRect, x, y, compLoc.x-1-x, height)) {
+  398 &nbsp;                         g.setClip(clipRect);
+  399 &nbsp;                         border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+  400 &nbsp;                                       grooveRect.width, grooveRect.height);
+<a name='401'>  401 &nbsp;                     }
+  402 &nbsp; 
+  403 &nbsp;                     // paint strip right of text
+  404 &nbsp;                     clipRect.setBounds(saveClip);
+  405 &nbsp;                     if (computeIntersection(clipRect, compLoc.x+ labelDim.width +1, y,
+  406 &nbsp;                                    x+width-(compLoc.x+ labelDim.width +1), height)) {
+  407 &nbsp;                         g.setClip(clipRect);
+  408 &nbsp;                         border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+  409 &nbsp;                                       grooveRect.width, grooveRect.height);
+  410 &nbsp;                     }
+<a name='411'>  411 &nbsp; 
+  412 &nbsp;                     // paint strip below text
+  413 &nbsp;                     clipRect.setBounds(saveClip);
+  414 &nbsp;                     if (computeIntersection(clipRect,
+  415 &nbsp;                                             compLoc.x - 1, compLoc.y + ascent + descent,
+  416 &nbsp;                                             labelDim.width + 2,
+  417 &nbsp;                                             y + height - compLoc.y - ascent - descent)) {
+  418 &nbsp;                         g.setClip(clipRect);
+  419 &nbsp;                         border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+  420 &nbsp;                                   grooveRect.width, grooveRect.height);
+<a name='421'>  421 &nbsp;                     }
+  422 &nbsp; 
+  423 &nbsp;                     // restore clip
+  424 &nbsp;                     g.setClip(saveClip);
+  425 &nbsp; 
+  426 &nbsp;                 } else {
+  427 &nbsp;                     border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+  428 &nbsp;                                       grooveRect.width, grooveRect.height);
+  429 &nbsp;                 }
+  430 &nbsp; 
+<a name='431'>  431 &nbsp;                 label.setLocation(compLoc);
+  432 &nbsp;                 label.setSize(labelDim);
+  433 &nbsp;             }
+  434 &nbsp;         }
+  435 &nbsp; 
+  436 &nbsp;         /**
+  437 &nbsp;          * Reinitialize the insets parameter with this Border's current Insets.
+  438 &nbsp;          * @param c the component for which this border insets value applies
+  439 &nbsp;          * @param insets the object to be reinitialized
+  440 &nbsp;          */
+<a name='441'>  441 &nbsp;         public Insets getBorderInsets(Component c, Insets insets) {
+  442 &nbsp;             int height = 16;
+  443 &nbsp; 
+  444 &nbsp;             Border border = getBorder();
+  445 &nbsp;             if (border != null) {
+  446 &nbsp;                 if (border instanceof AbstractBorder) {
+  447 &nbsp;                     ((AbstractBorder)border).getBorderInsets(c, insets);
+  448 &nbsp;                 } else {
+  449 &nbsp;                     // Can't reuse border insets because the Border interface
+  450 &nbsp;                     // can't be enhanced.
+<a name='451'>  451 &nbsp;                     Insets i = border.getBorderInsets(c);
+  452 &nbsp;                     insets.top = i.top;
+  453 &nbsp;                     insets.right = i.right;
+  454 &nbsp;                     insets.bottom = i.bottom;
+  455 &nbsp;                     insets.left = i.left;
+  456 &nbsp;                 }
+  457 &nbsp;             } else {
+  458 &nbsp;                 insets.left = insets.top = insets.right = insets.bottom = 0;
+  459 &nbsp;             }
+  460 &nbsp; 
+<a name='461'>  461 &nbsp;             insets.left += EDGE_SPACING + TEXT_SPACING;
+  462 &nbsp;             insets.right += EDGE_SPACING + TEXT_SPACING;
+  463 &nbsp;             insets.top += EDGE_SPACING + TEXT_SPACING;
+  464 &nbsp;             insets.bottom += EDGE_SPACING + TEXT_SPACING;
+  465 &nbsp; 
+  466 &nbsp;             if (c == null || label == null) {
+  467 &nbsp;                 return insets;
+  468 &nbsp;             }
+  469 &nbsp; 
+  470 &nbsp;             insets.top += label.getHeight();
+<a name='471'>  471 &nbsp; 
+  472 &nbsp;             return insets;
+  473 &nbsp;         }
+  474 &nbsp; 
+  475 &nbsp;         /**
+  476 &nbsp;          * Returns the label of the labeled border.
+  477 &nbsp;          */
+  478 &nbsp;         public JComponent getLabel() {
+  479 &nbsp;             return label;
+  480 &nbsp;         }
+<a name='481'>  481 &nbsp; 
+  482 &nbsp; 
+  483 &nbsp;         /**
+  484 &nbsp;          * Sets the title of the titled border.
+  485 &nbsp;          * param title the title for the border
+  486 &nbsp;          */
+  487 &nbsp;         public void setLabel(JComponent label) {
+  488 &nbsp;             this.label = label;
+  489 &nbsp;         }
+  490 &nbsp; 
+<a name='491'>  491 &nbsp; 
+  492 &nbsp; 
+  493 &nbsp;         /**
+  494 &nbsp;          * Returns the minimum dimensions this border requires
+  495 &nbsp;          * in order to fully display the border and title.
+  496 &nbsp;          * @param c the component where this border will be drawn
+  497 &nbsp;          */
+  498 &nbsp;         public Dimension getMinimumSize(Component c) {
+  499 &nbsp;             Insets insets = getBorderInsets(c);
+  500 &nbsp;             Dimension minSize = new Dimension(insets.right + insets.left,
+<a name='501'>  501 &nbsp;                                               insets.top + insets.bottom);
+  502 &nbsp;             minSize.width += label.getWidth();
+  503 &nbsp; 
+  504 &nbsp;             return minSize;
+  505 &nbsp;         }
+  506 &nbsp; 
+  507 &nbsp; 
+  508 &nbsp;         private static boolean computeIntersection(Rectangle dest,
+  509 &nbsp;                                                    int rx, int ry, int rw, int rh) {
+  510 &nbsp;             int x1 = Math.max(rx, dest.x);
+<a name='511'>  511 &nbsp;             int x2 = Math.min(rx + rw, dest.x + dest.width);
+  512 &nbsp;             int y1 = Math.max(ry, dest.y);
+  513 &nbsp;             int y2 = Math.min(ry + rh, dest.y + dest.height);
+  514 &nbsp;             dest.x = x1;
+  515 &nbsp;             dest.y = y1;
+  516 &nbsp;             dest.width = x2 - x1;
+  517 &nbsp;             dest.height = y2 - y1;
+  518 &nbsp; 
+  519 &nbsp;             if (dest.width &lt;= 0 || dest.height &lt;= 0) {
+  520 &nbsp;                 return false;
+<a name='521'>  521 &nbsp;             }
+  522 &nbsp;             return true;
+  523 &nbsp;         }
+  524 &nbsp;     }
+  525 &nbsp; 
+  526 &nbsp; 
+  527 &nbsp;     protected static class FocusBorder extends AbstractBorder implements FocusListener {
+  528 &nbsp;         private Component comp;
+  529 &nbsp;         private Color focusColor;
+  530 &nbsp;         private boolean focusLostTemporarily = false;
+<a name='531'>  531 &nbsp; 
+  532 &nbsp;         public FocusBorder(Component comp) {
+  533 &nbsp;             this.comp = comp;
+  534 &nbsp; 
+  535 &nbsp;             comp.addFocusListener(this);
+  536 &nbsp; 
+  537 &nbsp;             // This is the best guess for a L&amp;F specific color
+  538 &nbsp;             focusColor = UIManager.getColor("TabbedPane.focus");
+  539 &nbsp;         }
+  540 &nbsp; 
+<a name='541'>  541 &nbsp;         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+  542 &nbsp;             if (comp.hasFocus() || focusLostTemporarily) {
+  543 &nbsp;                 Color color = g.getColor();
+  544 &nbsp;                 g.setColor(focusColor);
+  545 &nbsp;                 BasicGraphicsUtils.drawDashedRect(g, x, y, width, height);
+  546 &nbsp;                 g.setColor(color);
+  547 &nbsp;             }
+  548 &nbsp;         }
+  549 &nbsp; 
+  550 &nbsp;         public Insets getBorderInsets(Component c, Insets insets) {
+<a name='551'>  551 &nbsp;             insets.set(2, 2, 2, 2);
+  552 &nbsp;             return insets;
+  553 &nbsp;         }
+  554 &nbsp; 
+  555 &nbsp; 
+  556 &nbsp;         public void focusGained(FocusEvent e) {
+  557 &nbsp;             comp.repaint();
+  558 &nbsp;         }
+  559 &nbsp; 
+  560 &nbsp;         public void focusLost(FocusEvent e) {
+<a name='561'>  561 &nbsp;             // We will still paint focus even if lost temporarily
+  562 &nbsp;             focusLostTemporarily = e.isTemporary();
+  563 &nbsp;             if (!focusLostTemporarily) {
+  564 &nbsp;                 comp.repaint();
+  565 &nbsp;             }
+  566 &nbsp;         }
+  567 &nbsp;     }
+  568 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/BorderedComponent.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

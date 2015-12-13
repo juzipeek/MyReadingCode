@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/NetClient/NetClient.iml" filepath="$PROJECT_DIR$/NetClient/NetClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hdcore/hdcore.iml" filepath="$PROJECT_DIR$/hdcore/hdcore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hdfs/hdfs.iml" filepath="$PROJECT_DIR$/hdfs/hdfs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jconsole/jconsole.iml" filepath="$PROJECT_DIR$/jconsole/jconsole.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mapred/mapred.iml" filepath="$PROJECT_DIR$/mapred/mapred.iml" />
+    </modules>
+  </component>
+</project>

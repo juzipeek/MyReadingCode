@@ -1,0 +1,742 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: ThreadTab.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ThreadTab.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2007, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/package-index.html>java.lang.management</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/package-index.html>java.lang.reflect</a>;
+   33 &nbsp; 
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   37 &nbsp; 
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/concurrent/package-index.html>java.util.concurrent</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/List.html>java.util.List</a>;
+<a name='41'>   41 &nbsp; 
+   42 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/awt/package-index.html>sun.awt</a>;
+   43 &nbsp; 
+   44 &nbsp; import static sun.tools.jconsole.OverviewPanel.*;
+   45 &nbsp; import static sun.tools.jconsole.Resources.*;
+   46 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   47 &nbsp; 
+   48 &nbsp; 
+   49 &nbsp; @SuppressWarnings("serial")
+   50 &nbsp; class ThreadTab extends Tab implements ActionListener, DocumentListener, ListSelectionListener {
+<a name='51'>   51 &nbsp;     PlotterPanel threadMeter;
+   52 &nbsp;     TimeComboBox timeComboBox;
+   53 &nbsp;     JTabbedPane threadListTabbedPane;
+   54 &nbsp;     DefaultListModel listModel;
+   55 &nbsp;     JTextField filterTF;
+   56 &nbsp;     JLabel messageLabel;
+   57 &nbsp;     JSplitPane threadsSplitPane;
+   58 &nbsp;     HashMap&lt;Long, String&gt; nameCache = new HashMap&lt;Long, String&gt;();
+   59 &nbsp; 
+   60 &nbsp;     private ThreadOverviewPanel overviewPanel;
+<a name='61'>   61 &nbsp;     private boolean plotterListening = false;
+   62 &nbsp; 
+   63 &nbsp; 
+   64 &nbsp;     private static final String threadCountKey   = "threadCount";
+   65 &nbsp;     private static final String peakKey          = "peak";
+   66 &nbsp; 
+   67 &nbsp;     private static final String threadCountName   = Resources.getText("Live Threads");
+   68 &nbsp;     private static final String peakName          = Resources.getText("Peak");
+   69 &nbsp; 
+   70 &nbsp;     private static final Color  threadCountColor = Plotter.defaultColor;
+<a name='71'>   71 &nbsp;     private static final Color  peakColor        = Color.red;
+   72 &nbsp; 
+   73 &nbsp;     private static final Border thinEmptyBorder  = new EmptyBorder(2, 2, 2, 2);
+   74 &nbsp; 
+   75 &nbsp;     private static final String infoLabelFormat = "ThreadTab.infoLabelFormat";
+   76 &nbsp; 
+   77 &nbsp; 
+   78 &nbsp;     /*
+   79 &nbsp;       Hierarchy of panels and layouts for this tab:
+   80 &nbsp; 
+<a name='81'>   81 &nbsp;         ThreadTab (BorderLayout)
+   82 &nbsp; 
+   83 &nbsp;             North:  topPanel (BorderLayout)
+   84 &nbsp; 
+   85 &nbsp;                         Center: controlPanel (FlowLayout)
+   86 &nbsp;                                     timeComboBox
+   87 &nbsp; 
+   88 &nbsp;             Center: plotterPanel (BorderLayout)
+   89 &nbsp; 
+   90 &nbsp;                         Center: plotter
+<a name='91'>   91 &nbsp; 
+   92 &nbsp;     */
+   93 &nbsp; 
+   94 &nbsp; 
+   95 &nbsp;     public static String getTabName() {
+   96 &nbsp;         return Resources.getText("Threads");
+   97 &nbsp;     }
+   98 &nbsp; 
+   99 &nbsp;     public ThreadTab(VMPanel vmPanel) {
+  100 &nbsp;         super(vmPanel, getTabName());
+<a name='101'>  101 &nbsp; 
+  102 &nbsp;         setLayout(new BorderLayout(0, 0));
+  103 &nbsp;         setBorder(new EmptyBorder(4, 4, 3, 4));
+  104 &nbsp; 
+  105 &nbsp;         JPanel topPanel     = new JPanel(new BorderLayout());
+  106 &nbsp;         JPanel plotterPanel = new JPanel(new VariableGridLayout(0, 1, 4, 4, true, true));
+  107 &nbsp; 
+  108 &nbsp;         add(topPanel, BorderLayout.NORTH);
+  109 &nbsp;         add(plotterPanel,  BorderLayout.CENTER);
+  110 &nbsp; 
+<a name='111'>  111 &nbsp;         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 5));
+  112 &nbsp;         topPanel.add(controlPanel, BorderLayout.CENTER);
+  113 &nbsp; 
+  114 &nbsp;         threadMeter = new PlotterPanel(Resources.getText("Number of Threads"),
+  115 &nbsp;                                        Plotter.Unit.NONE, true);
+  116 &nbsp;         threadMeter.plotter.createSequence(threadCountKey, threadCountName,  threadCountColor, true);
+  117 &nbsp;         threadMeter.plotter.createSequence(peakKey,        peakName,         peakColor,        true);
+  118 &nbsp;         setAccessibleName(threadMeter.plotter,
+  119 &nbsp;                           getText("ThreadTab.threadPlotter.accessibleName"));
+  120 &nbsp; 
+<a name='121'>  121 &nbsp;         plotterPanel.add(threadMeter);
+  122 &nbsp; 
+  123 &nbsp;         timeComboBox = new TimeComboBox(threadMeter.plotter);
+  124 &nbsp;         controlPanel.add(new LabeledComponent(Resources.getText("Time Range:"),
+  125 &nbsp;                                               getMnemonicInt("Time Range:"),
+  126 &nbsp;                                               timeComboBox));
+  127 &nbsp; 
+  128 &nbsp;         listModel = new DefaultListModel();
+  129 &nbsp; 
+  130 &nbsp;         JTextArea textArea = new JTextArea();
+<a name='131'>  131 &nbsp;         textArea.setBorder(thinEmptyBorder);
+  132 &nbsp;         textArea.setEditable(false);
+  133 &nbsp;         setAccessibleName(textArea,
+  134 &nbsp;                           getText("ThreadTab.threadInfo.accessibleName"));
+  135 &nbsp;         JList list = new ThreadJList(listModel, textArea);
+  136 &nbsp; 
+  137 &nbsp;         Dimension di = new Dimension(super.getPreferredSize());
+  138 &nbsp;         di.width = Math.min(di.width, 200);
+  139 &nbsp; 
+  140 &nbsp;         JScrollPane threadlistSP = new JScrollPane(list);
+<a name='141'>  141 &nbsp;         threadlistSP.setPreferredSize(di);
+  142 &nbsp;         threadlistSP.setBorder(null);
+  143 &nbsp; 
+  144 &nbsp;         JScrollPane textAreaSP = new JScrollPane(textArea);
+  145 &nbsp;         textAreaSP.setBorder(null);
+  146 &nbsp; 
+  147 &nbsp;         threadListTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+  148 &nbsp;         threadsSplitPane  = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+  149 &nbsp;                                            threadlistSP, textAreaSP);
+  150 &nbsp;         threadsSplitPane.setOneTouchExpandable(true);
+<a name='151'>  151 &nbsp;         threadsSplitPane.setBorder(null);
+  152 &nbsp; 
+  153 &nbsp;         JPanel firstTabPanel = new JPanel(new BorderLayout());
+  154 &nbsp;         firstTabPanel.setOpaque(false);
+  155 &nbsp; 
+  156 &nbsp;         JPanel firstTabToolPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+  157 &nbsp;         firstTabToolPanel.setOpaque(false);
+  158 &nbsp; 
+  159 &nbsp;         filterTF = new PromptingTextField("Filter", 20);
+  160 &nbsp;         filterTF.getDocument().addDocumentListener(this);
+<a name='161'>  161 &nbsp;         firstTabToolPanel.add(filterTF);
+  162 &nbsp; 
+  163 &nbsp;         JSeparator separator = new JSeparator(JSeparator.VERTICAL);
+  164 &nbsp;         separator.setPreferredSize(new Dimension(separator.getPreferredSize().width,
+  165 &nbsp;                                                  filterTF.getPreferredSize().height));
+  166 &nbsp;         firstTabToolPanel.add(separator);
+  167 &nbsp; 
+  168 &nbsp;         JButton detectDeadlockButton = new JButton(Resources.getText("Detect Deadlock"));
+  169 &nbsp;         detectDeadlockButton.setMnemonic(getMnemonicInt("Detect Deadlock"));
+  170 &nbsp;         detectDeadlockButton.setActionCommand("detectDeadlock");
+<a name='171'>  171 &nbsp;         detectDeadlockButton.addActionListener(this);
+  172 &nbsp;         detectDeadlockButton.setToolTipText(getText("Detect Deadlock.toolTip"));
+  173 &nbsp;         firstTabToolPanel.add(detectDeadlockButton);
+  174 &nbsp; 
+  175 &nbsp;         messageLabel = new JLabel();
+  176 &nbsp;         firstTabToolPanel.add(messageLabel);
+  177 &nbsp; 
+  178 &nbsp;         firstTabPanel.add(threadsSplitPane, BorderLayout.CENTER);
+  179 &nbsp;         firstTabPanel.add(firstTabToolPanel, BorderLayout.SOUTH);
+  180 &nbsp;         threadListTabbedPane.addTab(Resources.getText("Threads"), firstTabPanel);
+<a name='181'>  181 &nbsp; 
+  182 &nbsp;         plotterPanel.add(threadListTabbedPane);
+  183 &nbsp;     }
+  184 &nbsp; 
+  185 &nbsp;     private long oldThreads[] = new long[0];
+  186 &nbsp; 
+  187 &nbsp;     public SwingWorker&lt;?, ?&gt; newSwingWorker() {
+  188 &nbsp;         final ProxyClient proxyClient = vmPanel.getProxyClient();
+  189 &nbsp; 
+  190 &nbsp;         if (!plotterListening) {
+<a name='191'>  191 &nbsp;             proxyClient.addWeakPropertyChangeListener(threadMeter.plotter);
+  192 &nbsp;             plotterListening = true;
+  193 &nbsp;         }
+  194 &nbsp; 
+  195 &nbsp;         return new SwingWorker&lt;Boolean, Object&gt;() {
+  196 &nbsp;             private int tlCount;
+  197 &nbsp;             private int tpCount;
+  198 &nbsp;             private long ttCount;
+  199 &nbsp;             private long[] threads;
+  200 &nbsp;             private long timeStamp;
+<a name='201'>  201 &nbsp; 
+  202 &nbsp;             public Boolean doInBackground() {
+  203 &nbsp;                 try {
+  204 &nbsp;                     ThreadMXBean threadMBean = proxyClient.getThreadMXBean();
+  205 &nbsp; 
+  206 &nbsp;                     tlCount = threadMBean.getThreadCount();
+  207 &nbsp;                     tpCount = threadMBean.getPeakThreadCount();
+  208 &nbsp;                     if (overviewPanel != null) {
+  209 &nbsp;                         ttCount = threadMBean.getTotalStartedThreadCount();
+  210 &nbsp;                     } else {
+<a name='211'>  211 &nbsp;                         ttCount = 0L;
+  212 &nbsp;                     }
+  213 &nbsp; 
+  214 &nbsp;                     threads = threadMBean.getAllThreadIds();
+  215 &nbsp;                     for (long newThread : threads) {
+  216 &nbsp;                         if (nameCache.get(newThread) == null) {
+  217 &nbsp;                             ThreadInfo ti = threadMBean.getThreadInfo(newThread);
+  218 &nbsp;                             if (ti != null) {
+  219 &nbsp;                                 String name = ti.getThreadName();
+  220 &nbsp;                                 if (name != null) {
+<a name='221'>  221 &nbsp;                                     nameCache.put(newThread, name);
+  222 &nbsp;                                 }
+  223 &nbsp;                             }
+  224 &nbsp;                         }
+  225 &nbsp;                     }
+  226 &nbsp;                     timeStamp = System.currentTimeMillis();
+  227 &nbsp;                     return true;
+  228 &nbsp;                 } catch (IOException e) {
+  229 &nbsp;                     return false;
+  230 &nbsp;                 } catch (UndeclaredThrowableException e) {
+<a name='231'>  231 &nbsp;                     return false;
+  232 &nbsp;                 }
+  233 &nbsp;             }
+  234 &nbsp; 
+  235 &nbsp;             protected void done() {
+  236 &nbsp;                 try {
+  237 &nbsp;                     if (!get()) {
+  238 &nbsp;                         return;
+  239 &nbsp;                     }
+  240 &nbsp;                 } catch (InterruptedException ex) {
+<a name='241'>  241 &nbsp;                     return;
+  242 &nbsp;                 } catch (ExecutionException ex) {
+  243 &nbsp;                     if (JConsole.isDebug()) {
+  244 &nbsp;                         ex.printStackTrace();
+  245 &nbsp;                     }
+  246 &nbsp;                     return;
+  247 &nbsp;                 }
+  248 &nbsp; 
+  249 &nbsp;                 threadMeter.plotter.addValues(timeStamp, tlCount, tpCount);
+  250 &nbsp;                 threadMeter.setValueLabel(tlCount+"");
+<a name='251'>  251 &nbsp; 
+  252 &nbsp;                 if (overviewPanel != null) {
+  253 &nbsp;                     overviewPanel.updateThreadsInfo(tlCount, tpCount, ttCount, timeStamp);
+  254 &nbsp;                 }
+  255 &nbsp; 
+  256 &nbsp;                 String filter = filterTF.getText().toLowerCase(Locale.ENGLISH);
+  257 &nbsp;                 boolean doFilter = (filter.length() &gt; 0);
+  258 &nbsp; 
+  259 &nbsp;                 ArrayList&lt;Long&gt; l = new ArrayList&lt;Long&gt;();
+  260 &nbsp;                 for (long t : threads) {
+<a name='261'>  261 &nbsp;                     l.add(t);
+  262 &nbsp;                 }
+  263 &nbsp;                 Iterator&lt;Long&gt; iterator = l.iterator();
+  264 &nbsp;                 while (iterator.hasNext()) {
+  265 &nbsp;                     long newThread = iterator.next();
+  266 &nbsp;                     String name = nameCache.get(newThread);
+  267 &nbsp;                     if (doFilter &amp;&amp; name != null &amp;&amp;
+  268 &nbsp;                         name.toLowerCase(Locale.ENGLISH).indexOf(filter) &lt; 0) {
+  269 &nbsp; 
+  270 &nbsp;                         iterator.remove();
+<a name='271'>  271 &nbsp;                     }
+  272 &nbsp;                 }
+  273 &nbsp;                 long[] newThreads = threads;
+  274 &nbsp;                 if (l.size() &lt; threads.length) {
+  275 &nbsp;                     newThreads = new long[l.size()];
+  276 &nbsp;                     for (int i = 0; i &lt; newThreads.length; i++) {
+  277 &nbsp;                         newThreads[i] = l.get(i);
+  278 &nbsp;                     }
+  279 &nbsp;                 }
+  280 &nbsp; 
+<a name='281'>  281 &nbsp; 
+  282 &nbsp;                 for (long oldThread : oldThreads) {
+  283 &nbsp;                     boolean found = false;
+  284 &nbsp;                     for (long newThread : newThreads) {
+  285 &nbsp;                         if (newThread == oldThread) {
+  286 &nbsp;                             found = true;
+  287 &nbsp;                             break;
+  288 &nbsp;                         }
+  289 &nbsp;                     }
+  290 &nbsp;                     if (!found) {
+<a name='291'>  291 &nbsp;                         listModel.removeElement(oldThread);
+  292 &nbsp;                         if (!doFilter) {
+  293 &nbsp;                             nameCache.remove(oldThread);
+  294 &nbsp;                         }
+  295 &nbsp;                     }
+  296 &nbsp;                 }
+  297 &nbsp; 
+  298 &nbsp;                 // Threads are in reverse chronological order
+  299 &nbsp;                 for (int i = newThreads.length - 1; i &gt;= 0; i--) {
+  300 &nbsp;                     long newThread = newThreads[i];
+<a name='301'>  301 &nbsp;                     boolean found = false;
+  302 &nbsp;                     for (long oldThread : oldThreads) {
+  303 &nbsp;                         if (newThread == oldThread) {
+  304 &nbsp;                             found = true;
+  305 &nbsp;                             break;
+  306 &nbsp;                         }
+  307 &nbsp;                     }
+  308 &nbsp;                     if (!found) {
+  309 &nbsp;                         listModel.addElement(newThread);
+  310 &nbsp;                     }
+<a name='311'>  311 &nbsp;                 }
+  312 &nbsp;                 oldThreads = newThreads;
+  313 &nbsp;             }
+  314 &nbsp;         };
+  315 &nbsp;     }
+  316 &nbsp; 
+  317 &nbsp;     long lastSelected = -1;
+  318 &nbsp; 
+  319 &nbsp;     public void valueChanged(ListSelectionEvent ev) {
+  320 &nbsp;         ThreadJList list = (ThreadJList)ev.getSource();
+<a name='321'>  321 &nbsp;         final JTextArea textArea = list.textArea;
+  322 &nbsp; 
+  323 &nbsp;         Long selected = (Long)list.getSelectedValue();
+  324 &nbsp;         if (selected == null) {
+  325 &nbsp;             if (lastSelected != -1) {
+  326 &nbsp;                 selected = lastSelected;
+  327 &nbsp;             }
+  328 &nbsp;         } else {
+  329 &nbsp;             lastSelected = selected;
+  330 &nbsp;         }
+<a name='331'>  331 &nbsp;         textArea.setText("");
+  332 &nbsp;         if (selected != null) {
+  333 &nbsp;             final long threadID = selected;
+  334 &nbsp;             workerAdd(new Runnable() {
+  335 &nbsp;                 public void run() {
+  336 &nbsp;                     ProxyClient proxyClient = vmPanel.getProxyClient();
+  337 &nbsp;                     StringBuilder sb = new StringBuilder();
+  338 &nbsp;                     try {
+  339 &nbsp;                         ThreadMXBean threadMBean = proxyClient.getThreadMXBean();
+  340 &nbsp;                         ThreadInfo ti = null;
+<a name='341'>  341 &nbsp;                         MonitorInfo[] monitors = null;
+  342 &nbsp;                         if (proxyClient.isLockUsageSupported() &amp;&amp;
+  343 &nbsp;                               threadMBean.isObjectMonitorUsageSupported()) {
+  344 &nbsp;                             // VMs that support the monitor usage monitoring
+  345 &nbsp;                             ThreadInfo[] infos = threadMBean.dumpAllThreads(true, false);
+  346 &nbsp;                             for (ThreadInfo info : infos) {
+  347 &nbsp;                                 if (info.getThreadId() == threadID) {
+  348 &nbsp;                                     ti = info;
+  349 &nbsp;                                     monitors = info.getLockedMonitors();
+  350 &nbsp;                                     break;
+<a name='351'>  351 &nbsp;                                 }
+  352 &nbsp;                             }
+  353 &nbsp;                         } else {
+  354 &nbsp;                             // VM doesn't support monitor usage monitoring
+  355 &nbsp;                             ti = threadMBean.getThreadInfo(threadID, Integer.MAX_VALUE);
+  356 &nbsp;                         }
+  357 &nbsp;                         if (ti != null) {
+  358 &nbsp;                             if (ti.getLockName() == null) {
+  359 &nbsp;                                 sb.append(Resources.getText("Name State",
+  360 &nbsp;                                               ti.getThreadName(),
+<a name='361'>  361 &nbsp;                                               ti.getThreadState().toString()));
+  362 &nbsp;                             } else if (ti.getLockOwnerName() == null) {
+  363 &nbsp;                                 sb.append(Resources.getText("Name State LockName",
+  364 &nbsp;                                               ti.getThreadName(),
+  365 &nbsp;                                               ti.getThreadState().toString(),
+  366 &nbsp;                                               ti.getLockName()));
+  367 &nbsp;                             } else {
+  368 &nbsp;                                 sb.append(Resources.getText("Name State LockName LockOwner",
+  369 &nbsp;                                               ti.getThreadName(),
+  370 &nbsp;                                               ti.getThreadState().toString(),
+<a name='371'>  371 &nbsp;                                               ti.getLockName(),
+  372 &nbsp;                                               ti.getLockOwnerName()));
+  373 &nbsp;                             }
+  374 &nbsp;                             sb.append(Resources.getText("BlockedCount WaitedCount",
+  375 &nbsp;                                               ti.getBlockedCount(),
+  376 &nbsp;                                               ti.getWaitedCount()));
+  377 &nbsp;                             sb.append(Resources.getText("Stack trace"));
+  378 &nbsp;                             int index = 0;
+  379 &nbsp;                             for (StackTraceElement e : ti.getStackTrace()) {
+  380 &nbsp;                                 sb.append(e.toString()+"\n");
+<a name='381'>  381 &nbsp;                                 if (monitors != null) {
+  382 &nbsp;                                     for (MonitorInfo mi : monitors) {
+  383 &nbsp;                                         if (mi.getLockedStackDepth() == index) {
+  384 &nbsp;                                             sb.append(Resources.getText("Monitor locked", mi.toString()));
+  385 &nbsp;                                         }
+  386 &nbsp;                                     }
+  387 &nbsp;                                 }
+  388 &nbsp;                                 index++;
+  389 &nbsp;                             }
+  390 &nbsp;                         }
+<a name='391'>  391 &nbsp;                     } catch (IOException ex) {
+  392 &nbsp;                         // Ignore
+  393 &nbsp;                     } catch (UndeclaredThrowableException e) {
+  394 &nbsp;                         proxyClient.markAsDead();
+  395 &nbsp;                     }
+  396 &nbsp;                     final String text = sb.toString();
+  397 &nbsp;                     SwingUtilities.invokeLater(new Runnable() {
+  398 &nbsp;                         public void run() {
+  399 &nbsp;                             textArea.setText(text);
+  400 &nbsp;                             textArea.setCaretPosition(0);
+<a name='401'>  401 &nbsp;                         }
+  402 &nbsp;                     });
+  403 &nbsp;                 }
+  404 &nbsp;             });
+  405 &nbsp;         }
+  406 &nbsp;     }
+  407 &nbsp; 
+  408 &nbsp;     private void doUpdate() {
+  409 &nbsp;         workerAdd(new Runnable() {
+  410 &nbsp;             public void run() {
+<a name='411'>  411 &nbsp;                 update();
+  412 &nbsp;             }
+  413 &nbsp;         });
+  414 &nbsp;     }
+  415 &nbsp; 
+  416 &nbsp; 
+  417 &nbsp;     private void detectDeadlock() {
+  418 &nbsp;         workerAdd(new Runnable() {
+  419 &nbsp;             public void run() {
+  420 &nbsp;                 try {
+<a name='421'>  421 &nbsp;                     final Long[][] deadlockedThreads = getDeadlockedThreadIds();
+  422 &nbsp; 
+  423 &nbsp;                     if (deadlockedThreads == null || deadlockedThreads.length == 0) {
+  424 &nbsp;                         // Display message for 30 seconds. Do it on a separate thread so
+  425 &nbsp;                         // the sleep won't hold up the worker queue.
+  426 &nbsp;                         // This will be replaced later by separate statusbar logic.
+  427 &nbsp;                         new Thread() {
+  428 &nbsp;                             public void run() {
+  429 &nbsp;                                 try {
+  430 &nbsp;                                     SwingUtilities.invokeAndWait(new Runnable() {
+<a name='431'>  431 &nbsp;                                         public void run() {
+  432 &nbsp;                                             String msg = Resources.getText("No deadlock detected");
+  433 &nbsp;                                             messageLabel.setText(msg);
+  434 &nbsp;                                             threadListTabbedPane.revalidate();
+  435 &nbsp;                                         }
+  436 &nbsp;                                     });
+  437 &nbsp;                                     sleep(30 * 1000);
+  438 &nbsp;                                 } catch (InterruptedException ex) {
+  439 &nbsp;                                     // Ignore
+  440 &nbsp;                                 } catch (InvocationTargetException ex) {
+<a name='441'>  441 &nbsp;                                     // Ignore
+  442 &nbsp;                                 }
+  443 &nbsp;                                 SwingUtilities.invokeLater(new Runnable() {
+  444 &nbsp;                                     public void run() {
+  445 &nbsp;                                         messageLabel.setText("");
+  446 &nbsp;                                     }
+  447 &nbsp;                                 });
+  448 &nbsp;                             }
+  449 &nbsp;                         }.start();
+  450 &nbsp;                         return;
+<a name='451'>  451 &nbsp;                     }
+  452 &nbsp; 
+  453 &nbsp;                     SwingUtilities.invokeLater(new Runnable() {
+  454 &nbsp;                         public void run() {
+  455 &nbsp;                             // Remove old deadlock tabs
+  456 &nbsp;                             while (threadListTabbedPane.getTabCount() &gt; 1) {
+  457 &nbsp;                                 threadListTabbedPane.removeTabAt(1);
+  458 &nbsp;                             }
+  459 &nbsp; 
+  460 &nbsp;                             if (deadlockedThreads != null) {
+<a name='461'>  461 &nbsp;                                 for (int i = 0; i &lt; deadlockedThreads.length; i++) {
+  462 &nbsp;                                     DefaultListModel listModel = new DefaultListModel();
+  463 &nbsp;                                     JTextArea textArea = new JTextArea();
+  464 &nbsp;                                     textArea.setBorder(thinEmptyBorder);
+  465 &nbsp;                                     textArea.setEditable(false);
+  466 &nbsp;                                     setAccessibleName(textArea,
+  467 &nbsp;                                         getText("ThreadTab.threadInfo.accessibleName"));
+  468 &nbsp;                                     JList list = new ThreadJList(listModel, textArea);
+  469 &nbsp;                                     JScrollPane threadlistSP = new JScrollPane(list);
+  470 &nbsp;                                     JScrollPane textAreaSP = new JScrollPane(textArea);
+<a name='471'>  471 &nbsp;                                     threadlistSP.setBorder(null);
+  472 &nbsp;                                     textAreaSP.setBorder(null);
+  473 &nbsp;                                     JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+  474 &nbsp;                                                                                  threadlistSP, textAreaSP);
+  475 &nbsp;                                     splitPane.setOneTouchExpandable(true);
+  476 &nbsp;                                     splitPane.setBorder(null);
+  477 &nbsp;                                     splitPane.setDividerLocation(threadsSplitPane.getDividerLocation());
+  478 &nbsp;                                     String tabName;
+  479 &nbsp;                                     if (deadlockedThreads.length &gt; 1) {
+  480 &nbsp;                                         tabName = Resources.getText("deadlockTabN", i+1);
+<a name='481'>  481 &nbsp;                                     } else {
+  482 &nbsp;                                         tabName = Resources.getText("deadlockTab");
+  483 &nbsp;                                     }
+  484 &nbsp;                                     threadListTabbedPane.addTab(tabName, splitPane);
+  485 &nbsp; 
+  486 &nbsp;                                     for (long t : deadlockedThreads[i]) {
+  487 &nbsp;                                         listModel.addElement(t);
+  488 &nbsp;                                     }
+  489 &nbsp;                                 }
+  490 &nbsp;                                 threadListTabbedPane.setSelectedIndex(1);
+<a name='491'>  491 &nbsp;                             }
+  492 &nbsp;                         }
+  493 &nbsp;                     });
+  494 &nbsp;                 } catch (IOException e) {
+  495 &nbsp;                     // Ignore
+  496 &nbsp;                 } catch (UndeclaredThrowableException e) {
+  497 &nbsp;                     vmPanel.getProxyClient().markAsDead();
+  498 &nbsp;                 }
+  499 &nbsp;             }
+  500 &nbsp;         });
+<a name='501'>  501 &nbsp;     }
+  502 &nbsp; 
+  503 &nbsp; 
+  504 &nbsp;     // Return deadlocked threads or null
+  505 &nbsp;     public Long[][] getDeadlockedThreadIds() throws IOException {
+  506 &nbsp;         ProxyClient proxyClient = vmPanel.getProxyClient();
+  507 &nbsp;         ThreadMXBean threadMBean = proxyClient.getThreadMXBean();
+  508 &nbsp; 
+  509 &nbsp;         long[] ids = proxyClient.findDeadlockedThreads();
+  510 &nbsp;         if (ids == null) {
+<a name='511'>  511 &nbsp;             return null;
+  512 &nbsp;         }
+  513 &nbsp;         ThreadInfo[] infos = threadMBean.getThreadInfo(ids, Integer.MAX_VALUE);
+  514 &nbsp; 
+  515 &nbsp;         List&lt;Long[]&gt; dcycles = new ArrayList&lt;Long[]&gt;();
+  516 &nbsp;         List&lt;Long&gt; cycle = new ArrayList&lt;Long&gt;();
+  517 &nbsp; 
+  518 &nbsp;         // keep track of which thread is visited
+  519 &nbsp;         // one thread can only be in one cycle
+  520 &nbsp;         boolean[] visited = new boolean[ids.length];
+<a name='521'>  521 &nbsp; 
+  522 &nbsp;         int deadlockedThread = -1; // Index into arrays
+  523 &nbsp;         while (true) {
+  524 &nbsp;             if (deadlockedThread &lt; 0) {
+  525 &nbsp;                 if (cycle.size() &gt; 0) {
+  526 &nbsp;                     // a cycle found
+  527 &nbsp;                     dcycles.add(cycle.toArray(new Long[0]));
+  528 &nbsp;                     cycle = new ArrayList&lt;Long&gt;();
+  529 &nbsp;                 }
+  530 &nbsp;                 // start a new cycle from a non-visited thread
+<a name='531'>  531 &nbsp;                 for (int j = 0; j &lt; ids.length; j++) {
+  532 &nbsp;                     if (!visited[j]) {
+  533 &nbsp;                         deadlockedThread = j;
+  534 &nbsp;                         visited[j] = true;
+  535 &nbsp;                         break;
+  536 &nbsp;                     }
+  537 &nbsp;                 }
+  538 &nbsp;                 if (deadlockedThread &lt; 0) {
+  539 &nbsp;                     // done
+  540 &nbsp;                     break;
+<a name='541'>  541 &nbsp;                 }
+  542 &nbsp;             }
+  543 &nbsp; 
+  544 &nbsp;             cycle.add(ids[deadlockedThread]);
+  545 &nbsp;             long nextThreadId = infos[deadlockedThread].getLockOwnerId();
+  546 &nbsp;             for (int j = 0; j &lt; ids.length; j++) {
+  547 &nbsp;                 ThreadInfo ti = infos[j];
+  548 &nbsp;                 if (ti.getThreadId() == nextThreadId) {
+  549 &nbsp;                      if (visited[j]) {
+  550 &nbsp;                          deadlockedThread = -1;
+<a name='551'>  551 &nbsp;                      } else {
+  552 &nbsp;                          deadlockedThread = j;
+  553 &nbsp;                          visited[j] = true;
+  554 &nbsp;                      }
+  555 &nbsp;                      break;
+  556 &nbsp;                 }
+  557 &nbsp;             }
+  558 &nbsp;         }
+  559 &nbsp;         return dcycles.toArray(new Long[0][0]);
+  560 &nbsp;     }
+<a name='561'>  561 &nbsp; 
+  562 &nbsp; 
+  563 &nbsp; 
+  564 &nbsp; 
+  565 &nbsp; 
+  566 &nbsp;     // ActionListener interface
+  567 &nbsp;     public void actionPerformed(ActionEvent evt) {
+  568 &nbsp;         String cmd = ((AbstractButton)evt.getSource()).getActionCommand();
+  569 &nbsp; 
+  570 &nbsp;         if (cmd == "detectDeadlock") {
+<a name='571'>  571 &nbsp;             messageLabel.setText("");
+  572 &nbsp;             detectDeadlock();
+  573 &nbsp;         }
+  574 &nbsp;     }
+  575 &nbsp; 
+  576 &nbsp; 
+  577 &nbsp; 
+  578 &nbsp;     // DocumentListener interface
+  579 &nbsp; 
+  580 &nbsp;     public void insertUpdate(DocumentEvent e) {
+<a name='581'>  581 &nbsp;         doUpdate();
+  582 &nbsp;     }
+  583 &nbsp; 
+  584 &nbsp;     public void removeUpdate(DocumentEvent e) {
+  585 &nbsp;         doUpdate();
+  586 &nbsp;     }
+  587 &nbsp; 
+  588 &nbsp;     public void changedUpdate(DocumentEvent e) {
+  589 &nbsp;         doUpdate();
+  590 &nbsp;     }
+<a name='591'>  591 &nbsp; 
+  592 &nbsp; 
+  593 &nbsp; 
+  594 &nbsp;     private class ThreadJList extends JList {
+  595 &nbsp;         private JTextArea textArea;
+  596 &nbsp; 
+  597 &nbsp;         ThreadJList(DefaultListModel listModel, JTextArea textArea) {
+  598 &nbsp;             super(listModel);
+  599 &nbsp; 
+  600 &nbsp;             this.textArea = textArea;
+<a name='601'>  601 &nbsp; 
+  602 &nbsp;             setBorder(thinEmptyBorder);
+  603 &nbsp; 
+  604 &nbsp;             addListSelectionListener(ThreadTab.this);
+  605 &nbsp;             setCellRenderer(new DefaultListCellRenderer() {
+  606 &nbsp;                 public Component getListCellRendererComponent(JList list, Object value, int index,
+  607 &nbsp;                                                               boolean isSelected, boolean cellHasFocus) {
+  608 &nbsp;                     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+  609 &nbsp; 
+  610 &nbsp;                     if (value != null) {
+<a name='611'>  611 &nbsp;                         String name = nameCache.get(value);
+  612 &nbsp;                         if (name == null) {
+  613 &nbsp;                             name = value.toString();
+  614 &nbsp;                         }
+  615 &nbsp;                         setText(name);
+  616 &nbsp;                     }
+  617 &nbsp;                     return this;
+  618 &nbsp;                 }
+  619 &nbsp;             });
+  620 &nbsp;         }
+<a name='621'>  621 &nbsp; 
+  622 &nbsp;         public Dimension getPreferredSize() {
+  623 &nbsp;             Dimension d = super.getPreferredSize();
+  624 &nbsp;             d.width = Math.max(d.width, 100);
+  625 &nbsp;             return d;
+  626 &nbsp;         }
+  627 &nbsp;     }
+  628 &nbsp; 
+  629 &nbsp;     private class PromptingTextField extends JTextField implements FocusListener {
+  630 &nbsp;         private String prompt;
+<a name='631'>  631 &nbsp;         boolean promptRemoved = false;
+  632 &nbsp;         Color fg;
+  633 &nbsp; 
+  634 &nbsp;         public PromptingTextField(String prompt, int columns) {
+  635 &nbsp;             super(prompt, columns);
+  636 &nbsp; 
+  637 &nbsp;             this.prompt = prompt;
+  638 &nbsp;             updateForeground();
+  639 &nbsp;             addFocusListener(this);
+  640 &nbsp;             setAccessibleName(this, prompt);
+<a name='641'>  641 &nbsp;         }
+  642 &nbsp; 
+  643 &nbsp;         @Override
+  644 &nbsp;         public void revalidate() {
+  645 &nbsp;             super.revalidate();
+  646 &nbsp;             updateForeground();
+  647 &nbsp;         }
+  648 &nbsp; 
+  649 &nbsp;         private void updateForeground() {
+  650 &nbsp;             this.fg = UIManager.getColor("TextField.foreground");
+<a name='651'>  651 &nbsp;             if (promptRemoved) {
+  652 &nbsp;                 setForeground(fg);
+  653 &nbsp;             } else {
+  654 &nbsp;                 setForeground(Color.gray);
+  655 &nbsp;             }
+  656 &nbsp;         }
+  657 &nbsp; 
+  658 &nbsp;         public String getText() {
+  659 &nbsp;             if (!promptRemoved) {
+  660 &nbsp;                 return "";
+<a name='661'>  661 &nbsp;             } else {
+  662 &nbsp;                 return super.getText();
+  663 &nbsp;             }
+  664 &nbsp;         }
+  665 &nbsp; 
+  666 &nbsp;         public void focusGained(FocusEvent e) {
+  667 &nbsp;             if (!promptRemoved) {
+  668 &nbsp;                 setText("");
+  669 &nbsp;                 setForeground(fg);
+  670 &nbsp;                 promptRemoved = true;
+<a name='671'>  671 &nbsp;             }
+  672 &nbsp;         }
+  673 &nbsp; 
+  674 &nbsp;         public void focusLost(FocusEvent e) {
+  675 &nbsp;             if (promptRemoved &amp;&amp; getText().equals("")) {
+  676 &nbsp;                 setText(prompt);
+  677 &nbsp;                 setForeground(Color.gray);
+  678 &nbsp;                 promptRemoved = false;
+  679 &nbsp;             }
+  680 &nbsp;         }
+<a name='681'>  681 &nbsp; 
+  682 &nbsp;     }
+  683 &nbsp; 
+  684 &nbsp;     OverviewPanel[] getOverviewPanels() {
+  685 &nbsp;         if (overviewPanel == null) {
+  686 &nbsp;             overviewPanel = new ThreadOverviewPanel();
+  687 &nbsp;         }
+  688 &nbsp;         return new OverviewPanel[] { overviewPanel };
+  689 &nbsp;     }
+  690 &nbsp; 
+<a name='691'>  691 &nbsp; 
+  692 &nbsp;     private static class ThreadOverviewPanel extends OverviewPanel {
+  693 &nbsp;         ThreadOverviewPanel() {
+  694 &nbsp;             super(getText("Threads"), threadCountKey, threadCountName, null);
+  695 &nbsp;         }
+  696 &nbsp; 
+  697 &nbsp;         private void updateThreadsInfo(long tlCount, long tpCount, long ttCount, long timeStamp) {
+  698 &nbsp;             getPlotter().addValues(timeStamp, tlCount);
+  699 &nbsp;             getInfoLabel().setText(getText(infoLabelFormat, tlCount, tpCount, ttCount));
+  700 &nbsp;         }
+<a name='701'>  701 &nbsp;     }
+  702 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ThreadTab.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

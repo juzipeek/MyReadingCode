@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: LabeledComponent.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/LabeledComponent.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; 
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   32 &nbsp; 
+   33 &nbsp; @SuppressWarnings("serial")
+   34 &nbsp; public class LabeledComponent extends JPanel {
+   35 &nbsp;     JPanel rightPanel;
+   36 &nbsp;     String labelStr, valueLabelStr, compoundStr;
+   37 &nbsp;     JLabel label;
+   38 &nbsp;     JComponent comp;
+   39 &nbsp; 
+   40 &nbsp;     public LabeledComponent(String text, JComponent comp) {
+<a name='41'>   41 &nbsp;         this(text, 0, comp);
+   42 &nbsp;     }
+   43 &nbsp; 
+   44 &nbsp;     public LabeledComponent(String text, int mnemonic, JComponent comp) {
+   45 &nbsp;         super(new BorderLayout(6, 6));
+   46 &nbsp; 
+   47 &nbsp;         this.labelStr = text;
+   48 &nbsp;         this.label = new JLabel(text, JLabel.RIGHT);
+   49 &nbsp;         this.comp = comp;
+   50 &nbsp; 
+<a name='51'>   51 &nbsp;         label.setLabelFor(comp);
+   52 &nbsp;         if (mnemonic &gt; 0) {
+   53 &nbsp;             label.setDisplayedMnemonic(mnemonic);
+   54 &nbsp;         }
+   55 &nbsp; 
+   56 &nbsp;         add(label, BorderLayout.WEST);
+   57 &nbsp;         add(comp,  BorderLayout.CENTER);
+   58 &nbsp;     }
+   59 &nbsp; 
+   60 &nbsp;     public void setLabel(String str) {
+<a name='61'>   61 &nbsp;         this.labelStr = str;
+   62 &nbsp;         updateLabel();
+   63 &nbsp;     }
+   64 &nbsp; 
+   65 &nbsp;     public void setValueLabel(String str) {
+   66 &nbsp;         this.valueLabelStr = str;
+   67 &nbsp;         updateLabel();
+   68 &nbsp;     }
+   69 &nbsp; 
+   70 &nbsp;     private void updateLabel() {
+<a name='71'>   71 &nbsp;         String str = labelStr;
+   72 &nbsp;         label.setText(str);
+   73 &nbsp;         this.compoundStr = str;
+   74 &nbsp;         JComponent container = (JComponent)getParent();
+   75 &nbsp;         LabeledComponent.layout(container);
+   76 &nbsp;     }
+   77 &nbsp; 
+   78 &nbsp;     public static void layout(Container container) {
+   79 &nbsp;         int wMax = 0;
+   80 &nbsp; 
+<a name='81'>   81 &nbsp;         for (Component c : container.getComponents()) {
+   82 &nbsp;             if (c instanceof LabeledComponent) {
+   83 &nbsp;                 LabeledComponent lc = (LabeledComponent)c;
+   84 &nbsp; lc.label.setPreferredSize(null);
+   85 &nbsp; //              int w = lc.label.getMinimumSize().width;
+   86 &nbsp; int w = lc.label.getPreferredSize().width;
+   87 &nbsp;                 if (w &gt; wMax) {
+   88 &nbsp;                     wMax = w;
+   89 &nbsp;                 }
+   90 &nbsp;             }
+<a name='91'>   91 &nbsp;         }
+   92 &nbsp; 
+   93 &nbsp;         for (Component c : container.getComponents()) {
+   94 &nbsp;             if (c instanceof LabeledComponent) {
+   95 &nbsp;                 LabeledComponent lc = (LabeledComponent)c;
+   96 &nbsp;                 JLabel label = lc.label;
+   97 &nbsp;                 int h = label.getPreferredSize().height;
+   98 &nbsp; 
+   99 &nbsp;                 label.setPreferredSize(new Dimension(wMax, h));
+  100 &nbsp;                 label.setHorizontalAlignment(JLabel.RIGHT);
+<a name='101'>  101 &nbsp;             }
+  102 &nbsp;         }
+  103 &nbsp;     }
+  104 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/LabeledComponent.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

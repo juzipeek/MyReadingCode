@@ -1,0 +1,819 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: ConnectDialog.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ConnectDialog.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/List.html>java.util.List</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/net/MalformedURLException.html>java.net.MalformedURLException</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/IOException.html>java.io.IOException</a>;
+   34 &nbsp; 
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/accessibility/package-index.html>javax.accessibility</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/Timer.html>javax.swing.Timer</a>;
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/plaf/basic/BasicRadioButtonUI.html>javax.swing.plaf.basic.BasicRadioButtonUI</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/table/package-index.html>javax.swing.table</a>;
+   42 &nbsp; 
+   43 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/remote/JMXServiceURL.html>javax.management.remote.JMXServiceURL</a>;
+   44 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/remote/JMXConnector.html>javax.management.remote.JMXConnector</a>;
+   45 &nbsp; 
+   46 &nbsp; import static java.awt.BorderLayout.*;
+   47 &nbsp; import static javax.swing.ListSelectionModel.*;
+   48 &nbsp; import static sun.tools.jconsole.Resources.*;
+   49 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   50 &nbsp; 
+<a name='51'>   51 &nbsp; @SuppressWarnings("serial")
+   52 &nbsp; public class ConnectDialog extends InternalDialog
+   53 &nbsp;                 implements DocumentListener, FocusListener,
+   54 &nbsp;                            ItemListener, ListSelectionListener, KeyListener {
+   55 &nbsp; 
+   56 &nbsp;     private static final int COL_NAME = 0;
+   57 &nbsp;     private static final int COL_PID  = 1;
+   58 &nbsp; 
+   59 &nbsp; 
+   60 &nbsp;     JConsole jConsole;
+<a name='61'>   61 &nbsp;     JTextField userNameTF, passwordTF;
+   62 &nbsp;     JRadioButton localRadioButton, remoteRadioButton;
+   63 &nbsp;     JLabel localMessageLabel, remoteMessageLabel;
+   64 &nbsp;     JTextField remoteTF;
+   65 &nbsp;     JButton connectButton, cancelButton;
+   66 &nbsp;     JPanel radioButtonPanel;
+   67 &nbsp; 
+   68 &nbsp;     private Icon mastheadIcon =
+   69 &nbsp;         new MastheadIcon(getText("ConnectDialog.masthead.title"));
+   70 &nbsp;     private Color hintTextColor, disabledTableCellColor;
+<a name='71'>   71 &nbsp; 
+   72 &nbsp;     // The table of managed VM (local process)
+   73 &nbsp;     JTable vmTable;
+   74 &nbsp;     ManagedVmTableModel vmModel = null;
+   75 &nbsp; 
+   76 &nbsp;     JScrollPane localTableScrollPane = null;
+   77 &nbsp; 
+   78 &nbsp;     private Action connectAction, cancelAction;
+   79 &nbsp; 
+   80 &nbsp; 
+<a name='81'>   81 &nbsp;     public ConnectDialog(JConsole jConsole) {
+   82 &nbsp;         super(jConsole, Resources.getText("ConnectDialog.title"), true);
+   83 &nbsp; 
+   84 &nbsp;         this.jConsole = jConsole;
+   85 &nbsp;         setAccessibleDescription(this,
+   86 &nbsp;                                  getText("ConnectDialog.accessibleDescription"));
+   87 &nbsp;         setDefaultCloseOperation(HIDE_ON_CLOSE);
+   88 &nbsp;         setResizable(false);
+   89 &nbsp;         Container cp = (JComponent)getContentPane();
+   90 &nbsp; 
+<a name='91'>   91 &nbsp;         radioButtonPanel = new JPanel(new BorderLayout(0, 12));
+   92 &nbsp;         radioButtonPanel.setBorder(new EmptyBorder(6, 12, 12, 12));
+   93 &nbsp;         ButtonGroup radioButtonGroup = new ButtonGroup();
+   94 &nbsp;         JPanel bottomPanel = new JPanel(new BorderLayout());
+   95 &nbsp; 
+   96 &nbsp;         statusBar = new JLabel(" ", JLabel.CENTER);
+   97 &nbsp;         setAccessibleName(statusBar,
+   98 &nbsp;                           getText("ConnectDialog.statusBar.accessibleName"));
+   99 &nbsp; 
+  100 &nbsp;         Font normalLabelFont = statusBar.getFont();
+<a name='101'>  101 &nbsp;         Font boldLabelFont = normalLabelFont.deriveFont(Font.BOLD);
+  102 &nbsp;         Font smallLabelFont = normalLabelFont.deriveFont(normalLabelFont.getSize2D() - 1);
+  103 &nbsp; 
+  104 &nbsp;         JLabel mastheadLabel = new JLabel(mastheadIcon);
+  105 &nbsp;         setAccessibleName(mastheadLabel,
+  106 &nbsp;                           getText("ConnectDialog.masthead.accessibleName"));
+  107 &nbsp; 
+  108 &nbsp;         cp.add(mastheadLabel, NORTH);
+  109 &nbsp;         cp.add(radioButtonPanel, CENTER);
+  110 &nbsp;         cp.add(bottomPanel, SOUTH);
+<a name='111'>  111 &nbsp; 
+  112 &nbsp;         createActions();
+  113 &nbsp; 
+  114 &nbsp;         remoteTF = new JTextField();
+  115 &nbsp;         remoteTF.addActionListener(connectAction);
+  116 &nbsp;         remoteTF.getDocument().addDocumentListener(this);
+  117 &nbsp;         remoteTF.addFocusListener(this);
+  118 &nbsp;         remoteTF.setPreferredSize(remoteTF.getPreferredSize());
+  119 &nbsp;         setAccessibleName(remoteTF,
+  120 &nbsp;                           getText("Remote Process.textField.accessibleName"));
+<a name='121'>  121 &nbsp; 
+  122 &nbsp;         //
+  123 &nbsp;         // If the VM supports the local attach mechanism (is: Sun
+  124 &nbsp;         // implementation) then the Local Process panel is created.
+  125 &nbsp;         //
+  126 &nbsp;         if (JConsole.isLocalAttachAvailable()) {
+  127 &nbsp;             vmModel = new ManagedVmTableModel();
+  128 &nbsp;             vmTable = new LocalTabJTable(vmModel);
+  129 &nbsp;             vmTable.setSelectionMode(SINGLE_SELECTION);
+  130 &nbsp;             vmTable.setPreferredScrollableViewportSize(new Dimension(400, 250));
+<a name='131'>  131 &nbsp;             vmTable.setColumnSelectionAllowed(false);
+  132 &nbsp;             vmTable.addFocusListener(this);
+  133 &nbsp;             vmTable.getSelectionModel().addListSelectionListener(this);
+  134 &nbsp; 
+  135 &nbsp;             TableColumnModel columnModel = vmTable.getColumnModel();
+  136 &nbsp; 
+  137 &nbsp;             TableColumn pidColumn = columnModel.getColumn(COL_PID);
+  138 &nbsp;             pidColumn.setMaxWidth(getLabelWidth("9999999"));
+  139 &nbsp;             pidColumn.setResizable(false);
+  140 &nbsp; 
+<a name='141'>  141 &nbsp;             TableColumn cmdLineColumn = columnModel.getColumn(COL_NAME);
+  142 &nbsp;             cmdLineColumn.setResizable(false);
+  143 &nbsp; 
+  144 &nbsp;             localRadioButton = new JRadioButton(getText("Local Process:"));
+  145 &nbsp;             localRadioButton.setMnemonic(getMnemonicInt("Local Process:"));
+  146 &nbsp;             localRadioButton.setFont(boldLabelFont);
+  147 &nbsp;             localRadioButton.addItemListener(this);
+  148 &nbsp;             radioButtonGroup.add(localRadioButton);
+  149 &nbsp; 
+  150 &nbsp;             JPanel localPanel = new JPanel(new BorderLayout());
+<a name='151'>  151 &nbsp; 
+  152 &nbsp;             JPanel localTablePanel = new JPanel(new BorderLayout());
+  153 &nbsp; 
+  154 &nbsp;             radioButtonPanel.add(localPanel, NORTH);
+  155 &nbsp; 
+  156 &nbsp;             localPanel.add(localRadioButton, NORTH);
+  157 &nbsp;             localPanel.add(new Padder(localRadioButton), LINE_START);
+  158 &nbsp;             localPanel.add(localTablePanel, CENTER);
+  159 &nbsp; 
+  160 &nbsp;             localTableScrollPane = new JScrollPane(vmTable);
+<a name='161'>  161 &nbsp; 
+  162 &nbsp;             localTablePanel.add(localTableScrollPane, NORTH);
+  163 &nbsp; 
+  164 &nbsp;             localMessageLabel = new JLabel(" ");
+  165 &nbsp;             localMessageLabel.setFont(smallLabelFont);
+  166 &nbsp;             localMessageLabel.setForeground(hintTextColor);
+  167 &nbsp;             localTablePanel.add(localMessageLabel, SOUTH);
+  168 &nbsp;         }
+  169 &nbsp; 
+  170 &nbsp;         remoteRadioButton = new JRadioButton(getText("Remote Process:"));
+<a name='171'>  171 &nbsp;         remoteRadioButton.setMnemonic(getMnemonicInt("Remote Process:"));
+  172 &nbsp;         remoteRadioButton.setFont(boldLabelFont);
+  173 &nbsp;         radioButtonGroup.add(remoteRadioButton);
+  174 &nbsp; 
+  175 &nbsp;         JPanel remotePanel = new JPanel(new BorderLayout());
+  176 &nbsp;         if (localRadioButton != null) {
+  177 &nbsp;             remotePanel.add(remoteRadioButton, NORTH);
+  178 &nbsp;             remotePanel.add(new Padder(remoteRadioButton), LINE_START);
+  179 &nbsp; 
+  180 &nbsp;             Action nextRadioButtonAction =
+<a name='181'>  181 &nbsp;                 new AbstractAction("nextRadioButton") {
+  182 &nbsp;                     public void actionPerformed(ActionEvent ev) {
+  183 &nbsp;                         JRadioButton rb =
+  184 &nbsp;                             (ev.getSource() == localRadioButton) ? remoteRadioButton
+  185 &nbsp;                                                                  : localRadioButton;
+  186 &nbsp;                         rb.doClick();
+  187 &nbsp;                         rb.requestFocus();
+  188 &nbsp;                     }
+  189 &nbsp;                 };
+  190 &nbsp; 
+<a name='191'>  191 &nbsp;             localRadioButton.getActionMap().put("nextRadioButton", nextRadioButtonAction);
+  192 &nbsp;             remoteRadioButton.getActionMap().put("nextRadioButton", nextRadioButtonAction);
+  193 &nbsp; 
+  194 &nbsp;             localRadioButton.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
+  195 &nbsp;                                                "nextRadioButton");
+  196 &nbsp;             remoteRadioButton.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
+  197 &nbsp;                                                 "nextRadioButton");
+  198 &nbsp;         } else {
+  199 &nbsp;             JLabel remoteLabel = new JLabel(remoteRadioButton.getText());
+  200 &nbsp;             remoteLabel.setFont(boldLabelFont);
+<a name='201'>  201 &nbsp;             remotePanel.add(remoteLabel, NORTH);
+  202 &nbsp;         }
+  203 &nbsp;         radioButtonPanel.add(remotePanel, SOUTH);
+  204 &nbsp; 
+  205 &nbsp;         JPanel remoteTFPanel = new JPanel(new BorderLayout());
+  206 &nbsp;         remotePanel.add(remoteTFPanel, CENTER);
+  207 &nbsp; 
+  208 &nbsp;         remoteTFPanel.add(remoteTF, NORTH);
+  209 &nbsp; 
+  210 &nbsp;         remoteMessageLabel = new JLabel("&lt;html&gt;" + getText("remoteTF.usage"));
+<a name='211'>  211 &nbsp;         remoteMessageLabel.setFont(smallLabelFont);
+  212 &nbsp;         remoteMessageLabel.setForeground(hintTextColor);
+  213 &nbsp;         remoteTFPanel.add(remoteMessageLabel, CENTER);
+  214 &nbsp; 
+  215 &nbsp;         JPanel userPwdPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0));
+  216 &nbsp;         userPwdPanel.setBorder(new EmptyBorder(12, 0, 0, 0)); // top padding
+  217 &nbsp; 
+  218 &nbsp;         int tfWidth = JConsole.IS_WIN ? 12 : 8;
+  219 &nbsp; 
+  220 &nbsp;         userNameTF = new JTextField(tfWidth);
+<a name='221'>  221 &nbsp;         userNameTF.addActionListener(connectAction);
+  222 &nbsp;         userNameTF.getDocument().addDocumentListener(this);
+  223 &nbsp;         userNameTF.addFocusListener(this);
+  224 &nbsp;         setAccessibleName(userNameTF,
+  225 &nbsp;                           getText("Username.accessibleName"));
+  226 &nbsp;         String labelKey = "Username: ";
+  227 &nbsp;         LabeledComponent lc;
+  228 &nbsp;         lc = new LabeledComponent(getText(labelKey),
+  229 &nbsp;                                   getMnemonicInt(labelKey),
+  230 &nbsp;                                   userNameTF);
+<a name='231'>  231 &nbsp;         lc.label.setFont(boldLabelFont);
+  232 &nbsp;         userPwdPanel.add(lc);
+  233 &nbsp; 
+  234 &nbsp;         passwordTF = new JPasswordField(tfWidth);
+  235 &nbsp;         // Heights differ, so fix here
+  236 &nbsp;         passwordTF.setPreferredSize(userNameTF.getPreferredSize());
+  237 &nbsp;         passwordTF.addActionListener(connectAction);
+  238 &nbsp;         passwordTF.getDocument().addDocumentListener(this);
+  239 &nbsp;         passwordTF.addFocusListener(this);
+  240 &nbsp;         setAccessibleName(passwordTF,
+<a name='241'>  241 &nbsp;                           getText("Password.accessibleName"));
+  242 &nbsp;         labelKey = "Password: ";
+  243 &nbsp;         lc = new LabeledComponent(getText(labelKey),
+  244 &nbsp;                                   getMnemonicInt(labelKey),
+  245 &nbsp;                                   passwordTF);
+  246 &nbsp;         lc.setBorder(new EmptyBorder(0, 12, 0, 0)); // Left padding
+  247 &nbsp;         lc.label.setFont(boldLabelFont);
+  248 &nbsp;         userPwdPanel.add(lc);
+  249 &nbsp; 
+  250 &nbsp;         remoteTFPanel.add(userPwdPanel, SOUTH);
+<a name='251'>  251 &nbsp; 
+  252 &nbsp;         String connectButtonToolTipText =
+  253 &nbsp;             getText("ConnectDialog.connectButton.toolTip");
+  254 &nbsp;         connectButton = new JButton(connectAction);
+  255 &nbsp;         connectButton.setToolTipText(connectButtonToolTipText);
+  256 &nbsp; 
+  257 &nbsp;         cancelButton = new JButton(cancelAction);
+  258 &nbsp; 
+  259 &nbsp;         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+  260 &nbsp;         buttonPanel.setBorder(new EmptyBorder(12, 12, 2, 12));
+<a name='261'>  261 &nbsp;         if (JConsole.IS_GTK) {
+  262 &nbsp;             buttonPanel.add(cancelButton);
+  263 &nbsp;             buttonPanel.add(connectButton);
+  264 &nbsp;         } else {
+  265 &nbsp;             buttonPanel.add(connectButton);
+  266 &nbsp;             buttonPanel.add(cancelButton);
+  267 &nbsp;         }
+  268 &nbsp;         bottomPanel.add(buttonPanel, NORTH);
+  269 &nbsp; 
+  270 &nbsp;         bottomPanel.add(statusBar, SOUTH);
+<a name='271'>  271 &nbsp; 
+  272 &nbsp;         updateButtonStates();
+  273 &nbsp;         Utilities.updateTransparency(this);
+  274 &nbsp;     }
+  275 &nbsp; 
+  276 &nbsp;     public void revalidate() {
+  277 &nbsp;         // Adjust some colors
+  278 &nbsp;         hintTextColor =
+  279 &nbsp;             ensureContrast(UIManager.getColor("Label.disabledForeground"),
+  280 &nbsp;                            UIManager.getColor("Panel.background"));
+<a name='281'>  281 &nbsp;         disabledTableCellColor =
+  282 &nbsp;             ensureContrast(new Color(0x808080),
+  283 &nbsp;                            UIManager.getColor("Table.background"));
+  284 &nbsp; 
+  285 &nbsp;         if (remoteMessageLabel != null) {
+  286 &nbsp;             remoteMessageLabel.setForeground(hintTextColor);
+  287 &nbsp;             // Update html color setting
+  288 &nbsp;             String colorStr =
+  289 &nbsp;                 String.format("%06x", hintTextColor.getRGB() &amp; 0xFFFFFF);
+  290 &nbsp;             remoteMessageLabel.setText("&lt;html&gt;&lt;font color=#" + colorStr + "&gt;" +
+<a name='291'>  291 &nbsp;                                        getText("remoteTF.usage"));
+  292 &nbsp;         }
+  293 &nbsp;         if (localMessageLabel != null) {
+  294 &nbsp;             localMessageLabel.setForeground(hintTextColor);
+  295 &nbsp;             // Update html color setting
+  296 &nbsp;             valueChanged(null);
+  297 &nbsp;         }
+  298 &nbsp; 
+  299 &nbsp;         super.revalidate();
+  300 &nbsp;     }
+<a name='301'>  301 &nbsp; 
+  302 &nbsp;     private void createActions() {
+  303 &nbsp;         connectAction = new AbstractAction(getText("Connect")) {
+  304 &nbsp;             /* init */ {
+  305 &nbsp;                 putValue(Action.MNEMONIC_KEY, getMnemonicInt("Connect"));
+  306 &nbsp;             }
+  307 &nbsp; 
+  308 &nbsp;             public void actionPerformed(ActionEvent ev) {
+  309 &nbsp;                 if (!isEnabled() || !isVisible()) {
+  310 &nbsp;                     return;
+<a name='311'>  311 &nbsp;                 }
+  312 &nbsp;                 setVisible(false);
+  313 &nbsp;                 statusBar.setText("");
+  314 &nbsp; 
+  315 &nbsp;                 if (remoteRadioButton.isSelected()) {
+  316 &nbsp;                     String txt = remoteTF.getText().trim();
+  317 &nbsp;                     String userName = userNameTF.getText().trim();
+  318 &nbsp;                     userName = userName.equals("") ? null : userName;
+  319 &nbsp;                     String password = passwordTF.getText();
+  320 &nbsp;                     password = password.equals("") ? null : password;
+<a name='321'>  321 &nbsp;                     try {
+  322 &nbsp;                         if (txt.startsWith(JConsole.ROOT_URL)) {
+  323 &nbsp;                             String url = txt;
+  324 &nbsp;                             String msg = null;
+  325 &nbsp;                             jConsole.addUrl(url, userName, password, false);
+  326 &nbsp;                             remoteTF.setText(JConsole.ROOT_URL);
+  327 &nbsp;                             return;
+  328 &nbsp;                         } else {
+  329 &nbsp;                             String host = remoteTF.getText().trim();
+  330 &nbsp;                             String port = "0";
+<a name='331'>  331 &nbsp;                             int index = host.lastIndexOf(":");
+  332 &nbsp;                             if (index &gt;= 0) {
+  333 &nbsp;                                 port = host.substring(index + 1);
+  334 &nbsp;                                 host = host.substring(0, index);
+  335 &nbsp;                             }
+  336 &nbsp;                             if (host.length() &gt; 0 &amp;&amp; port.length() &gt; 0) {
+  337 &nbsp;                                 int p = Integer.parseInt(port.trim());
+  338 &nbsp;                                 jConsole.addHost(host, p, userName, password);
+  339 &nbsp;                                 remoteTF.setText("");
+  340 &nbsp;                                 userNameTF.setText("");
+<a name='341'>  341 &nbsp;                                 passwordTF.setText("");
+  342 &nbsp;                                 return;
+  343 &nbsp;                             }
+  344 &nbsp;                         }
+  345 &nbsp;                     } catch (Exception ex) {
+  346 &nbsp;                         statusBar.setText(ex.toString());
+  347 &nbsp;                     }
+  348 &nbsp;                     setVisible(true);
+  349 &nbsp;                 } else if (localRadioButton != null &amp;&amp; localRadioButton.isSelected()) {
+  350 &nbsp;                     // Try to connect to selected VM. If a connection
+<a name='351'>  351 &nbsp;                     // cannot be established for some reason (the process has
+  352 &nbsp;                     // terminated for example) then keep the dialog open showing
+  353 &nbsp;                     // the connect error.
+  354 &nbsp;                     //
+  355 &nbsp;                     int row = vmTable.getSelectedRow();
+  356 &nbsp;                     if (row &gt;= 0) {
+  357 &nbsp;                         jConsole.addVmid(vmModel.vmAt(row));
+  358 &nbsp;                     }
+  359 &nbsp;                     refresh();
+  360 &nbsp;                 }
+<a name='361'>  361 &nbsp;             }
+  362 &nbsp;         };
+  363 &nbsp; 
+  364 &nbsp;         cancelAction = new AbstractAction(getText("Cancel")) {
+  365 &nbsp;             public void actionPerformed(ActionEvent ev) {
+  366 &nbsp;                 setVisible(false);
+  367 &nbsp;                 statusBar.setText("");
+  368 &nbsp;             }
+  369 &nbsp;         };
+  370 &nbsp;     }
+<a name='371'>  371 &nbsp; 
+  372 &nbsp; 
+  373 &nbsp;     // a label used solely for calculating the width
+  374 &nbsp;     private static JLabel tmpLabel = new JLabel();
+  375 &nbsp;     public static int getLabelWidth(String text) {
+  376 &nbsp;         tmpLabel.setText(text);
+  377 &nbsp;         return (int) tmpLabel.getPreferredSize().getWidth() + 1;
+  378 &nbsp;     }
+  379 &nbsp; 
+  380 &nbsp;     private class LocalTabJTable extends JTable {
+<a name='381'>  381 &nbsp;         ManagedVmTableModel vmModel;
+  382 &nbsp;         Border rendererBorder = new EmptyBorder(0, 6, 0, 6);
+  383 &nbsp; 
+  384 &nbsp;         public LocalTabJTable(ManagedVmTableModel model) {
+  385 &nbsp;             super(model);
+  386 &nbsp;             this.vmModel = model;
+  387 &nbsp; 
+  388 &nbsp;             // Remove vertical lines, expect for GTK L&amp;F.
+  389 &nbsp;             // (because GTK doesn't show header dividers)
+  390 &nbsp;             if (!JConsole.IS_GTK) {
+<a name='391'>  391 &nbsp;                 setShowVerticalLines(false);
+  392 &nbsp;                 setIntercellSpacing(new Dimension(0, 1));
+  393 &nbsp;             }
+  394 &nbsp; 
+  395 &nbsp;             // Double-click handler
+  396 &nbsp;             addMouseListener(new MouseAdapter() {
+  397 &nbsp;                 public void mouseClicked(MouseEvent evt) {
+  398 &nbsp;                     if (evt.getClickCount() == 2) {
+  399 &nbsp;                         connectButton.doClick();
+  400 &nbsp;                     }
+<a name='401'>  401 &nbsp;                 }
+  402 &nbsp;             });
+  403 &nbsp; 
+  404 &nbsp;             // Enter should call default action
+  405 &nbsp;             getActionMap().put("connect", connectAction);
+  406 &nbsp;             InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+  407 &nbsp;             inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "connect");
+  408 &nbsp;         }
+  409 &nbsp; 
+  410 &nbsp;         public String getToolTipText(MouseEvent e) {
+<a name='411'>  411 &nbsp;             String tip = null;
+  412 &nbsp;             java.awt.Point p = e.getPoint();
+  413 &nbsp;             int rowIndex = rowAtPoint(p);
+  414 &nbsp;             int colIndex = columnAtPoint(p);
+  415 &nbsp;             int realColumnIndex = convertColumnIndexToModel(colIndex);
+  416 &nbsp; 
+  417 &nbsp;             if (realColumnIndex == COL_NAME) {
+  418 &nbsp;                 LocalVirtualMachine vmd = vmModel.vmAt(rowIndex);
+  419 &nbsp;                 tip = vmd.toString();
+  420 &nbsp;             }
+<a name='421'>  421 &nbsp;             return tip;
+  422 &nbsp;         }
+  423 &nbsp; 
+  424 &nbsp;         public TableCellRenderer getCellRenderer(int row, int column) {
+  425 &nbsp;             return new DefaultTableCellRenderer() {
+  426 &nbsp;                 public Component getTableCellRendererComponent(JTable table,
+  427 &nbsp;                                                                Object value,
+  428 &nbsp;                                                                boolean isSelected,
+  429 &nbsp;                                                                boolean hasFocus,
+  430 &nbsp;                                                                int row,
+<a name='431'>  431 &nbsp;                                                                int column) {
+  432 &nbsp;                     Component comp =
+  433 &nbsp;                         super.getTableCellRendererComponent(table, value, isSelected,
+  434 &nbsp;                                                             hasFocus, row, column);
+  435 &nbsp; 
+  436 &nbsp;                     if (!isSelected) {
+  437 &nbsp;                         LocalVirtualMachine lvm = vmModel.vmAt(row);
+  438 &nbsp;                         if (!lvm.isManageable() &amp;&amp; !lvm.isAttachable()) {
+  439 &nbsp;                             comp.setForeground(disabledTableCellColor);
+  440 &nbsp;                         }
+<a name='441'>  441 &nbsp;                     }
+  442 &nbsp; 
+  443 &nbsp;                     if (comp instanceof JLabel) {
+  444 &nbsp;                         JLabel label = (JLabel)comp;
+  445 &nbsp;                         label.setBorder(rendererBorder);
+  446 &nbsp; 
+  447 &nbsp;                         if (value instanceof Integer) {
+  448 &nbsp;                             label.setHorizontalAlignment(JLabel.RIGHT);
+  449 &nbsp;                         }
+  450 &nbsp;                     }
+<a name='451'>  451 &nbsp; 
+  452 &nbsp;                     return comp;
+  453 &nbsp;                 }
+  454 &nbsp;             };
+  455 &nbsp;         }
+  456 &nbsp;     }
+  457 &nbsp; 
+  458 &nbsp;     public void setConnectionParameters(String url,
+  459 &nbsp;                                         String host,
+  460 &nbsp;                                         int port,
+<a name='461'>  461 &nbsp;                                         String userName,
+  462 &nbsp;                                         String password,
+  463 &nbsp;                                         String msg) {
+  464 &nbsp;         if ((url != null &amp;&amp; url.length() &gt; 0) ||
+  465 &nbsp;             (host != null &amp;&amp; host.length() &gt; 0 &amp;&amp; port &gt; 0)) {
+  466 &nbsp; 
+  467 &nbsp;             remoteRadioButton.setSelected(true);
+  468 &nbsp;             if (url != null &amp;&amp; url.length() &gt; 0) {
+  469 &nbsp;                 remoteTF.setText(url);
+  470 &nbsp;             } else {
+<a name='471'>  471 &nbsp;                 remoteTF.setText(host+":"+port);
+  472 &nbsp;             }
+  473 &nbsp;             userNameTF.setText((userName != null) ? userName : "");
+  474 &nbsp;             passwordTF.setText((password != null) ? password : "");
+  475 &nbsp; 
+  476 &nbsp;             statusBar.setText((msg != null) ? msg : "");
+  477 &nbsp;             if (getPreferredSize().width &gt; getWidth()) {
+  478 &nbsp;                 pack();
+  479 &nbsp;             }
+  480 &nbsp;             remoteTF.requestFocus();
+<a name='481'>  481 &nbsp;             remoteTF.selectAll();
+  482 &nbsp;         }
+  483 &nbsp;     }
+  484 &nbsp; 
+  485 &nbsp; 
+  486 &nbsp;     public void itemStateChanged(ItemEvent ev) {
+  487 &nbsp;         if (!localRadioButton.isSelected()) {
+  488 &nbsp;             vmTable.getSelectionModel().clearSelection();
+  489 &nbsp;         }
+  490 &nbsp;         updateButtonStates();
+<a name='491'>  491 &nbsp;     }
+  492 &nbsp; 
+  493 &nbsp;     private void updateButtonStates() {
+  494 &nbsp;         boolean connectEnabled = false;
+  495 &nbsp; 
+  496 &nbsp;         if (remoteRadioButton.isSelected()) {
+  497 &nbsp;             connectEnabled = JConsole.isValidRemoteString(remoteTF.getText());
+  498 &nbsp;         } else if (localRadioButton != null &amp;&amp; localRadioButton.isSelected()) {
+  499 &nbsp;             int row = vmTable.getSelectedRow();
+  500 &nbsp;             if (row &gt;= 0) {
+<a name='501'>  501 &nbsp;                 LocalVirtualMachine lvm = vmModel.vmAt(row);
+  502 &nbsp;                 connectEnabled = (lvm.isManageable() || lvm.isAttachable());
+  503 &nbsp;             }
+  504 &nbsp;         }
+  505 &nbsp; 
+  506 &nbsp;         connectAction.setEnabled(connectEnabled);
+  507 &nbsp;     }
+  508 &nbsp; 
+  509 &nbsp;     public void insertUpdate(DocumentEvent e) {
+  510 &nbsp;         updateButtonStates();
+<a name='511'>  511 &nbsp;     }
+  512 &nbsp; 
+  513 &nbsp;     public void removeUpdate(DocumentEvent e) {
+  514 &nbsp;         updateButtonStates();
+  515 &nbsp;     }
+  516 &nbsp; 
+  517 &nbsp;     public void changedUpdate(DocumentEvent e) {
+  518 &nbsp;         updateButtonStates();
+  519 &nbsp;     }
+  520 &nbsp; 
+<a name='521'>  521 &nbsp;     public void focusGained(FocusEvent e) {
+  522 &nbsp;         Object source = e.getSource();
+  523 &nbsp;         Component opposite = e.getOppositeComponent();
+  524 &nbsp; 
+  525 &nbsp;         if (!e.isTemporary() &amp;&amp;
+  526 &nbsp;             source instanceof JTextField &amp;&amp;
+  527 &nbsp;             opposite instanceof JComponent &amp;&amp;
+  528 &nbsp;             SwingUtilities.getRootPane(opposite) == getRootPane()) {
+  529 &nbsp; 
+  530 &nbsp;             ((JTextField)source).selectAll();
+<a name='531'>  531 &nbsp;         }
+  532 &nbsp; 
+  533 &nbsp;         if (source == remoteTF) {
+  534 &nbsp;             remoteRadioButton.setSelected(true);
+  535 &nbsp;         } else if (source == vmTable) {
+  536 &nbsp;             localRadioButton.setSelected(true);
+  537 &nbsp;             if (vmModel.getRowCount() == 1) {
+  538 &nbsp;                 // if there's only one process then select the row
+  539 &nbsp;                 vmTable.setRowSelectionInterval(0, 0);
+  540 &nbsp;             }
+<a name='541'>  541 &nbsp;         }
+  542 &nbsp;         updateButtonStates();
+  543 &nbsp;     }
+  544 &nbsp; 
+  545 &nbsp;     public void focusLost(FocusEvent e) {
+  546 &nbsp;     }
+  547 &nbsp; 
+  548 &nbsp;     public void keyTyped(KeyEvent e) {
+  549 &nbsp;         char c = e.getKeyChar();
+  550 &nbsp;         if (c == KeyEvent.VK_ESCAPE) {
+<a name='551'>  551 &nbsp;             setVisible(false);
+  552 &nbsp;         } else if (!(Character.isDigit(c) ||
+  553 &nbsp;                      c == KeyEvent.VK_BACK_SPACE ||
+  554 &nbsp;                      c == KeyEvent.VK_DELETE)) {
+  555 &nbsp;             getToolkit().beep();
+  556 &nbsp;             e.consume();
+  557 &nbsp;         }
+  558 &nbsp;     }
+  559 &nbsp; 
+  560 &nbsp;     public void setVisible(boolean b) {
+<a name='561'>  561 &nbsp;         boolean wasVisible = isVisible();
+  562 &nbsp;         super.setVisible(b);
+  563 &nbsp;         if (b &amp;&amp; !wasVisible) {
+  564 &nbsp;             SwingUtilities.invokeLater(new Runnable() {
+  565 &nbsp;                 public void run() {
+  566 &nbsp;                     if (remoteRadioButton.isSelected()) {
+  567 &nbsp;                         remoteTF.requestFocus();
+  568 &nbsp;                         remoteTF.selectAll();
+  569 &nbsp;                     }
+  570 &nbsp;                 }
+<a name='571'>  571 &nbsp;             });
+  572 &nbsp;         }
+  573 &nbsp;     }
+  574 &nbsp; 
+  575 &nbsp;     public void keyPressed(KeyEvent e) {
+  576 &nbsp;     }
+  577 &nbsp; 
+  578 &nbsp;     public void keyReleased(KeyEvent e) {
+  579 &nbsp;     }
+  580 &nbsp; 
+<a name='581'>  581 &nbsp; 
+  582 &nbsp;     // ListSelectionListener interface
+  583 &nbsp;     public void valueChanged(ListSelectionEvent e) {
+  584 &nbsp;         updateButtonStates();
+  585 &nbsp;         String labelText = " "; // Non-empty to reserve vertical space
+  586 &nbsp;         int row = vmTable.getSelectedRow();
+  587 &nbsp;         if (row &gt;= 0) {
+  588 &nbsp;             LocalVirtualMachine lvm = vmModel.vmAt(row);
+  589 &nbsp;             if (!lvm.isManageable()) {
+  590 &nbsp;                 if (lvm.isAttachable()) {
+<a name='591'>  591 &nbsp;                     labelText = getText("Management Will Be Enabled");
+  592 &nbsp;                 } else {
+  593 &nbsp;                     labelText = getText("Management Not Enabled");
+  594 &nbsp;                 }
+  595 &nbsp;             }
+  596 &nbsp;         }
+  597 &nbsp;         String colorStr =
+  598 &nbsp;             String.format("%06x", hintTextColor.getRGB() &amp; 0xFFFFFF);
+  599 &nbsp;         localMessageLabel.setText("&lt;html&gt;&lt;font color=#" + colorStr + "&gt;" + labelText);
+  600 &nbsp;     }
+<a name='601'>  601 &nbsp;     // ----
+  602 &nbsp; 
+  603 &nbsp; 
+  604 &nbsp;     // Refresh the list of managed VMs
+  605 &nbsp;     public void refresh() {
+  606 &nbsp;         if (vmModel != null) {
+  607 &nbsp;             // Remember selection
+  608 &nbsp;             LocalVirtualMachine selected = null;
+  609 &nbsp;             int row = vmTable.getSelectedRow();
+  610 &nbsp;             if (row &gt;= 0) {
+<a name='611'>  611 &nbsp;                 selected = vmModel.vmAt(row);
+  612 &nbsp;             }
+  613 &nbsp; 
+  614 &nbsp;             vmModel.refresh();
+  615 &nbsp; 
+  616 &nbsp;             int selectRow = -1;
+  617 &nbsp;             int n = vmModel.getRowCount();
+  618 &nbsp;             if (selected != null) {
+  619 &nbsp;                 for (int i = 0; i &lt; n; i++) {
+  620 &nbsp;                     LocalVirtualMachine lvm = vmModel.vmAt(i);
+<a name='621'>  621 &nbsp;                     if (selected.vmid() == lvm.vmid() &amp;&amp;
+  622 &nbsp;                         selected.toString().equals(lvm.toString())) {
+  623 &nbsp; 
+  624 &nbsp;                         selectRow = i;
+  625 &nbsp;                         break;
+  626 &nbsp;                     }
+  627 &nbsp;                 }
+  628 &nbsp;             }
+  629 &nbsp;             if (selectRow &gt; -1) {
+  630 &nbsp;                 vmTable.setRowSelectionInterval(selectRow, selectRow);
+<a name='631'>  631 &nbsp;             } else {
+  632 &nbsp;                 vmTable.getSelectionModel().clearSelection();
+  633 &nbsp;             }
+  634 &nbsp; 
+  635 &nbsp;             Dimension dim = vmTable.getPreferredSize();
+  636 &nbsp; 
+  637 &nbsp;             // Tricky. Reduce height by one to avoid double line at bottom,
+  638 &nbsp;             // but that causes a scroll bar to appear, so remove it.
+  639 &nbsp;             dim.height = Math.min(dim.height-1, 100);
+  640 &nbsp;             localTableScrollPane.setVerticalScrollBarPolicy((dim.height &lt; 100)
+<a name='641'>  641 &nbsp;                                                 ? JScrollPane.VERTICAL_SCROLLBAR_NEVER
+  642 &nbsp;                                                 : JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+  643 &nbsp;             localTableScrollPane.getViewport().setMinimumSize(dim);
+  644 &nbsp;             localTableScrollPane.getViewport().setPreferredSize(dim);
+  645 &nbsp;         }
+  646 &nbsp;         pack();
+  647 &nbsp;         setLocationRelativeTo(jConsole);
+  648 &nbsp;     }
+  649 &nbsp; 
+  650 &nbsp;     // Represents the list of managed VMs as a tabular data model.
+<a name='651'>  651 &nbsp;     private static class ManagedVmTableModel extends AbstractTableModel {
+  652 &nbsp;         private static String[] columnNames = {
+  653 &nbsp;             Resources.getText("Column.Name"),
+  654 &nbsp;             Resources.getText("Column.PID"),
+  655 &nbsp;         };
+  656 &nbsp; 
+  657 &nbsp;         private List&lt;LocalVirtualMachine&gt; vmList;
+  658 &nbsp; 
+  659 &nbsp;         public int getColumnCount() {
+  660 &nbsp;             return columnNames.length;
+<a name='661'>  661 &nbsp;         }
+  662 &nbsp; 
+  663 &nbsp;         public String getColumnName(int col) {
+  664 &nbsp;             return columnNames[col];
+  665 &nbsp;         }
+  666 &nbsp; 
+  667 &nbsp;         public synchronized int getRowCount() {
+  668 &nbsp;             return vmList.size();
+  669 &nbsp;         }
+  670 &nbsp; 
+<a name='671'>  671 &nbsp;         public synchronized Object getValueAt(int row, int col) {
+  672 &nbsp;             assert col &gt;= 0 &amp;&amp; col &lt;= columnNames.length;
+  673 &nbsp;             LocalVirtualMachine vm = vmList.get(row);
+  674 &nbsp;             switch (col) {
+  675 &nbsp;                 case COL_NAME: return vm.displayName();
+  676 &nbsp;                 case COL_PID:  return vm.vmid();
+  677 &nbsp;                 default: return null;
+  678 &nbsp;             }
+  679 &nbsp;         }
+  680 &nbsp; 
+<a name='681'>  681 &nbsp;         public Class getColumnClass(int column) {
+  682 &nbsp;             switch (column) {
+  683 &nbsp;                 case COL_NAME: return String.class;
+  684 &nbsp;                 case COL_PID:  return Integer.class;
+  685 &nbsp;                 default: return super.getColumnClass(column);
+  686 &nbsp;             }
+  687 &nbsp;         }
+  688 &nbsp; 
+  689 &nbsp;         public ManagedVmTableModel() {
+  690 &nbsp;             refresh();
+<a name='691'>  691 &nbsp;         }
+  692 &nbsp; 
+  693 &nbsp; 
+  694 &nbsp;         public synchronized LocalVirtualMachine vmAt(int pos) {
+  695 &nbsp;             return vmList.get(pos);
+  696 &nbsp;         }
+  697 &nbsp; 
+  698 &nbsp;         public synchronized void refresh() {
+  699 &nbsp;             Map&lt;Integer, LocalVirtualMachine&gt; map =
+  700 &nbsp;                 LocalVirtualMachine.getAllVirtualMachines();
+<a name='701'>  701 &nbsp;             vmList = new ArrayList&lt;LocalVirtualMachine&gt;();
+  702 &nbsp;             vmList.addAll(map.values());
+  703 &nbsp; 
+  704 &nbsp;             // data has changed
+  705 &nbsp;             fireTableDataChanged();
+  706 &nbsp;         }
+  707 &nbsp;     }
+  708 &nbsp; 
+  709 &nbsp; 
+  710 &nbsp;     // Convenience method
+<a name='711'>  711 &nbsp;     private static String getText(String key) {
+  712 &nbsp;         return Resources.getText(key);
+  713 &nbsp;     }
+  714 &nbsp; 
+  715 &nbsp; 
+  716 &nbsp;     // A blank component that takes up as much space as the
+  717 &nbsp;     // button part of a JRadioButton.
+  718 &nbsp;     private static class Padder extends JPanel {
+  719 &nbsp;         JRadioButton radioButton;
+  720 &nbsp; 
+<a name='721'>  721 &nbsp;         Padder(JRadioButton radioButton) {
+  722 &nbsp;             this.radioButton = radioButton;
+  723 &nbsp; 
+  724 &nbsp;             setAccessibleName(this, getText("Blank"));
+  725 &nbsp;         }
+  726 &nbsp; 
+  727 &nbsp;         public Dimension getPreferredSize() {
+  728 &nbsp;             Rectangle r = getTextRectangle(radioButton);
+  729 &nbsp;             int w = (r != null &amp;&amp; r.x &gt; 8) ? r.x : 22;
+  730 &nbsp; 
+<a name='731'>  731 &nbsp;             return new Dimension(w, 0);
+  732 &nbsp;         }
+  733 &nbsp; 
+  734 &nbsp;         private static Rectangle getTextRectangle(AbstractButton button) {
+  735 &nbsp;             String text = button.getText();
+  736 &nbsp;             Icon icon = (button.isEnabled()) ? button.getIcon() : button.getDisabledIcon();
+  737 &nbsp; 
+  738 &nbsp;             if (icon == null &amp;&amp; button.getUI() instanceof BasicRadioButtonUI) {
+  739 &nbsp;                 icon = ((BasicRadioButtonUI)button.getUI()).getDefaultIcon();
+  740 &nbsp;             }
+<a name='741'>  741 &nbsp; 
+  742 &nbsp;             if ((icon == null) &amp;&amp; (text == null)) {
+  743 &nbsp;                 return null;
+  744 &nbsp;             }
+  745 &nbsp; 
+  746 &nbsp;             Rectangle paintIconR = new Rectangle();
+  747 &nbsp;             Rectangle paintTextR = new Rectangle();
+  748 &nbsp;             Rectangle paintViewR = new Rectangle();
+  749 &nbsp;             Insets paintViewInsets = new Insets(0, 0, 0, 0);
+  750 &nbsp; 
+<a name='751'>  751 &nbsp;             paintViewInsets = button.getInsets(paintViewInsets);
+  752 &nbsp;             paintViewR.x = paintViewInsets.left;
+  753 &nbsp;             paintViewR.y = paintViewInsets.top;
+  754 &nbsp;             paintViewR.width = button.getWidth() - (paintViewInsets.left + paintViewInsets.right);
+  755 &nbsp;             paintViewR.height = button.getHeight() - (paintViewInsets.top + paintViewInsets.bottom);
+  756 &nbsp; 
+  757 &nbsp;             Graphics g = button.getGraphics();
+  758 &nbsp;             if (g == null) {
+  759 &nbsp;                 return null;
+  760 &nbsp;             }
+<a name='761'>  761 &nbsp;             String clippedText =
+  762 &nbsp;                 SwingUtilities.layoutCompoundLabel(button,
+  763 &nbsp;                                                    g.getFontMetrics(),
+  764 &nbsp;                                                    text,
+  765 &nbsp;                                                    icon,
+  766 &nbsp;                                                    button.getVerticalAlignment(),
+  767 &nbsp;                                                    button.getHorizontalAlignment(),
+  768 &nbsp;                                                    button.getVerticalTextPosition(),
+  769 &nbsp;                                                    button.getHorizontalTextPosition(),
+  770 &nbsp;                                                    paintViewR,
+<a name='771'>  771 &nbsp;                                                    paintIconR,
+  772 &nbsp;                                                    paintTextR,
+  773 &nbsp;                                                    button.getIconTextGap());
+  774 &nbsp; 
+  775 &nbsp;             return paintTextR;
+  776 &nbsp;         }
+  777 &nbsp;     }
+  778 &nbsp; 
+  779 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/ConnectDialog.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

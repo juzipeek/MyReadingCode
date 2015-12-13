@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: OutputViewer.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/OutputViewer.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/Font.html>java.awt.Font</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/WindowAdapter.html>java.awt.event.WindowAdapter</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/WindowEvent.html>java.awt.event.WindowEvent</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+   32 &nbsp; 
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   34 &nbsp; 
+   35 &nbsp; /**
+   36 &nbsp;  * A simple console window to display messages sent to System.out and
+   37 &nbsp;  * System.err.
+   38 &nbsp;  *
+   39 &nbsp;  * A stop-gap solution until an error dialog is implemented.
+   40 &nbsp;  */
+<a name='41'>   41 &nbsp; public class OutputViewer {
+   42 &nbsp;     private static JFrame frame;
+   43 &nbsp;     private static JTextArea ta;
+   44 &nbsp; 
+   45 &nbsp;     static {
+   46 &nbsp;         System.setOut(PipeListener.create("System.out"));
+   47 &nbsp;         System.setErr(PipeListener.create("System.err"));
+   48 &nbsp;     }
+   49 &nbsp; 
+   50 &nbsp;     // Dummy to cause class to be loaded
+<a name='51'>   51 &nbsp;     public static void init() { }
+   52 &nbsp; 
+   53 &nbsp;     private static void append(String s) {
+   54 &nbsp;         if (frame == null) {
+   55 &nbsp;             // FIXME: The frame title should be a localized string.
+   56 &nbsp;             frame = new JFrame("JConsole: Output");
+   57 &nbsp;             ta = new JTextArea();
+   58 &nbsp;             ta.setEditable(false);
+   59 &nbsp;             frame.getContentPane().add(new JScrollPane(ta));
+   60 &nbsp;             ta.setFont(new Font("Monospaced", Font.BOLD, 14));
+<a name='61'>   61 &nbsp;             frame.setSize(500, 600);
+   62 &nbsp;             frame.setLocation(1024-500, 768-600);
+   63 &nbsp;             // Exit JConsole if no window remains.
+   64 &nbsp;             // e.g. jconsole -version only creates the OutputViewer
+   65 &nbsp;             // but no other window.
+   66 &nbsp;             frame.addWindowListener(new WindowAdapter() {
+   67 &nbsp;                 public void windowClosing(WindowEvent e) {
+   68 &nbsp;                     if (JFrame.getFrames().length == 1) {
+   69 &nbsp;                         System.exit(0);
+   70 &nbsp;                     }
+<a name='71'>   71 &nbsp;                 }
+   72 &nbsp;             });
+   73 &nbsp;         }
+   74 &nbsp;         ta.append(s);
+   75 &nbsp;         ta.setCaretPosition(ta.getText().length());
+   76 &nbsp;         frame.setVisible(true);
+   77 &nbsp;     }
+   78 &nbsp; 
+   79 &nbsp;     private static void appendln(String s) {
+   80 &nbsp;         append(s+"\n");
+<a name='81'>   81 &nbsp;     }
+   82 &nbsp; 
+   83 &nbsp;     private static class PipeListener extends Thread {
+   84 &nbsp;         public PrintStream ps;
+   85 &nbsp;         private String name;
+   86 &nbsp;         private PipedInputStream inPipe;
+   87 &nbsp;         private BufferedReader br;
+   88 &nbsp; 
+   89 &nbsp;         public static PrintStream create(String name) {
+   90 &nbsp;             return new PipeListener(name).ps;
+<a name='91'>   91 &nbsp;         }
+   92 &nbsp; 
+   93 &nbsp;         private PipeListener(String name) {
+   94 &nbsp;             this.name = name;
+   95 &nbsp; 
+   96 &nbsp;             try {
+   97 &nbsp;                 inPipe = new PipedInputStream();
+   98 &nbsp;                 ps = new PrintStream(new PipedOutputStream(inPipe));
+   99 &nbsp;                 br = new BufferedReader(new InputStreamReader(inPipe));
+  100 &nbsp;             } catch (IOException e) {
+<a name='101'>  101 &nbsp;                 appendln("PipeListener&lt;init&gt;("+name+"): " + e);
+  102 &nbsp;             }
+  103 &nbsp;             start();
+  104 &nbsp;         }
+  105 &nbsp; 
+  106 &nbsp;         public void run() {
+  107 &nbsp;             try {
+  108 &nbsp;                 String str;
+  109 &nbsp;                 while ((str = br.readLine()) != null) {
+  110 &nbsp;                     appendln(str);
+<a name='111'>  111 &nbsp; 
+  112 &nbsp;                     // Hack: Turn off thread check in PipedInputStream.
+  113 &nbsp;                     // Any thread should be allowed to write except this one
+  114 &nbsp;                     // but we just use this one to keep the pipe alive.
+  115 &nbsp;                     try {
+  116 &nbsp;                         java.lang.reflect.Field f =
+  117 &nbsp;                             PipedInputStream.class.getDeclaredField("writeSide");
+  118 &nbsp;                         f.setAccessible(true);
+  119 &nbsp;                         f.set(inPipe, this);
+  120 &nbsp;                     } catch (Exception e) {
+<a name='121'>  121 &nbsp;                         appendln("PipeListener("+name+").run: "+e);
+  122 &nbsp;                     }
+  123 &nbsp;                 }
+  124 &nbsp;                 appendln("-- "+name+" closed --");
+  125 &nbsp;                 br.close();
+  126 &nbsp;             } catch (IOException e) {
+  127 &nbsp;                 appendln("PipeListener("+name+").run: "+e);
+  128 &nbsp;             }
+  129 &nbsp;         }
+  130 &nbsp;     }
+<a name='131'>  131 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/OutputViewer.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

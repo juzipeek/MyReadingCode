@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: MemoryPoolStat.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MemoryPoolStat.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2008, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/MemoryUsage.html>java.lang.management.MemoryUsage</a>;
+   29 &nbsp; 
+   30 &nbsp; public class MemoryPoolStat {
+<a name='31'>   31 &nbsp;     private String      poolName;
+   32 &nbsp;     private long        usageThreshold;
+   33 &nbsp;     private MemoryUsage usage;
+   34 &nbsp;     private long        lastGcId;
+   35 &nbsp;     private long        lastGcStartTime;
+   36 &nbsp;     private long        lastGcEndTime;
+   37 &nbsp;     private long        collectThreshold;
+   38 &nbsp;     private MemoryUsage beforeGcUsage;
+   39 &nbsp;     private MemoryUsage afterGcUsage;
+   40 &nbsp; 
+<a name='41'>   41 &nbsp;     MemoryPoolStat(String name,
+   42 &nbsp;                    long usageThreshold,
+   43 &nbsp;                    MemoryUsage usage,
+   44 &nbsp;                    long lastGcId,
+   45 &nbsp;                    long lastGcStartTime,
+   46 &nbsp;                    long lastGcEndTime,
+   47 &nbsp;                    long collectThreshold,
+   48 &nbsp;                    MemoryUsage beforeGcUsage,
+   49 &nbsp;                    MemoryUsage afterGcUsage) {
+   50 &nbsp;         this.poolName = name;
+<a name='51'>   51 &nbsp;         this.usageThreshold = usageThreshold;
+   52 &nbsp;         this.usage = usage;
+   53 &nbsp;         this.lastGcId = lastGcId;
+   54 &nbsp;         this.lastGcStartTime = lastGcStartTime;
+   55 &nbsp;         this.lastGcEndTime = lastGcEndTime;
+   56 &nbsp;         this.collectThreshold = collectThreshold;
+   57 &nbsp;         this.beforeGcUsage = beforeGcUsage;
+   58 &nbsp;         this.afterGcUsage = afterGcUsage;
+   59 &nbsp;     }
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;     /**
+   62 &nbsp;      * Returns the memory pool name.
+   63 &nbsp;      */
+   64 &nbsp;     public String getPoolName() {
+   65 &nbsp;         return poolName;
+   66 &nbsp;     }
+   67 &nbsp; 
+   68 &nbsp;     /**
+   69 &nbsp;      * Returns the current memory usage.
+   70 &nbsp;      */
+<a name='71'>   71 &nbsp;     public MemoryUsage getUsage() {
+   72 &nbsp;         return usage;
+   73 &nbsp;     }
+   74 &nbsp; 
+   75 &nbsp;     /**
+   76 &nbsp;      * Returns the current usage threshold.
+   77 &nbsp;      * -1 if not supported.
+   78 &nbsp;      */
+   79 &nbsp;     public long getUsageThreshold() {
+   80 &nbsp;         return usageThreshold;
+<a name='81'>   81 &nbsp;     }
+   82 &nbsp; 
+   83 &nbsp;     /**
+   84 &nbsp;      * Returns the current collection usage threshold.
+   85 &nbsp;      * -1 if not supported.
+   86 &nbsp;      */
+   87 &nbsp;     public long getCollectionUsageThreshold() {
+   88 &nbsp;         return collectThreshold;
+   89 &nbsp;     }
+   90 &nbsp; 
+<a name='91'>   91 &nbsp;     /**
+   92 &nbsp;      * Returns the Id of GC.
+   93 &nbsp;      */
+   94 &nbsp;     public long getLastGcId() {
+   95 &nbsp;         return lastGcId;
+   96 &nbsp;     }
+   97 &nbsp; 
+   98 &nbsp; 
+   99 &nbsp;     /**
+  100 &nbsp;      * Returns the start time of the most recent GC on
+<a name='101'>  101 &nbsp;      * the memory pool for this statistics in milliseconds.
+  102 &nbsp;      *
+  103 &nbsp;      * Return 0 if no GC occurs.
+  104 &nbsp;      */
+  105 &nbsp;     public long getLastGcStartTime() {
+  106 &nbsp;         return lastGcStartTime;
+  107 &nbsp;     }
+  108 &nbsp; 
+  109 &nbsp;     /**
+  110 &nbsp;      * Returns the end time of the most recent GC on
+<a name='111'>  111 &nbsp;      * the memory pool for this statistics in milliseconds.
+  112 &nbsp;      *
+  113 &nbsp;      * Return 0 if no GC occurs.
+  114 &nbsp;      */
+  115 &nbsp;     public long getLastGcEndTime() {
+  116 &nbsp;         return lastGcEndTime;
+  117 &nbsp;     }
+  118 &nbsp; 
+  119 &nbsp;     /**
+  120 &nbsp;      * Returns the memory usage before the most recent GC started.
+<a name='121'>  121 &nbsp;      * null if no GC occurs.
+  122 &nbsp;      */
+  123 &nbsp;     public MemoryUsage getBeforeGcUsage() {
+  124 &nbsp;         return beforeGcUsage;
+  125 &nbsp;     }
+  126 &nbsp; 
+  127 &nbsp;     /**
+  128 &nbsp;      * Returns the memory usage after the most recent GC finished.
+  129 &nbsp;      * null if no GC occurs.
+  130 &nbsp;      */
+<a name='131'>  131 &nbsp;     public MemoryUsage getAfterGcUsage() {
+  132 &nbsp;         return beforeGcUsage;
+  133 &nbsp;     }
+  134 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MemoryPoolStat.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

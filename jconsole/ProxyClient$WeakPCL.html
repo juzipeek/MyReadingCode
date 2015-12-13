@@ -1,0 +1,182 @@
+
+    
+    <!-- classdoc.jsp -->
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>sun.tools.jconsole: class: ProxyClient.WeakPCL</title>
+	<style>
+#jdoc {margin:10px 10px 10px 10px}
+#pkg {font-size:1em;font-weight:bold}
+#cls {font-size:2em;font-weight:bold}
+body {margin:0 0 0 0; padding:0 0 0 0} 
+table {margin-top:10px;background-color:#ffffff;}
+
+th {background:#ddeeff;text-align:left}	
+td {padding:5px 2px 2px 5px;border-top:1px solid #999999;margin:0 0 0 0}
+pre {padding:0;margin:0}
+.withborder {border-left:1px solid #999999;border-right:1px solid #999999;background-color:#eeeeee}
+	</style>
+	
+	<script type="text/javascript">
+	
+	function src(m) {
+	  s = 	document.getElementById(m);
+	  i = document.getElementById(m+"i");
+	  if (s != null && s.style.visibility!='visible') {
+	   s.style.visibility='visible';
+	   s.style.height="auto";
+	   s.style.overflow='auto';
+	   i.src = "/minus.gif";
+	  } else if (s != null) {
+	   s.style.visibility='hidden';
+	   s.style.height="1px";
+	   s.style.overflow='hidden';
+	   i.src = "/plus.gif";
+	  }
+	}
+	
+	</script>
+<style type="text/css">
+#fixme {
+	/* Netscape 4, IE 4.x-5.0/Win and other lesser browsers will use this */
+  position: absolute; left: 0; top: 0;
+}
+body > div#fixme {
+  /* used by Opera 5+, Netscape6+/Mozilla, Konqueror, Safari, OmniWeb 4.5+, iCab, ICEbrowser */
+  position: fixed;
+}
+</style>
+<!--[if gte IE 5.5]>
+<style type="text/css">
+div#fixme {
+  /* IE5.5+/Win - this is more specific than the IE 5.0 version */
+  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
+  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
+}
+</style>
+<![endif]--></head><body>
+<div id="fixme" style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+[javadoc | 
+ <a href="/html/api/sun/tools/jconsole/ProxyClient.java.html">source</a>]
+</div>
+<div style="height:20px"></div>
+<div id="jdoc">
+
+
+<!-- classname.jsp -->
+    
+<span id="pkg">sun.tools.jconsole</span><br>
+    <span id="cls">class: ProxyClient.WeakPCL</span> [javadoc | 
+ <a href="/html/api/sun/tools/jconsole/ProxyClient.java.html">source</a>]
+    
+    	<br><pre><a href=/docs/api/java/lang/Object.html>java.lang.Object</a>
+ &nbsp; <img src=/inherit.gif><a href=/docs/api/java/lang/ref/Reference.html>java.lang.ref.Reference</a>
+ &nbsp;  &nbsp; <img src=/inherit.gif><a href=/docs/api/java/lang/ref/WeakReference.html>java.lang.ref.WeakReference</a>&lt;<a href="/docs/api/java/beans/PropertyChangeListener.html">PropertyChangeListener</a>&gt;
+ &nbsp;  &nbsp;  &nbsp; <img src=/inherit.gif><b>sun.tools.jconsole.ProxyClient$WeakPCL</b></pre>
+    
+
+
+
+
+<!-- end -->
+
+
+<!-- classimplements.jsp -->
+    <p><b>All Implemented Interfaces:</b>
+		<br> &nbsp; &nbsp; <a href='/docs/api/java/beans/PropertyChangeListener.html'>PropertyChangeListener</a></p>
+
+
+
+
+<!-- end -->
+
+
+    <!-- classcomment.jsp -->
+    The PropertyChangeListener is handled via a WeakReference
+so as not to pin down the listener.
+
+
+
+<!-- end -->
+
+
+
+<!-- nestedclass.jsp -->
+    
+
+
+
+<!-- end -->
+
+
+<!-- fieldsummary.jsp -->
+    
+<table width='100%'><tr><th>Fields inherited from <a href='/docs/api/java/lang/ref/Reference.html'>java.lang.ref.Reference</a>: </td></tr><tr><td> <a href='/docs/api/java/lang/ref/Reference.html#queue'>queue</a>, &nbsp;<a href='/docs/api/java/lang/ref/Reference.html#next'>next</a></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+
+
+<!-- constructsummary.jsp -->
+    <table width='100%'><tr><th>Constructor:</td></tr>
+<tr><td><pre><a href='javascript:src("cs0")'><img id='cs0i' src=/plus.gif border=0></a> <a name='WeakPCL(PropertyChangeListener)'><b>WeakPCL</b>(<a href=/docs/api/java/beans/PropertyChangeListener.html>PropertyChangeListener</a> referent) <pre id='cs0' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            super(referent);
+}</pre></pre></pre></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+<!-- methodsummary.jsp -->
+    <table width='100%'><tr><th>Method from <b>sun.tools.jconsole.ProxyClient$WeakPCL</b> Summary:</td></tr><tr><td>
+<a href='/docs/api/sun/tools/jconsole/ProxyClient$WeakPCL.html#propertyChange(PropertyChangeEvent)'>propertyChange</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.lang.ref.Reference</b>:</td></tr><tr><td>
+<a href='/docs/api/java/lang/ref/Reference.html#access$100'>access$100</a>, &nbsp; <a href='/docs/api/java/lang/ref/Reference.html#access$200'>access$200</a>, &nbsp; <a href='/docs/api/java/lang/ref/Reference.html#access$202(Reference)'>access$202</a>, &nbsp; <a href='/docs/api/java/lang/ref/Reference.html#clear'>clear</a>, &nbsp; <a href='/docs/api/java/lang/ref/Reference.html#enqueue'>enqueue</a>, &nbsp; <a href='/docs/api/java/lang/ref/Reference.html#get'>get</a>, &nbsp; <a href='/docs/api/java/lang/ref/Reference.html#isEnqueued'>isEnqueued</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.lang.Object</b>:</td></tr><tr><td>
+<a href='/docs/api/java/lang/Object.html#clone'>clone</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#equals(Object)'>equals</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#finalize'>finalize</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#getClass'>getClass</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#hashCode'>hashCode</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notify'>notify</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notifyAll'>notifyAll</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#toString'>toString</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long)'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long, int)'>wait</a></td></tr></table><table width='100%'><tr><th>Method from <b>sun.tools.jconsole.ProxyClient$WeakPCL</b> Detail:</td></tr>
+<tr><td><pre><a href='javascript:src("ms2")'><img id='ms2i' src=/plus.gif border=0></a> public  void<a name='propertyChange(PropertyChangeEvent)'> <b>propertyChange</b>(<a href=/docs/api/java/beans/PropertyChangeEvent.html>PropertyChangeEvent</a> pce)</a> <pre id='ms2' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            PropertyChangeListener pcl = get();
+            if (pcl == null) {
+                // The referent listener was GC'ed, we're no longer
+                // interested in PropertyChanges, remove the listener.
+                dispose();
+            } else {
+                pcl.propertyChange(pce);
+            }
+}</pre></pre></td></tr></table>
+
+
+
+
+
+
+
+
+<!-- end -->
+
+
+</div>
+</body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- end -->
+

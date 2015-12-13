@@ -1,0 +1,631 @@
+
+    
+    <!-- classdoc.jsp -->
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>sun.tools.jconsole: public class: Plotter</title>
+	<style>
+#jdoc {margin:10px 10px 10px 10px}
+#pkg {font-size:1em;font-weight:bold}
+#cls {font-size:2em;font-weight:bold}
+body {margin:0 0 0 0; padding:0 0 0 0} 
+table {margin-top:10px;background-color:#ffffff;}
+
+th {background:#ddeeff;text-align:left}	
+td {padding:5px 2px 2px 5px;border-top:1px solid #999999;margin:0 0 0 0}
+pre {padding:0;margin:0}
+.withborder {border-left:1px solid #999999;border-right:1px solid #999999;background-color:#eeeeee}
+	</style>
+	
+	<script type="text/javascript">
+	
+	function src(m) {
+	  s = 	document.getElementById(m);
+	  i = document.getElementById(m+"i");
+	  if (s != null && s.style.visibility!='visible') {
+	   s.style.visibility='visible';
+	   s.style.height="auto";
+	   s.style.overflow='auto';
+	   i.src = "/minus.gif";
+	  } else if (s != null) {
+	   s.style.visibility='hidden';
+	   s.style.height="1px";
+	   s.style.overflow='hidden';
+	   i.src = "/plus.gif";
+	  }
+	}
+	
+	</script>
+<style type="text/css">
+#fixme {
+	/* Netscape 4, IE 4.x-5.0/Win and other lesser browsers will use this */
+  position: absolute; left: 0; top: 0;
+}
+body > div#fixme {
+  /* used by Opera 5+, Netscape6+/Mozilla, Konqueror, Safari, OmniWeb 4.5+, iCab, ICEbrowser */
+  position: fixed;
+}
+</style>
+<!--[if gte IE 5.5]>
+<style type="text/css">
+div#fixme {
+  /* IE5.5+/Win - this is more specific than the IE 5.0 version */
+  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
+  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
+}
+</style>
+<![endif]--></head><body>
+<div id="fixme" style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+[javadoc | 
+ <a href="/html/api/sun/tools/jconsole/Plotter.java.html">source</a>]
+</div>
+<div style="height:20px"></div>
+<div id="jdoc">
+
+
+<!-- classname.jsp -->
+    
+<span id="pkg">sun.tools.jconsole</span><br>
+    <span id="cls">public class: Plotter</span> [javadoc | 
+ <a href="/html/api/sun/tools/jconsole/Plotter.java.html">source</a>]
+    
+    	<br><pre><a href=/docs/api/java/lang/Object.html>java.lang.Object</a>
+ &nbsp; <img src=/inherit.gif><a href=/docs/api/java/awt/Component.html>java.awt.Component</a>
+ &nbsp;  &nbsp; <img src=/inherit.gif><a href=/docs/api/java/awt/Container.html>java.awt.Container</a>
+ &nbsp;  &nbsp;  &nbsp; <img src=/inherit.gif><a href=/docs/api/javax/swing/JComponent.html>javax.swing.JComponent</a>
+ &nbsp;  &nbsp;  &nbsp;  &nbsp; <img src=/inherit.gif><b>sun.tools.jconsole.Plotter</b></pre>
+    
+
+
+
+
+<!-- end -->
+
+
+<!-- classimplements.jsp -->
+    <p><b>All Implemented Interfaces:</b>
+		<br> &nbsp; &nbsp; <a href='/docs/api/java/awt/event/ActionListener.html'>ActionListener</a>, <a href='/docs/api/javax/accessibility/Accessible.html'>Accessible</a>, <a href='/docs/api/java/beans/PropertyChangeListener.html'>PropertyChangeListener</a>, <a href='/docs/api/javax/swing/TransferHandler$HasGetTransferHandler.html'>TransferHandler$HasGetTransferHandler</a>, <a href='/docs/api/java/io/Serializable.html'>Serializable</a>, <a href='/docs/api/java/awt/MenuContainer.html'>MenuContainer</a>, <a href='/docs/api/java/awt/image/ImageObserver.html'>ImageObserver</a></p><p><b>Direct Known Subclasses:</b><br> &nbsp; &nbsp; <a href='/docs/api/sun/tools/jconsole/MemoryTab$PoolPlotter.html'>PoolPlotter</a>, <a href='/docs/api/sun/tools/jconsole/inspector/XPlotter.html'>XPlotter</a></p>
+
+
+
+
+<!-- end -->
+
+
+    <!-- classcomment.jsp -->
+    
+
+
+<!-- nestedclass.jsp -->
+    
+<table width='100%'><tr><th colspan=3>Nested Class Summary:</td></tr><tr><td nowrap>public static enum class &nbsp;</td><td nowrap><a href='Plotter$Unit.html'>Plotter.Unit</a> &nbsp;</td><td width='100%'>&nbsp;</td></tr><tr><td nowrap>protected class &nbsp;</td><td nowrap><a href='Plotter$AccessiblePlotter.html'>Plotter.AccessiblePlotter</a> &nbsp;</td><td width='100%'>&nbsp;</td></tr></table>
+
+
+<!-- end -->
+
+
+<!-- fieldsummary.jsp -->
+    
+<table width='100%'><tr><th colspan=3>Field Summary</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;<a href=/docs/api/java/lang/String.html>String</a>[]</td> <td class='withborder' nowrap><b>rangeNames</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;int[]</td> <td class='withborder' nowrap><b>rangeValues</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;long</td> <td class='withborder' nowrap><b>SECOND</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;long</td> <td class='withborder' nowrap><b>MINUTE</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;long</td> <td class='withborder' nowrap><b>HOUR</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;long</td> <td class='withborder' nowrap><b>DAY</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;<a href=/docs/api/java/awt/Color.html>Color</a></td> <td class='withborder' nowrap><b>bgColor</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;<a href=/docs/api/java/awt/Color.html>Color</a></td> <td class='withborder' nowrap><b>defaultColor</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><tr valign=top><td valign='top' nowrap>static final  &nbsp;int</td> <td class='withborder' nowrap><b>ARRAY_SIZE_INCREMENT</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><table width='100%'><tr><th>Fields inherited from <a href='/docs/api/javax/swing/JComponent.html'>javax.swing.JComponent</a>: </td></tr><tr><td> <a href='/docs/api/javax/swing/JComponent.html#DEBUG_GRAPHICS_LOADED'>DEBUG_GRAPHICS_LOADED</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#ui'>ui</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#listenerList'>listenerList</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#paintingChild'>paintingChild</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#WHEN_FOCUSED'>WHEN_FOCUSED</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#WHEN_ANCESTOR_OF_FOCUSED_COMPONENT'>WHEN_ANCESTOR_OF_FOCUSED_COMPONENT</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#WHEN_IN_FOCUSED_WINDOW'>WHEN_IN_FOCUSED_WINDOW</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#UNDEFINED_CONDITION'>UNDEFINED_CONDITION</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#TOOL_TIP_TEXT_KEY'>TOOL_TIP_TEXT_KEY</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#focusController'>focusController</a>, &nbsp;<a href='/docs/api/javax/swing/JComponent.html#accessibleContext'>accessibleContext</a></td></tr></table><table width='100%'><tr><th>Fields inherited from <a href='/docs/api/java/awt/Container.html'>java.awt.Container</a>: </td></tr><tr><td> <a href='/docs/api/java/awt/Container.html#layoutMgr'>layoutMgr</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#containerListener'>containerListener</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#listeningChildren'>listeningChildren</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#listeningBoundsChildren'>listeningBoundsChildren</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#descendantsCount'>descendantsCount</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#preserveBackgroundColor'>preserveBackgroundColor</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#INCLUDE_SELF'>INCLUDE_SELF</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#SEARCH_HEAVYWEIGHTS'>SEARCH_HEAVYWEIGHTS</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#modalComp'>modalComp</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#modalAppContext'>modalAppContext</a>, &nbsp;<a href='/docs/api/java/awt/Container.html#$assertionsDisabled'>$assertionsDisabled</a></td></tr></table><table width='100%'><tr><th>Fields inherited from <a href='/docs/api/java/awt/Component.html'>java.awt.Component</a>: </td></tr><tr><td> <a href='/docs/api/java/awt/Component.html#peer'>peer</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#parent'>parent</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#appContext'>appContext</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#x'>x</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#y'>y</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#width'>width</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#height'>height</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#foreground'>foreground</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#background'>background</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#font'>font</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#peerFont'>peerFont</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#cursor'>cursor</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#locale'>locale</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#graphicsConfig'>graphicsConfig</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#bufferStrategy'>bufferStrategy</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#ignoreRepaint'>ignoreRepaint</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#visible'>visible</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#enabled'>enabled</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#dropTarget'>dropTarget</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#popups'>popups</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#focusTraversalKeys'>focusTraversalKeys</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#LOCK'>LOCK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#minSize'>minSize</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#minSizeSet'>minSizeSet</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#prefSize'>prefSize</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#prefSizeSet'>prefSizeSet</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#maxSize'>maxSize</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#maxSizeSet'>maxSizeSet</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#componentOrientation'>componentOrientation</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#newEventsOnly'>newEventsOnly</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#componentListener'>componentListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#focusListener'>focusListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#hierarchyListener'>hierarchyListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#hierarchyBoundsListener'>hierarchyBoundsListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#keyListener'>keyListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#mouseListener'>mouseListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#mouseMotionListener'>mouseMotionListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#mouseWheelListener'>mouseWheelListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#inputMethodListener'>inputMethodListener</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#windowClosingException'>windowClosingException</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#actionListenerK'>actionListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#adjustmentListenerK'>adjustmentListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#componentListenerK'>componentListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#containerListenerK'>containerListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#focusListenerK'>focusListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#itemListenerK'>itemListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#keyListenerK'>keyListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#mouseListenerK'>mouseListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#mouseMotionListenerK'>mouseMotionListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#mouseWheelListenerK'>mouseWheelListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#textListenerK'>textListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#ownedWindowK'>ownedWindowK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#windowListenerK'>windowListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#inputMethodListenerK'>inputMethodListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#hierarchyListenerK'>hierarchyListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#hierarchyBoundsListenerK'>hierarchyBoundsListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#windowStateListenerK'>windowStateListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#windowFocusListenerK'>windowFocusListenerK</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#eventMask'>eventMask</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#isInc'>isInc</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#incRate'>incRate</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#TOP_ALIGNMENT'>TOP_ALIGNMENT</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#CENTER_ALIGNMENT'>CENTER_ALIGNMENT</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#BOTTOM_ALIGNMENT'>BOTTOM_ALIGNMENT</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#LEFT_ALIGNMENT'>LEFT_ALIGNMENT</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#RIGHT_ALIGNMENT'>RIGHT_ALIGNMENT</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#isPacked'>isPacked</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#backgroundEraseDisabled'>backgroundEraseDisabled</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#eventCache'>eventCache</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#nativeInLightFixer'>nativeInLightFixer</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#accessibleContext'>accessibleContext</a>, &nbsp;<a href='/docs/api/java/awt/Component.html#$assertionsDisabled'>$assertionsDisabled</a></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+
+
+<!-- constructsummary.jsp -->
+    <table width='100%'><tr><th>Constructor:</td></tr>
+<tr><td><pre><a href='javascript:src("cs0")'><img id='cs0i' src=/plus.gif border=0></a> <a name='Plotter'>public <b>Plotter</b>() <pre id='cs0' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this(Unit.NONE, 0);
+}</pre></pre></pre></td></tr><tr><td><pre><a href='javascript:src("cs1")'><img id='cs1i' src=/plus.gif border=0></a> <a name='Plotter(Unit)'>public <b>Plotter</b>(<a href=/docs/api/sun/tools/jconsole/Plotter/Unit.html>Unit</a> unit) <pre id='cs1' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this(unit, 0);
+}</pre></pre></pre></td></tr><tr><td><pre><a href='javascript:src("cs2")'><img id='cs2i' src=/plus.gif border=0></a> <a name='Plotter(Unit, int)'>public <b>Plotter</b>(<a href=/docs/api/sun/tools/jconsole/Plotter/Unit.html>Unit</a> unit,
+    int decimals) <pre id='cs2' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this(unit,decimals,true);
+}</pre></pre></pre></td></tr><tr><td><pre><a href='javascript:src("cs3")'><img id='cs3i' src=/plus.gif border=0></a> <a name='Plotter(Unit, int, boolean)'>public <b>Plotter</b>(<a href=/docs/api/sun/tools/jconsole/Plotter/Unit.html>Unit</a> unit,
+    int decimals,
+    boolean displayLegend) <pre id='cs3' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this.displayLegend = displayLegend;
+        setUnit(unit);
+        setDecimals(decimals);
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (getParent() instanceof PlotterPanel) {
+                    getParent().requestFocusInWindow();
+                }
+            }
+        });
+}</pre></pre></pre></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+<!-- methodsummary.jsp -->
+    <table width='100%'><tr><th>Method from <b>sun.tools.jconsole.Plotter</b> Summary:</td></tr><tr><td>
+<a href='/docs/api/sun/tools/jconsole/Plotter.html#actionPerformed(ActionEvent)'>actionPerformed</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#addValues(long, long)'>addValues</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#createSequence(String, String, Color, boolean)'>createSequence</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#getAccessibleContext'>getAccessibleContext</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#getComponentPopupMenu'>getComponentPopupMenu</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#getLastTimeStamp'>getLastTimeStamp</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#getLastValue(String)'>getLastValue</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#getValue'>getValue</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#getViewRange'>getViewRange</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#paintComponent(Graphics)'>paintComponent</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#propertyChange(PropertyChangeEvent)'>propertyChange</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#setDecimals(int)'>setDecimals</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#setIsPlotted(String, boolean)'>setIsPlotted</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#setUnit(Unit)'>setUnit</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#setUseDashedTransitions(String, boolean)'>setUseDashedTransitions</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/Plotter.html#setViewRange(int)'>setViewRange</a></td></tr></table><table width='100%'><tr><th>Methods from <b>javax.swing.JComponent</b>:</td></tr><tr><td>
+<a href='/docs/api/javax/swing/JComponent.html#_paintImmediately(int, int, int, int)'>_paintImmediately</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#access$100'>access$100</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#access$200'>access$200</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#addAncestorListener(AncestorListener)'>addAncestorListener</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#addNotify'>addNotify</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#addVetoableChangeListener(VetoableChangeListener)'>addVetoableChangeListener</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#alwaysOnTop'>alwaysOnTop</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#checkIfChildObscuredBySibling'>checkIfChildObscuredBySibling</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#clientPropertyChanged(Object, Object, Object)'>clientPropertyChanged</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#compWriteObjectNotify'>compWriteObjectNotify</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#componentInputMapChanged(ComponentInputMap)'>componentInputMapChanged</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#computeVisibleRect(Rectangle)'>computeVisibleRect</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#computeVisibleRect(Component, Rectangle)'>computeVisibleRect</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#contains(int, int)'>contains</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#createToolTip'>createToolTip</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#disable'>disable</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#dndDone'>dndDone</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#dropLocationForPoint(Point)'>dropLocationForPoint</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#enable'>enable</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#firePropertyChange(String, boolean, boolean)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#firePropertyChange(String, int, int)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#firePropertyChange(String, char, char)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#fireVetoableChange(String, Object, Object)'>fireVetoableChange</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getAccessibleContext'>getAccessibleContext</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getActionForKeyStroke(KeyStroke)'>getActionForKeyStroke</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getActionMap'>getActionMap</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getActionMap(boolean)'>getActionMap</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getAlignmentX'>getAlignmentX</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getAlignmentY'>getAlignmentY</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getAncestorListeners'>getAncestorListeners</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getAutoscrolls'>getAutoscrolls</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getBaseline(int, int)'>getBaseline</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getBaselineResizeBehavior'>getBaselineResizeBehavior</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getBorder'>getBorder</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getBounds(Rectangle)'>getBounds</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getClientProperty(Object)'>getClientProperty</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getComponentGraphics(Graphics)'>getComponentGraphics</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getComponentPopupMenu'>getComponentPopupMenu</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getConditionForKeyStroke(KeyStroke)'>getConditionForKeyStroke</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getCreatedDoubleBuffer'>getCreatedDoubleBuffer</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getDebugGraphicsOptions'>getDebugGraphicsOptions</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getDefaultLocale'>getDefaultLocale</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getFontMetrics(Font)'>getFontMetrics</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getGraphics'>getGraphics</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getGraphicsInvoked(Component)'>getGraphicsInvoked</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getHeight'>getHeight</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getInheritsPopupMenu'>getInheritsPopupMenu</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getInputMap'>getInputMap</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getInputMap(int)'>getInputMap</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getInputMap(int, boolean)'>getInputMap</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getInputVerifier'>getInputVerifier</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getInsets'>getInsets</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getInsets(Insets)'>getInsets</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getListeners(Class)'>getListeners</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getLocation(Point)'>getLocation</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getManagingFocusBackwardTraversalKeys'>getManagingFocusBackwardTraversalKeys</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getManagingFocusForwardTraversalKeys'>getManagingFocusForwardTraversalKeys</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getMaximumSize'>getMaximumSize</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getMinimumSize'>getMinimumSize</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getNextFocusableComponent'>getNextFocusableComponent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getPopupLocation(MouseEvent)'>getPopupLocation</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getPreferredSize'>getPreferredSize</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getRegisteredKeyStrokes'>getRegisteredKeyStrokes</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getRootPane'>getRootPane</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getSize(Dimension)'>getSize</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getToolTipLocation(MouseEvent)'>getToolTipLocation</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getToolTipText'>getToolTipText</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getToolTipText(MouseEvent)'>getToolTipText</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getTopLevelAncestor'>getTopLevelAncestor</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getTransferHandler'>getTransferHandler</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getUIClassID'>getUIClassID</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getVerifyInputWhenFocusTarget'>getVerifyInputWhenFocusTarget</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getVetoableChangeListeners'>getVetoableChangeListeners</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getVisibleRect'>getVisibleRect</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getWidth'>getWidth</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getWriteObjCounter(JComponent)'>getWriteObjCounter</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getX'>getX</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#getY'>getY</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#grabFocus'>grabFocus</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isDoubleBuffered'>isDoubleBuffered</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isLightweightComponent(Component)'>isLightweightComponent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isManagingFocus'>isManagingFocus</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isOpaque'>isOpaque</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isOptimizedDrawingEnabled'>isOptimizedDrawingEnabled</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isPainting'>isPainting</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isPaintingForPrint'>isPaintingForPrint</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isPaintingOrigin'>isPaintingOrigin</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isPaintingTile'>isPaintingTile</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isRequestFocusEnabled'>isRequestFocusEnabled</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#isValidateRoot'>isValidateRoot</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paint(Graphics)'>paint</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paintBorder(Graphics)'>paintBorder</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paintChildren(Graphics)'>paintChildren</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paintComponent(Graphics)'>paintComponent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paintForceDoubleBuffered(Graphics)'>paintForceDoubleBuffered</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paintImmediately(Rectangle)'>paintImmediately</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paintImmediately(int, int, int, int)'>paintImmediately</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paintToOffscreen(Graphics, int, int, int, int, int, int)'>paintToOffscreen</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#paramString'>paramString</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#print(Graphics)'>print</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#printAll(Graphics)'>printAll</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#printBorder(Graphics)'>printBorder</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#printChildren(Graphics)'>printChildren</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#printComponent(Graphics)'>printComponent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#processComponentKeyEvent(KeyEvent)'>processComponentKeyEvent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#processKeyBinding(KeyStroke, KeyEvent, int, boolean)'>processKeyBinding</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#processKeyBindings(KeyEvent, boolean)'>processKeyBindings</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#processKeyBindingsForAllComponents(KeyEvent, Container, boolean)'>processKeyBindingsForAllComponents</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#processKeyEvent(KeyEvent)'>processKeyEvent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#processMouseEvent(MouseEvent)'>processMouseEvent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#processMouseMotionEvent(MouseEvent)'>processMouseMotionEvent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#putClientProperty(Object, Object)'>putClientProperty</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#rectangleIsObscured(int, int, int, int)'>rectangleIsObscured</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#registerKeyboardAction(ActionListener, KeyStroke, int)'>registerKeyboardAction</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#registerKeyboardAction(ActionListener, String, KeyStroke, int)'>registerKeyboardAction</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#removeAncestorListener(AncestorListener)'>removeAncestorListener</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#removeNotify'>removeNotify</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#removeVetoableChangeListener(VetoableChangeListener)'>removeVetoableChangeListener</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#repaint(Rectangle)'>repaint</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#repaint(long, int, int, int, int)'>repaint</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#requestDefaultFocus'>requestDefaultFocus</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#requestFocus'>requestFocus</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#requestFocus(boolean)'>requestFocus</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#requestFocusInWindow'>requestFocusInWindow</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#requestFocusInWindow(boolean)'>requestFocusInWindow</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#resetKeyboardActions'>resetKeyboardActions</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#reshape(int, int, int, int)'>reshape</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#revalidate'>revalidate</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#safelyGetGraphics(Component)'>safelyGetGraphics</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#safelyGetGraphics(Component, Component)'>safelyGetGraphics</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#scrollRectToVisible(Rectangle)'>scrollRectToVisible</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setActionMap(ActionMap)'>setActionMap</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setAlignmentX(float)'>setAlignmentX</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setAlignmentY(float)'>setAlignmentY</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setAutoscrolls(boolean)'>setAutoscrolls</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setBackground(Color)'>setBackground</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setBorder(Border)'>setBorder</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setComponentPopupMenu(JPopupMenu)'>setComponentPopupMenu</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setCreatedDoubleBuffer(boolean)'>setCreatedDoubleBuffer</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setDebugGraphicsOptions(int)'>setDebugGraphicsOptions</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setDefaultLocale(Locale)'>setDefaultLocale</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setDoubleBuffered(boolean)'>setDoubleBuffered</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setDropLocation(DropLocation, Object, boolean)'>setDropLocation</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setEnabled(boolean)'>setEnabled</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setFocusTraversalKeys(int, Set)'>setFocusTraversalKeys</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setFont(Font)'>setFont</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setForeground(Color)'>setForeground</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setInheritsPopupMenu(boolean)'>setInheritsPopupMenu</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setInputMap(int, InputMap)'>setInputMap</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setInputVerifier(InputVerifier)'>setInputVerifier</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setMaximumSize(Dimension)'>setMaximumSize</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setMinimumSize(Dimension)'>setMinimumSize</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setNextFocusableComponent(Component)'>setNextFocusableComponent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setOpaque(boolean)'>setOpaque</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setPaintingChild(Component)'>setPaintingChild</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setPreferredSize(Dimension)'>setPreferredSize</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setRequestFocusEnabled(boolean)'>setRequestFocusEnabled</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setToolTipText(String)'>setToolTipText</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setTransferHandler(TransferHandler)'>setTransferHandler</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setUI(ComponentUI)'>setUI</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setUIProperty(String, Object)'>setUIProperty</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setVerifyInputWhenFocusTarget(boolean)'>setVerifyInputWhenFocusTarget</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setVisible(boolean)'>setVisible</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#setWriteObjCounter(JComponent, byte)'>setWriteObjCounter</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#shouldDebugGraphics'>shouldDebugGraphics</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#superProcessMouseMotionEvent(MouseEvent)'>superProcessMouseMotionEvent</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#unregisterKeyboardAction(KeyStroke)'>unregisterKeyboardAction</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#update(Graphics)'>update</a>, &nbsp; <a href='/docs/api/javax/swing/JComponent.html#updateUI'>updateUI</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.awt.Container</b>:</td></tr><tr><td>
+<a href='/docs/api/java/awt/Container.html#add(Component)'>add</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#add(String, Component)'>add</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#add(Component, int)'>add</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#add(Component, Object)'>add</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#add(Component, Object, int)'>add</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#addContainerListener(ContainerListener)'>addContainerListener</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#addImpl(Component, Object, int)'>addImpl</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#addNotify'>addNotify</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#addPropertyChangeListener(PropertyChangeListener)'>addPropertyChangeListener</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#addPropertyChangeListener(String, PropertyChangeListener)'>addPropertyChangeListener</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#adjustDecendantsOnParent(int)'>adjustDecendantsOnParent</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#adjustDescendants(int)'>adjustDescendants</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#adjustListeningChildren(long, int)'>adjustListeningChildren</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#applyComponentOrientation(ComponentOrientation)'>applyComponentOrientation</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#areFocusTraversalKeysSet(int)'>areFocusTraversalKeysSet</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#canContainFocusOwner(Component)'>canContainFocusOwner</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#checkGD(String)'>checkGD</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#clearCurrentFocusCycleRootOnHide'>clearCurrentFocusCycleRootOnHide</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#clearMostRecentFocusOwnerOnHide'>clearMostRecentFocusOwnerOnHide</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#containsFocus'>containsFocus</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#countComponents'>countComponents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#countHierarchyMembers'>countHierarchyMembers</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#createChildHierarchyEvents(int, long, boolean)'>createChildHierarchyEvents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#createHierarchyEvents(int, Component, Container, long, boolean)'>createHierarchyEvents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#decreaseComponentCount(Component)'>decreaseComponentCount</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#deliverEvent(Event)'>deliverEvent</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#dispatchEventImpl(AWTEvent)'>dispatchEventImpl</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#dispatchEventToSelf(AWTEvent)'>dispatchEventToSelf</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#doLayout'>doLayout</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#eventEnabled(AWTEvent)'>eventEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#findComponentAt(Point)'>findComponentAt</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#findComponentAt(int, int)'>findComponentAt</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#findComponentAt(int, int, boolean)'>findComponentAt</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#findComponentAtImpl(int, int, boolean)'>findComponentAtImpl</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getAccessibleAt(Point)'>getAccessibleAt</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getAccessibleChild(int)'>getAccessibleChild</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getAccessibleChildrenCount'>getAccessibleChildrenCount</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getAlignmentX'>getAlignmentX</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getAlignmentY'>getAlignmentY</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getComponent(int)'>getComponent</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getComponentAt(Point)'>getComponentAt</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getComponentAt(int, int)'>getComponentAt</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getComponentCount'>getComponentCount</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getComponentZOrder(Component)'>getComponentZOrder</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getComponents'>getComponents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getComponents_NoClientCode'>getComponents_NoClientCode</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getContainerListeners'>getContainerListeners</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getDropTargetEventTarget(int, int, boolean)'>getDropTargetEventTarget</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getFocusTraversalKeys(int)'>getFocusTraversalKeys</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getFocusTraversalPolicy'>getFocusTraversalPolicy</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getHeavyweightContainer'>getHeavyweightContainer</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getInsets'>getInsets</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getLayout'>getLayout</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getListeners(Class)'>getListeners</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getMaximumSize'>getMaximumSize</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getMinimumSize'>getMinimumSize</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getMouseEventTarget(int, int, boolean)'>getMouseEventTarget</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getMousePosition(boolean)'>getMousePosition</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getOpaqueShape'>getOpaqueShape</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#getPreferredSize'>getPreferredSize</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#hasHeavyweightDescendants'>hasHeavyweightDescendants</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#hasLightweightDescendants'>hasLightweightDescendants</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#increaseComponentCount(Component)'>increaseComponentCount</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#initializeFocusTraversalKeys'>initializeFocusTraversalKeys</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#insets'>insets</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#invalidate'>invalidate</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#invalidateTree'>invalidateTree</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#isAncestorOf(Component)'>isAncestorOf</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#isFocusCycleRoot'>isFocusCycleRoot</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#isFocusCycleRoot(Container)'>isFocusCycleRoot</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#isFocusTraversalPolicyProvider'>isFocusTraversalPolicyProvider</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#isFocusTraversalPolicySet'>isFocusTraversalPolicySet</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#isParentOf(Component)'>isParentOf</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#isSameOrAncestorOf(Component, boolean)'>isSameOrAncestorOf</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#layout'>layout</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#lightweightPaint(Graphics)'>lightweightPaint</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#lightweightPrint(Graphics)'>lightweightPrint</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#list(PrintStream, int)'>list</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#list(PrintWriter, int)'>list</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#locate(int, int)'>locate</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#minimumSize'>minimumSize</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#mixOnReshaping'>mixOnReshaping</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#mixOnShowing'>mixOnShowing</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#mixOnValidating'>mixOnValidating</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#mixOnZOrderChanging(int, int)'>mixOnZOrderChanging</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#nextFocusHelper'>nextFocusHelper</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#numListening(long)'>numListening</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#paint(Graphics)'>paint</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#paintComponents(Graphics)'>paintComponents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#paintHeavyweightComponents(Graphics)'>paintHeavyweightComponents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#paramString'>paramString</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#postProcessKeyEvent(KeyEvent)'>postProcessKeyEvent</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#postsOldMouseEvents'>postsOldMouseEvents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#preProcessKeyEvent(KeyEvent)'>preProcessKeyEvent</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#preferredSize'>preferredSize</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#print(Graphics)'>print</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#printComponents(Graphics)'>printComponents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#printHeavyweightComponents(Graphics)'>printHeavyweightComponents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#processContainerEvent(ContainerEvent)'>processContainerEvent</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#processEvent(AWTEvent)'>processEvent</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#proxyEnableEvents(long)'>proxyEnableEvents</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#recursiveApplyCurrentShape'>recursiveApplyCurrentShape</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#recursiveApplyCurrentShape(int)'>recursiveApplyCurrentShape</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#recursiveApplyCurrentShape(int, int)'>recursiveApplyCurrentShape</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#recursiveSubtractAndApplyShape(Region)'>recursiveSubtractAndApplyShape</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#recursiveSubtractAndApplyShape(Region, int)'>recursiveSubtractAndApplyShape</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#recursiveSubtractAndApplyShape(Region, int, int)'>recursiveSubtractAndApplyShape</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#remove(int)'>remove</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#remove(Component)'>remove</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#removeAll'>removeAll</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#removeContainerListener(ContainerListener)'>removeContainerListener</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#removeNotify'>removeNotify</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#setComponentZOrder(Component, int)'>setComponentZOrder</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#setFocusCycleRoot(boolean)'>setFocusCycleRoot</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#setFocusTraversalKeys(int, Set)'>setFocusTraversalKeys</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#setFocusTraversalPolicy(FocusTraversalPolicy)'>setFocusTraversalPolicy</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#setFocusTraversalPolicyProvider(boolean)'>setFocusTraversalPolicyProvider</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#setFont(Font)'>setFont</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#setLayout(LayoutManager)'>setLayout</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#transferFocusBackward'>transferFocusBackward</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#transferFocusDownCycle'>transferFocusDownCycle</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#update(Graphics)'>update</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#validate'>validate</a>, &nbsp; <a href='/docs/api/java/awt/Container.html#validateTree'>validateTree</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.awt.Component</b>:</td></tr><tr><td>
+<a href='/docs/api/java/awt/Component.html#access$002(Component, Region)'>access$002</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#access$100(Component)'>access$100</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#access$400(Component)'>access$400</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#access$500(Class)'>access$500</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#action(Event, Object)'>action</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#add(PopupMenu)'>add</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addComponentListener(ComponentListener)'>addComponentListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addFocusListener(FocusListener)'>addFocusListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addHierarchyBoundsListener(HierarchyBoundsListener)'>addHierarchyBoundsListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addHierarchyListener(HierarchyListener)'>addHierarchyListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addInputMethodListener(InputMethodListener)'>addInputMethodListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addKeyListener(KeyListener)'>addKeyListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addMouseListener(MouseListener)'>addMouseListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addMouseMotionListener(MouseMotionListener)'>addMouseMotionListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addMouseWheelListener(MouseWheelListener)'>addMouseWheelListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addNotify'>addNotify</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addPropertyChangeListener(PropertyChangeListener)'>addPropertyChangeListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#addPropertyChangeListener(String, PropertyChangeListener)'>addPropertyChangeListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#adjustListeningChildrenOnParent(long, int)'>adjustListeningChildrenOnParent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#applyComponentOrientation(ComponentOrientation)'>applyComponentOrientation</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#applyCompoundShape(Region)'>applyCompoundShape</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#applyCurrentShape'>applyCurrentShape</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#areBoundsValid'>areBoundsValid</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#areFocusTraversalKeysSet(int)'>areFocusTraversalKeysSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#areInputMethodsEnabled'>areInputMethodsEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#autoProcessMouseWheel(MouseWheelEvent)'>autoProcessMouseWheel</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#autoTransferFocus(boolean)'>autoTransferFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#bounds'>bounds</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#canBeFocusOwner'>canBeFocusOwner</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#checkGD(String)'>checkGD</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#checkImage(Image, ImageObserver)'>checkImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#checkImage(Image, int, int, ImageObserver)'>checkImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#checkTreeLock'>checkTreeLock</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#checkWindowClosingException'>checkWindowClosingException</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#clearCurrentFocusCycleRootOnHide'>clearCurrentFocusCycleRootOnHide</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#clearMostRecentFocusOwnerOnHide'>clearMostRecentFocusOwnerOnHide</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#coalesceEvents(AWTEvent, AWTEvent)'>coalesceEvents</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#constructComponentName'>constructComponentName</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#contains(Point)'>contains</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#contains(int, int)'>contains</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#containsFocus'>containsFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#countHierarchyMembers'>countHierarchyMembers</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#createBufferStrategy(int)'>createBufferStrategy</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#createBufferStrategy(int, BufferCapabilities)'>createBufferStrategy</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#createHierarchyEvents(int, Component, Container, long, boolean)'>createHierarchyEvents</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#createImage(ImageProducer)'>createImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#createImage(int, int)'>createImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#createVolatileImage(int, int)'>createVolatileImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#createVolatileImage(int, int, ImageCapabilities)'>createVolatileImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#deliverEvent(Event)'>deliverEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#disable'>disable</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#disableEvents(long)'>disableEvents</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#dispatchEvent(AWTEvent)'>dispatchEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#dispatchEventImpl(AWTEvent)'>dispatchEventImpl</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#dispatchMouseWheelToAncestor(MouseWheelEvent)'>dispatchMouseWheelToAncestor</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#doLayout'>doLayout</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#enable'>enable</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#enable(boolean)'>enable</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#enableEvents(long)'>enableEvents</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#enableInputMethods(boolean)'>enableInputMethods</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#eventEnabled(AWTEvent)'>eventEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#eventTypeEnabled(int)'>eventTypeEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#findUnderMouseInWindow(PointerInfo)'>findUnderMouseInWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, Object, Object)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, boolean, boolean)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, int, int)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, byte, byte)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, char, char)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, short, short)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, long, long)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, float, float)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#firePropertyChange(String, double, double)'>firePropertyChange</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getAccessibleContext'>getAccessibleContext</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getAccessibleIndexInParent'>getAccessibleIndexInParent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getAccessibleStateSet'>getAccessibleStateSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getAlignmentX'>getAlignmentX</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getAlignmentY'>getAlignmentY</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBackBuffer'>getBackBuffer</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBackground'>getBackground</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBaseline(int, int)'>getBaseline</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBaselineResizeBehavior'>getBaselineResizeBehavior</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBounds'>getBounds</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBounds(Rectangle)'>getBounds</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBoundsOp'>getBoundsOp</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getBufferStrategy'>getBufferStrategy</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getColorModel'>getColorModel</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getComponentAt(Point)'>getComponentAt</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getComponentAt(int, int)'>getComponentAt</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getComponentListeners'>getComponentListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getComponentOrientation'>getComponentOrientation</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getContainer'>getContainer</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getContainingWindow'>getContainingWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getContainingWindow(Component)'>getContainingWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getCursor'>getCursor</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getDropTarget'>getDropTarget</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFocusCycleRootAncestor'>getFocusCycleRootAncestor</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFocusListeners'>getFocusListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFocusTraversalKeys(int)'>getFocusTraversalKeys</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFocusTraversalKeysEnabled'>getFocusTraversalKeysEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFocusTraversalKeys_NoIDCheck(int)'>getFocusTraversalKeys_NoIDCheck</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFont'>getFont</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFontMetrics(Font)'>getFontMetrics</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getFont_NoClientCode'>getFont_NoClientCode</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getForeground'>getForeground</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getGraphics'>getGraphics</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getGraphicsConfiguration'>getGraphicsConfiguration</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getGraphicsConfiguration_NoClientCode'>getGraphicsConfiguration_NoClientCode</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getGraphics_NoClientCode'>getGraphics_NoClientCode</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getHeight'>getHeight</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getHierarchyBoundsListeners'>getHierarchyBoundsListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getHierarchyListeners'>getHierarchyListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getIgnoreRepaint'>getIgnoreRepaint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getInputContext'>getInputContext</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getInputMethodListeners'>getInputMethodListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getInputMethodRequests'>getInputMethodRequests</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getKeyListeners'>getKeyListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getListeners(Class)'>getListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getLocale'>getLocale</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getLocation'>getLocation</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getLocation(Point)'>getLocation</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getLocationOnScreen'>getLocationOnScreen</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getLocationOnScreen_NoTreeLock'>getLocationOnScreen_NoTreeLock</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getLocationOnWindow'>getLocationOnWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getMaximumSize'>getMaximumSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getMinimumSize'>getMinimumSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getMouseListeners'>getMouseListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getMouseMotionListeners'>getMouseMotionListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getMousePosition'>getMousePosition</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getMouseWheelListeners'>getMouseWheelListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getName'>getName</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getNativeContainer'>getNativeContainer</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getNormalShape'>getNormalShape</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getObjectLock'>getObjectLock</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getOpaqueShape'>getOpaqueShape</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getParent'>getParent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getParent_NoClientCode'>getParent_NoClientCode</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getPeer'>getPeer</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getPreferredSize'>getPreferredSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getPropertyChangeListeners'>getPropertyChangeListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getPropertyChangeListeners(String)'>getPropertyChangeListeners</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getSiblingIndexAbove'>getSiblingIndexAbove</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getSiblingIndexBelow'>getSiblingIndexBelow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getSize'>getSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getSize(Dimension)'>getSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getToolkit'>getToolkit</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getToolkitImpl'>getToolkitImpl</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getTreeLock'>getTreeLock</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getWidth'>getWidth</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getX'>getX</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#getY'>getY</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#gotFocus(Event, Object)'>gotFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#handleEvent(Event)'>handleEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#hasFocus'>hasFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#hide'>hide</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#imageUpdate(Image, int, int, int, int, int)'>imageUpdate</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#initializeFocusTraversalKeys'>initializeFocusTraversalKeys</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#inside(int, int)'>inside</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#invalidate'>invalidate</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#invalidateIfValid'>invalidateIfValid</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isBackgroundSet'>isBackgroundSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isCoalescingEnabled'>isCoalescingEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isCursorSet'>isCursorSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isDisplayable'>isDisplayable</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isDoubleBuffered'>isDoubleBuffered</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isEnabled'>isEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isEnabledImpl'>isEnabledImpl</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isFocusCycleRoot(Container)'>isFocusCycleRoot</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isFocusOwner'>isFocusOwner</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isFocusTraversable'>isFocusTraversable</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isFocusTraversableOverridden'>isFocusTraversableOverridden</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isFocusable'>isFocusable</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isFontSet'>isFontSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isForegroundSet'>isForegroundSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isInstanceOf(Object, String)'>isInstanceOf</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isLightweight'>isLightweight</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isMaximumSizeSet'>isMaximumSizeSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isMinimumSizeSet'>isMinimumSizeSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isMixingNeeded'>isMixingNeeded</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isNonOpaqueForMixing'>isNonOpaqueForMixing</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isOpaque'>isOpaque</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isPreferredSizeSet'>isPreferredSizeSet</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isRecursivelyVisible'>isRecursivelyVisible</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isSameOrAncestorOf(Component, boolean)'>isSameOrAncestorOf</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isShowing'>isShowing</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isValid'>isValid</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isVisible'>isVisible</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#isVisible_NoClientCode'>isVisible_NoClientCode</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#keyDown(Event, int)'>keyDown</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#keyUp(Event, int)'>keyUp</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#layout'>layout</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#lightweightPaint(Graphics)'>lightweightPaint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#lightweightPrint(Graphics)'>lightweightPrint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#list'>list</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#list(PrintStream)'>list</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#list(PrintWriter)'>list</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#list(PrintStream, int)'>list</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#list(PrintWriter, int)'>list</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#locate(int, int)'>locate</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#location'>location</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#lostFocus(Event, Object)'>lostFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#minimumSize'>minimumSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mixOnHiding(boolean)'>mixOnHiding</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mixOnReshaping'>mixOnReshaping</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mixOnShowing'>mixOnShowing</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mixOnValidating'>mixOnValidating</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mixOnZOrderChanging(int, int)'>mixOnZOrderChanging</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mouseDown(Event, int, int)'>mouseDown</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mouseDrag(Event, int, int)'>mouseDrag</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mouseEnter(Event, int, int)'>mouseEnter</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mouseExit(Event, int, int)'>mouseExit</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mouseMove(Event, int, int)'>mouseMove</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#mouseUp(Event, int, int)'>mouseUp</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#move(int, int)'>move</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#nextFocus'>nextFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#nextFocusHelper'>nextFocusHelper</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#numListening(long)'>numListening</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#paint(Graphics)'>paint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#paintAll(Graphics)'>paintAll</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#paintHeavyweightComponents(Graphics)'>paintHeavyweightComponents</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#paramString'>paramString</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#pointRelativeToComponent(Point)'>pointRelativeToComponent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#postEvent(Event)'>postEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#postNextFocusHelper(Component)'>postNextFocusHelper</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#postsOldMouseEvents'>postsOldMouseEvents</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#preNextFocusHelper'>preNextFocusHelper</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#preferredSize'>preferredSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#prepareImage(Image, ImageObserver)'>prepareImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#prepareImage(Image, int, int, ImageObserver)'>prepareImage</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#print(Graphics)'>print</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#printAll(Graphics)'>printAll</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#printHeavyweightComponents(Graphics)'>printHeavyweightComponents</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processComponentEvent(ComponentEvent)'>processComponentEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processEvent(AWTEvent)'>processEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processFocusEvent(FocusEvent)'>processFocusEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processHierarchyBoundsEvent(HierarchyEvent)'>processHierarchyBoundsEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processHierarchyEvent(HierarchyEvent)'>processHierarchyEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processInputMethodEvent(InputMethodEvent)'>processInputMethodEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processKeyEvent(KeyEvent)'>processKeyEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processMouseEvent(MouseEvent)'>processMouseEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processMouseMotionEvent(MouseEvent)'>processMouseMotionEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#processMouseWheelEvent(MouseWheelEvent)'>processMouseWheelEvent</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#remove(MenuComponent)'>remove</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeComponentListener(ComponentListener)'>removeComponentListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeFocusListener(FocusListener)'>removeFocusListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeHierarchyBoundsListener(HierarchyBoundsListener)'>removeHierarchyBoundsListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeHierarchyListener(HierarchyListener)'>removeHierarchyListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeInputMethodListener(InputMethodListener)'>removeInputMethodListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeKeyListener(KeyListener)'>removeKeyListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeMouseListener(MouseListener)'>removeMouseListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeMouseMotionListener(MouseMotionListener)'>removeMouseMotionListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeMouseWheelListener(MouseWheelListener)'>removeMouseWheelListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removeNotify'>removeNotify</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removePropertyChangeListener(PropertyChangeListener)'>removePropertyChangeListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#removePropertyChangeListener(String, PropertyChangeListener)'>removePropertyChangeListener</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#repaint'>repaint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#repaint(long)'>repaint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#repaint(int, int, int, int)'>repaint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#repaint(long, int, int, int, int)'>repaint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocus'>requestFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocus(Cause)'>requestFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocus(boolean)'>requestFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocus(boolean, Cause)'>requestFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocusHelper(boolean, boolean)'>requestFocusHelper</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocusHelper(boolean, boolean, Cause)'>requestFocusHelper</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocusInWindow'>requestFocusInWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocusInWindow(Cause)'>requestFocusInWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocusInWindow(boolean)'>requestFocusInWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#requestFocusInWindow(boolean, Cause)'>requestFocusInWindow</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#resetGC'>resetGC</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#reshape(int, int, int, int)'>reshape</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#resize(Dimension)'>resize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#resize(int, int)'>resize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setBackground(Color)'>setBackground</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setBounds(Rectangle)'>setBounds</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setBounds(int, int, int, int)'>setBounds</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setBoundsOp(int)'>setBoundsOp</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setComponentOrientation(ComponentOrientation)'>setComponentOrientation</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setCursor(Cursor)'>setCursor</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setDropTarget(DropTarget)'>setDropTarget</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setEnabled(boolean)'>setEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setFocusTraversalKeys(int, Set)'>setFocusTraversalKeys</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setFocusTraversalKeysEnabled(boolean)'>setFocusTraversalKeysEnabled</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setFocusTraversalKeys_NoIDCheck(int, Set)'>setFocusTraversalKeys_NoIDCheck</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setFocusable(boolean)'>setFocusable</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setFont(Font)'>setFont</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setForeground(Color)'>setForeground</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setGCFromPeer'>setGCFromPeer</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setIgnoreRepaint(boolean)'>setIgnoreRepaint</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setLocale(Locale)'>setLocale</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setLocation(Point)'>setLocation</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setLocation(int, int)'>setLocation</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setMaximumSize(Dimension)'>setMaximumSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setMinimumSize(Dimension)'>setMinimumSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setName(String)'>setName</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setPreferredSize(Dimension)'>setPreferredSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setRequestFocusController(RequestFocusController)'>setRequestFocusController</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setSize(Dimension)'>setSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setSize(int, int)'>setSize</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#setVisible(boolean)'>setVisible</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#show'>show</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#show(boolean)'>show</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#size'>size</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#subtractAndApplyShape(Region)'>subtractAndApplyShape</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#subtractAndApplyShapeBelowMe'>subtractAndApplyShapeBelowMe</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#toString'>toString</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#transferFocus'>transferFocus</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#transferFocusBackward'>transferFocusBackward</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#transferFocusUpCycle'>transferFocusUpCycle</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#update(Graphics)'>update</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#updateCursorImmediately'>updateCursorImmediately</a>, &nbsp; <a href='/docs/api/java/awt/Component.html#validate'>validate</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.lang.Object</b>:</td></tr><tr><td>
+<a href='/docs/api/java/lang/Object.html#clone'>clone</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#equals(Object)'>equals</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#finalize'>finalize</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#getClass'>getClass</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#hashCode'>hashCode</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notify'>notify</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notifyAll'>notifyAll</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#toString'>toString</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long)'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long, int)'>wait</a></td></tr></table><table width='100%'><tr><th>Method from <b>sun.tools.jconsole.Plotter</b> Detail:</td></tr>
+<tr><td><pre><a href='javascript:src("ms4")'><img id='ms4i' src=/plus.gif border=0></a> public  void<a name='actionPerformed(ActionEvent)'> <b>actionPerformed</b>(<a href=/docs/api/java/awt/event/ActionEvent.html>ActionEvent</a> ev)</a> <pre id='ms4' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        JComponent src = (JComponent)ev.getSource();
+        if (src == saveAsMI) {
+            saveAs();
+        } else {
+            int index = timeRangeMenu.getPopupMenu().getComponentIndex(src);
+            setViewRange(rangeValues[index]);
+        }
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms5")'><img id='ms5i' src=/plus.gif border=0></a> public synchronized  void<a name='addValues(long, long)'> <b>addValues</b>(long time,
+    long values)</a> <pre id='ms5' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        assert (values.length == seqs.size());
+        times.add(time);
+        for (int i = 0; i <  values.length; i++) {
+            seqs.get(i).add(values[i]);
+        }
+        repaint();
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms9")'><img id='ms9i' src=/plus.gif border=0></a> public  void<a name='createSequence(String, String, Color, boolean)'> <b>createSequence</b>(<a href=/docs/api/java/lang/String.html>String</a> key,
+    <a href=/docs/api/java/lang/String.html>String</a> name,
+    <a href=/docs/api/java/awt/Color.html>Color</a> color,
+    boolean isPlotted)</a> <pre id='ms9' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        Sequence seq = getSequence(key);
+        if (seq == null) {
+            seq = new Sequence(key);
+        }
+        seq.name = name;
+        seq.color = (color != null) ? color : defaultColor;
+        seq.isPlotted = isPlotted;
+        seqs.add(seq);
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms11")'><img id='ms11i' src=/plus.gif border=0></a> public <a href=/docs/api/javax/accessibility/AccessibleContext.html>AccessibleContext</a><a name='getAccessibleContext'> <b>getAccessibleContext</b>()</a> <pre id='ms11' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        if (accessibleContext == null) {
+            accessibleContext = new AccessiblePlotter();
+        }
+        return accessibleContext;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms12")'><img id='ms12i' src=/plus.gif border=0></a> public <a href=/docs/api/javax/swing/JPopupMenu.html>JPopupMenu</a><a name='getComponentPopupMenu'> <b>getComponentPopupMenu</b>()</a> <pre id='ms12' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        if (popupMenu == null) {
+            popupMenu = new JPopupMenu(Resources.getText("Chart:"));
+            timeRangeMenu = new JMenu(Resources.getText("Plotter.timeRangeMenu"));
+            timeRangeMenu.setMnemonic(getMnemonicInt("Plotter.timeRangeMenu"));
+            popupMenu.add(timeRangeMenu);
+            menuRBs = new JRadioButtonMenuItem[rangeNames.length];
+            ButtonGroup rbGroup = new ButtonGroup();
+            for (int i = 0; i <  rangeNames.length; i++) {
+                menuRBs[i] = new JRadioButtonMenuItem(rangeNames[i]);
+                rbGroup.add(menuRBs[i]);
+                menuRBs[i].addActionListener(this);
+                if (viewRange == rangeValues[i]) {
+                    menuRBs[i].setSelected(true);
+                }
+                timeRangeMenu.add(menuRBs[i]);
+            }
+            popupMenu.addSeparator();
+            saveAsMI = new JMenuItem(getText("Plotter.saveAsMenuItem"));
+            saveAsMI.setMnemonic(getMnemonicInt("Plotter.saveAsMenuItem"));
+            saveAsMI.addActionListener(this);
+            popupMenu.add(saveAsMI);
+        }
+        return popupMenu;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms15")'><img id='ms15i' src=/plus.gif border=0></a> long<a name='getLastTimeStamp'> <b>getLastTimeStamp</b>()</a> <pre id='ms15' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return times.time(times.size - 1);
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms16")'><img id='ms16i' src=/plus.gif border=0></a> long<a name='getLastValue(String)'> <b>getLastValue</b>(<a href=/docs/api/java/lang/String.html>String</a> key)</a> <pre id='ms16' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        Sequence seq = getSequence(key);
+        return (seq != null && seq.size  > 0) ? seq.value(seq.size - 1) : 0L;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms19")'><img id='ms19i' src=/plus.gif border=0></a> long<a name='getValue'> <b>getValue</b>()</a> <pre id='ms19' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return 0;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms21")'><img id='ms21i' src=/plus.gif border=0></a> public int<a name='getViewRange'> <b>getViewRange</b>()</a> <pre id='ms21' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        return viewRange;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms24")'><img id='ms24i' src=/plus.gif border=0></a> public  void<a name='paintComponent(Graphics)'> <b>paintComponent</b>(<a href=/docs/api/java/awt/Graphics.html>Graphics</a> g)</a> <pre id='ms24' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        super.paintComponent(g);
+        Color oldColor = g.getColor();
+        Font  oldFont  = g.getFont();
+        Color fg = getForeground();
+        Color bg = getBackground();
+        boolean bgIsLight = (bg.getRed()  > 200 &&
+                             bg.getGreen()  > 200 &&
+                             bg.getBlue()  > 200);
+        ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                         RenderingHints.VALUE_ANTIALIAS_ON);
+        if (smallFont == null) {
+            smallFont = oldFont.deriveFont(9.0F);
+        }
+        r.x = leftMargin - 5;
+        r.y = topMargin  - 8;
+        r.width  = getWidth()-leftMargin-rightMargin;
+        r.height = getHeight()-topMargin-bottomMargin+16;
+        if (border == null) {
+            // By setting colors here, we avoid recalculating them
+            // over and over.
+            border = new BevelBorder(BevelBorder.LOWERED,
+                                     getBackground().brighter().brighter(),
+                                     getBackground().brighter(),
+                                     getBackground().darker().darker(),
+                                     getBackground().darker());
+        }
+        border.paintBorder(this, g, r.x, r.y, r.width, r.height);
+        // Fill background color
+        g.setColor(bgColor);
+        g.fillRect(r.x+2, r.y+2, r.width-4, r.height-4);
+        g.setColor(oldColor);
+        long tMin = Long.MAX_VALUE;
+        long tMax = Long.MIN_VALUE;
+        long vMin = Long.MAX_VALUE;
+        long vMax = 1;
+        int w = getWidth()-rightMargin-leftMargin-10;
+        int h = getHeight()-topMargin-bottomMargin;
+        if (times.size  > 1) {
+            tMin = Math.min(tMin, times.time(0));
+            tMax = Math.max(tMax, times.time(times.size-1));
+        }
+        long viewRangeMS;
+        if (viewRange  > 0) {
+            viewRangeMS = viewRange * MINUTE;
+        } else {
+            // Display full time range, but no less than a minute
+            viewRangeMS = Math.max(tMax - tMin, 1 * MINUTE);
+        }
+        // Calculate min/max values
+        for (Sequence seq : seqs) {
+            if (seq.size  > 0) {
+                for (int i = 0; i <  seq.size; i++) {
+                    if (seq.size == 1 || times.time(i)  >= tMax - viewRangeMS) {
+                        long val = seq.value(i);
+                        if (val  > Long.MIN_VALUE) {
+                            vMax = Math.max(vMax, val);
+                            vMin = Math.min(vMin, val);
+                        }
+                    }
+                }
+            } else {
+                vMin = 0L;
+            }
+            if (unit == Unit.BYTES || !seq.isPlotted) {
+                // We'll scale only to the first (main) value set.
+                // TODO: Use a separate property for this.
+                break;
+            }
+        }
+        // Normalize scale
+        vMax = normalizeMax(vMax);
+        if (vMin  > 0) {
+            if (vMax / vMin  > 4) {
+                vMin = 0;
+            } else {
+                vMin = normalizeMin(vMin);
+            }
+        }
+        g.setColor(fg);
+        // Axes
+        // Draw vertical axis
+        int x = leftMargin - 18;
+        int y = topMargin;
+        FontMetrics fm = g.getFontMetrics();
+        g.drawLine(x,   y,   x,   y+h);
+        int n = 5;
+        if ((""+vMax).startsWith("2")) {
+            n = 4;
+        } else if ((""+vMax).startsWith("3")) {
+            n = 6;
+        } else if ((""+vMax).startsWith("4")) {
+            n = 4;
+        } else if ((""+vMax).startsWith("6")) {
+            n = 6;
+        } else if ((""+vMax).startsWith("7")) {
+            n = 7;
+        } else if ((""+vMax).startsWith("8")) {
+            n = 8;
+        } else if ((""+vMax).startsWith("9")) {
+            n = 3;
+        }
+        // Ticks
+        ArrayList< Long > tickValues = new ArrayList< Long >();
+        tickValues.add(vMin);
+        for (int i = 0; i <  n; i++) {
+            long v = i * vMax / n;
+            if (v  > vMin) {
+                tickValues.add(v);
+            }
+        }
+        tickValues.add(vMax);
+        n = tickValues.size();
+        String[] tickStrings = new String[n];
+        for (int i = 0; i <  n; i++) {
+            long v = tickValues.get(i);
+            tickStrings[i] = getSizeString(v, vMax);
+        }
+        // Trim trailing decimal zeroes.
+        if (decimals  > 0) {
+            boolean trimLast = true;
+            boolean removedDecimalPoint = false;
+            do {
+                for (String str : tickStrings) {
+                    if (!(str.endsWith("0") || str.endsWith("."))) {
+                        trimLast = false;
+                        break;
+                    }
+                }
+                if (trimLast) {
+                    if (tickStrings[0].endsWith(".")) {
+                        removedDecimalPoint = true;
+                    }
+                    for (int i = 0; i <  n; i++) {
+                        String str = tickStrings[i];
+                        tickStrings[i] = str.substring(0, str.length()-1);
+                    }
+                }
+            } while (trimLast && !removedDecimalPoint);
+        }
+        // Draw ticks
+        int lastY = Integer.MAX_VALUE;
+        for (int i = 0; i <  n; i++) {
+            long v = tickValues.get(i);
+            y = topMargin+h-(int)(h * (v-vMin) / (vMax-vMin));
+            g.drawLine(x-2, y, x+2, y);
+            String s = tickStrings[i];
+            if (unit == Unit.PERCENT) {
+                s += "%";
+            }
+            int sx = x-6-fm.stringWidth(s);
+            if (y <  lastY-13) {
+                if (checkLeftMargin(sx)) {
+                    // Wait for next repaint
+                    return;
+                }
+                g.drawString(s, sx, y+4);
+            }
+            // Draw horizontal grid line
+            g.setColor(Color.lightGray);
+            g.drawLine(r.x + 4, y, r.x + r.width - 4, y);
+            g.setColor(fg);
+            lastY = y;
+        }
+        // Draw horizontal axis
+        x = leftMargin;
+        y = topMargin + h + 15;
+        g.drawLine(x,   y,   x+w, y);
+        long t1 = tMax;
+        if (t1 < = 0L) {
+            // No data yet, so draw current time
+            t1 = System.currentTimeMillis();
+        }
+        long tz = timeDF.getTimeZone().getOffset(t1);
+        long tickInterval = calculateTickInterval(w, 40, viewRangeMS);
+        if (tickInterval  > 3 * HOUR) {
+            tickInterval = calculateTickInterval(w, 80, viewRangeMS);
+        }
+        long t0 = tickInterval - (t1 - viewRangeMS + tz) % tickInterval;
+        while (t0 <  viewRangeMS) {
+            x = leftMargin + (int)(w * t0 / viewRangeMS);
+            g.drawLine(x, y-2, x, y+2);
+            long t = t1 - viewRangeMS + t0;
+            String str = formatClockTime(t);
+            g.drawString(str, x, y+16);
+            //if (tickInterval  > (1 * HOUR) && t % (1 * DAY) == 0) {
+            if ((t + tz) % (1 * DAY) == 0) {
+                str = formatDate(t);
+                g.drawString(str, x, y+27);
+            }
+            // Draw vertical grid line
+            g.setColor(Color.lightGray);
+            g.drawLine(x, topMargin, x, topMargin + h);
+            g.setColor(fg);
+            t0 += tickInterval;
+        }
+        // Plot values
+        int start = 0;
+        int nValues = 0;
+        int nLists = seqs.size();
+        if (nLists  > 0) {
+            nValues = seqs.get(0).size;
+        }
+        if (nValues == 0) {
+            g.setColor(oldColor);
+            return;
+        } else {
+            Sequence seq = seqs.get(0);
+            // Find starting point
+            for (int p = 0; p <  seq.size; p++) {
+                if (times.time(p)  >= tMax - viewRangeMS) {
+                    start = p;
+                    break;
+                }
+            }
+        }
+        //Optimization: collapse plot of more than four values per pixel
+        int pointsPerPixel = (nValues - start) / w;
+        if (pointsPerPixel <  4) {
+            pointsPerPixel = 1;
+        }
+        // Draw graphs
+        // Loop backwards over sequences because the first needs to be painted on top
+        for (int i = nLists-1; i  >= 0; i--) {
+            int x0 = leftMargin;
+            int y0 = topMargin + h + 1;
+            Sequence seq = seqs.get(i);
+            if (seq.isPlotted && seq.size  > 0) {
+                // Paint twice, with white and with color
+                for (int pass = 0; pass <  2; pass++) {
+                    g.setColor((pass == 0) ? Color.white : seq.color);
+                    int x1 = -1;
+                    long v1 = -1;
+                    for (int p = start; p <  nValues; p += pointsPerPixel) {
+                        // Make sure we get the last value
+                        if (pointsPerPixel  > 1 && p  >= nValues - pointsPerPixel) {
+                            p = nValues - 1;
+                        }
+                        int x2 = (int)(w * (times.time(p)-(t1-viewRangeMS)) / viewRangeMS);
+                        long v2 = seq.value(p);
+                        if (v2  >= vMin && v2 < = vMax) {
+                            int y2  = (int)(h * (v2 -vMin) / (vMax-vMin));
+                            if (x1  >= 0 && v1  >= vMin && v1 < = vMax) {
+                                int y1 = (int)(h * (v1-vMin) / (vMax-vMin));
+                                if (y1 == y2) {
+                                    // fillrect is much faster
+                                    g.fillRect(x0+x1, y0-y1-pass, x2-x1, 1);
+                                } else {
+                                    Graphics2D g2d = (Graphics2D)g;
+                                    Stroke oldStroke = null;
+                                    if (seq.transitionStroke != null) {
+                                        oldStroke = g2d.getStroke();
+                                        g2d.setStroke(seq.transitionStroke);
+                                    }
+                                    g.drawLine(x0+x1, y0-y1-pass, x0+x2, y0-y2-pass);
+                                    if (oldStroke != null) {
+                                        g2d.setStroke(oldStroke);
+                                    }
+                                }
+                            }
+                        }
+                        x1 = x2;
+                        v1 = v2;
+                    }
+                }
+                // Current value
+                long v = seq.value(seq.size - 1);
+                if (v  >= vMin && v < = vMax) {
+                    if (bgIsLight) {
+                        g.setColor(seq.color);
+                    } else {
+                        g.setColor(fg);
+                    }
+                    x = r.x + r.width + 2;
+                    y = topMargin+h-(int)(h * (v-vMin) / (vMax-vMin));
+                    // a small triangle/arrow
+                    g.fillPolygon(new int[] { x+2, x+6, x+6 },
+                                  new int[] { y,   y+3, y-3 },
+                                  3);
+                }
+                g.setColor(fg);
+            }
+        }
+        int[] valueStringSlots = new int[nLists];
+        for (int i = 0; i <  nLists; i++) valueStringSlots[i] = -1;
+        for (int i = 0; i <  nLists; i++) {
+            Sequence seq = seqs.get(i);
+            if (seq.isPlotted && seq.size  > 0) {
+                // Draw current value
+                // TODO: collapse values if pointsPerPixel  >= 4
+                long v = seq.value(seq.size - 1);
+                if (v  >= vMin && v < = vMax) {
+                    x = r.x + r.width + 2;
+                    y = topMargin+h-(int)(h * (v-vMin) / (vMax-vMin));
+                    int y2 = getValueStringSlot(valueStringSlots, y, 2*10, i);
+                    g.setFont(smallFont);
+                    if (bgIsLight) {
+                        g.setColor(seq.color);
+                    } else {
+                        g.setColor(fg);
+                    }
+                    String curValue = getFormattedValue(v, true);
+                    if (unit == Unit.PERCENT) {
+                        curValue += "%";
+                    }
+                    int valWidth = fm.stringWidth(curValue);
+                    String legend = (displayLegend?seq.name:"");
+                    int legendWidth = fm.stringWidth(legend);
+                    if (checkRightMargin(valWidth) || checkRightMargin(legendWidth)) {
+                        // Wait for next repaint
+                        return;
+                    }
+                    g.drawString(legend  , x + 17, Math.min(topMargin+h,      y2 + 3 - 10));
+                    g.drawString(curValue, x + 17, Math.min(topMargin+h + 10, y2 + 3));
+                    // Maybe draw a short line to value
+                    if (y2  > y + 3) {
+                        g.drawLine(x + 9, y + 2, x + 14, y2);
+                    } else if (y2 <  y - 3) {
+                        g.drawLine(x + 9, y - 2, x + 14, y2);
+                    }
+                }
+                g.setFont(oldFont);
+                g.setColor(fg);
+            }
+        }
+        g.setColor(oldColor);
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms25")'><img id='ms25i' src=/plus.gif border=0></a> public  void<a name='propertyChange(PropertyChangeEvent)'> <b>propertyChange</b>(<a href=/docs/api/java/beans/PropertyChangeEvent.html>PropertyChangeEvent</a> ev)</a> <pre id='ms25' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        String prop = ev.getPropertyName();
+        if (prop == JConsoleContext.CONNECTION_STATE_PROPERTY) {
+            ConnectionState newState = (ConnectionState)ev.getNewValue();
+            switch (newState) {
+              case DISCONNECTED:
+                synchronized(this) {
+                    long time = System.currentTimeMillis();
+                    times.add(time);
+                    for (Sequence seq : seqs) {
+                        seq.add(Long.MIN_VALUE);
+                    }
+                }
+                break;
+            }
+        }
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms28")'><img id='ms28i' src=/plus.gif border=0></a> public  void<a name='setDecimals(int)'> <b>setDecimals</b>(int decimals)</a> <pre id='ms28' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this.decimals = decimals;
+        this.decimalsMultiplier = Math.pow(10.0, decimals);
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms29")'><img id='ms29i' src=/plus.gif border=0></a> public  void<a name='setIsPlotted(String, boolean)'> <b>setIsPlotted</b>(<a href=/docs/api/java/lang/String.html>String</a> key,
+    boolean isPlotted)</a> <pre id='ms29' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        Sequence seq = getSequence(key);
+        if (seq != null) {
+            seq.isPlotted = isPlotted;
+        }
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms30")'><img id='ms30i' src=/plus.gif border=0></a> public  void<a name='setUnit(Unit)'> <b>setUnit</b>(<a href=/docs/api/sun/tools/jconsole/Plotter/Unit.html>Unit</a> unit)</a> <pre id='ms30' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        this.unit = unit;
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms31")'><img id='ms31i' src=/plus.gif border=0></a> public  void<a name='setUseDashedTransitions(String, boolean)'> <b>setUseDashedTransitions</b>(<a href=/docs/api/java/lang/String.html>String</a> key,
+    boolean b)</a> <pre id='ms31' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        Sequence seq = getSequence(key);
+        if (seq != null) {
+            seq.transitionStroke = b ? getDashedStroke() : null;
+        }
+}</pre></pre></td></tr><tr><td><pre><a href='javascript:src("ms32")'><img id='ms32i' src=/plus.gif border=0></a> public  void<a name='setViewRange(int)'> <b>setViewRange</b>(int minutes)</a> <pre id='ms32' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+        if (minutes != viewRange) {
+            int oldValue = viewRange;
+            viewRange = minutes;
+            /* Do not i18n this string */
+            firePropertyChange("viewRange", oldValue, viewRange);
+            if (popupMenu != null) {
+                for (int i = 0; i <  menuRBs.length; i++) {
+                    if (rangeValues[i] == viewRange) {
+                        menuRBs[i].setSelected(true);
+                        break;
+                    }
+                }
+            }
+            repaint();
+        }
+}</pre></pre></td></tr></table>
+
+
+
+
+
+
+
+
+<!-- end -->
+
+
+</div>
+</body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- end -->
+

@@ -1,0 +1,426 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: SummaryTab.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/SummaryTab.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2007, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/package-index.html>java.lang.management</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/package-index.html>java.lang.reflect</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/net/URL.html>java.net.URL</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/text/package-index.html>java.text</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/concurrent/package-index.html>java.util.concurrent</a>;
+   36 &nbsp; 
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/text/package-index.html>javax.swing.text</a>;
+   40 &nbsp; 
+<a name='41'>   41 &nbsp; import static sun.tools.jconsole.Formatter.*;
+   42 &nbsp; import static sun.tools.jconsole.Resources.*;
+   43 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   44 &nbsp; 
+   45 &nbsp; @SuppressWarnings("serial")
+   46 &nbsp; class SummaryTab extends Tab {
+   47 &nbsp;     private static final String cpuUsageKey = "cpu";
+   48 &nbsp;     private static final String cpuUsageName = getText("CPU Usage");
+   49 &nbsp;     private static final String cpuUsageFormat = "CPUUsageFormat";
+   50 &nbsp; 
+<a name='51'>   51 &nbsp;     private static final String newDivider =   "&lt;tr&gt;&lt;td colspan=4&gt;&lt;font size =-1&gt;&lt;hr&gt;";
+   52 &nbsp;     private static final String newTable =     "&lt;tr&gt;&lt;td colspan=4 align=left&gt;&lt;table cellpadding=1&gt;";
+   53 &nbsp;     private static final String newLeftTable = "&lt;tr&gt;&lt;td colspan=2 align=left&gt;&lt;table cellpadding=1&gt;";
+   54 &nbsp;     private static final String newRightTable =  "&lt;td colspan=2 align=left&gt;&lt;table cellpadding=1&gt;";
+   55 &nbsp;     private static final String endTable = "&lt;/table&gt;";
+   56 &nbsp; 
+   57 &nbsp;     private static final int CPU_DECIMALS = 1;
+   58 &nbsp; 
+   59 &nbsp;     private CPUOverviewPanel overviewPanel;
+   60 &nbsp;     private DateFormat headerDateTimeFormat;
+<a name='61'>   61 &nbsp;     private String pathSeparator = null;
+   62 &nbsp;     HTMLPane info;
+   63 &nbsp; 
+   64 &nbsp;     private static class Result {
+   65 &nbsp;         long upTime = -1L;
+   66 &nbsp;         long processCpuTime = -1L;
+   67 &nbsp;         long timeStamp;
+   68 &nbsp;         int nCPUs;
+   69 &nbsp;         String summary;
+   70 &nbsp;     }
+<a name='71'>   71 &nbsp; 
+   72 &nbsp;     public static String getTabName() {
+   73 &nbsp;         return Resources.getText("SummaryTab.tabName");
+   74 &nbsp;     }
+   75 &nbsp; 
+   76 &nbsp;     public SummaryTab(VMPanel vmPanel) {
+   77 &nbsp;         super(vmPanel, getTabName());
+   78 &nbsp; 
+   79 &nbsp;         setLayout(new BorderLayout());
+   80 &nbsp; 
+<a name='81'>   81 &nbsp;         info = new HTMLPane();
+   82 &nbsp;         setAccessibleName(info, getTabName());
+   83 &nbsp;         add(new JScrollPane(info));
+   84 &nbsp; 
+   85 &nbsp;         headerDateTimeFormat =
+   86 &nbsp;             getDateTimeFormat("SummaryTab.headerDateTimeFormat");
+   87 &nbsp;     }
+   88 &nbsp; 
+   89 &nbsp;     public SwingWorker&lt;?, ?&gt; newSwingWorker() {
+   90 &nbsp;         return new SwingWorker&lt;Result, Object&gt;() {
+<a name='91'>   91 &nbsp;             public Result doInBackground() {
+   92 &nbsp;                 return formatSummary();
+   93 &nbsp;             }
+   94 &nbsp; 
+   95 &nbsp; 
+   96 &nbsp;             protected void done() {
+   97 &nbsp;                 try {
+   98 &nbsp;                     Result result = get();
+   99 &nbsp;                     if (result != null) {
+  100 &nbsp;                         info.setText(result.summary);
+<a name='101'>  101 &nbsp;                         if (overviewPanel != null &amp;&amp;
+  102 &nbsp;                             result.upTime &gt; 0L &amp;&amp;
+  103 &nbsp;                             result.processCpuTime &gt;= 0L) {
+  104 &nbsp; 
+  105 &nbsp;                             overviewPanel.updateCPUInfo(result);
+  106 &nbsp;                         }
+  107 &nbsp;                     }
+  108 &nbsp;                 } catch (InterruptedException ex) {
+  109 &nbsp;                 } catch (ExecutionException ex) {
+  110 &nbsp;                     if (JConsole.isDebug()) {
+<a name='111'>  111 &nbsp;                         ex.printStackTrace();
+  112 &nbsp;                     }
+  113 &nbsp;                 }
+  114 &nbsp;             }
+  115 &nbsp;         };
+  116 &nbsp;     }
+  117 &nbsp; 
+  118 &nbsp;     StringBuilder buf;
+  119 &nbsp; 
+  120 &nbsp;     synchronized Result formatSummary() {
+<a name='121'>  121 &nbsp;         Result result = new Result();
+  122 &nbsp;         ProxyClient proxyClient = vmPanel.getProxyClient();
+  123 &nbsp;         if (proxyClient.isDead()) {
+  124 &nbsp;             return null;
+  125 &nbsp;         }
+  126 &nbsp; 
+  127 &nbsp;         buf = new StringBuilder();
+  128 &nbsp;         append("&lt;table cellpadding=1&gt;");
+  129 &nbsp; 
+  130 &nbsp;         try {
+<a name='131'>  131 &nbsp;             RuntimeMXBean         rmBean     = proxyClient.getRuntimeMXBean();
+  132 &nbsp;             CompilationMXBean     cmpMBean   = proxyClient.getCompilationMXBean();
+  133 &nbsp;             ThreadMXBean          tmBean     = proxyClient.getThreadMXBean();
+  134 &nbsp;             MemoryMXBean          memoryBean = proxyClient.getMemoryMXBean();
+  135 &nbsp;             ClassLoadingMXBean    clMBean    = proxyClient.getClassLoadingMXBean();
+  136 &nbsp;             OperatingSystemMXBean osMBean    = proxyClient.getOperatingSystemMXBean();
+  137 &nbsp;             com.sun.management.OperatingSystemMXBean sunOSMBean  =
+  138 &nbsp;                proxyClient.getSunOperatingSystemMXBean();
+  139 &nbsp; 
+  140 &nbsp;             append("&lt;tr&gt;&lt;td colspan=4&gt;");
+<a name='141'>  141 &nbsp;             append("&lt;center&gt;&lt;b&gt;" + getText("SummaryTab.tabName") + "&lt;/b&gt;&lt;/center&gt;");
+  142 &nbsp;             String dateTime =
+  143 &nbsp;                 headerDateTimeFormat.format(System.currentTimeMillis());
+  144 &nbsp;             append("&lt;center&gt;" + dateTime + "&lt;/center&gt;");
+  145 &nbsp; 
+  146 &nbsp;             append(newDivider);
+  147 &nbsp; 
+  148 &nbsp;             {  // VM info
+  149 &nbsp;                 append(newLeftTable);
+  150 &nbsp;                 append("Connection name", vmPanel.getDisplayName());
+<a name='151'>  151 &nbsp;                 append("Virtual Machine",
+  152 &nbsp;                        getText("SummaryTab.vmVersion",
+  153 &nbsp;                                rmBean.getVmName(), rmBean.getVmVersion()));
+  154 &nbsp;                 append("Vendor", rmBean.getVmVendor());
+  155 &nbsp;                 append("Name", rmBean.getName());
+  156 &nbsp;                 append(endTable);
+  157 &nbsp; 
+  158 &nbsp;                 append(newRightTable);
+  159 &nbsp;                 result.upTime = rmBean.getUptime();
+  160 &nbsp;                 append("Uptime", formatTime(result.upTime));
+<a name='161'>  161 &nbsp;                 if (sunOSMBean != null) {
+  162 &nbsp;                     result.processCpuTime = sunOSMBean.getProcessCpuTime();
+  163 &nbsp;                     append("Process CPU time", formatNanoTime(result.processCpuTime));
+  164 &nbsp;                 }
+  165 &nbsp; 
+  166 &nbsp;                 if (cmpMBean != null) {
+  167 &nbsp;                     append("JIT compiler", cmpMBean.getName());
+  168 &nbsp;                     append("Total compile time",
+  169 &nbsp;                            cmpMBean.isCompilationTimeMonitoringSupported()
+  170 &nbsp;                                     ? formatTime(cmpMBean.getTotalCompilationTime())
+<a name='171'>  171 &nbsp;                                     : getText("Unavailable"));
+  172 &nbsp;                 } else {
+  173 &nbsp;                     append("JIT compiler", getText("Unavailable"));
+  174 &nbsp;                 }
+  175 &nbsp;                 append(endTable);
+  176 &nbsp;             }
+  177 &nbsp; 
+  178 &nbsp;             append(newDivider);
+  179 &nbsp; 
+  180 &nbsp;             {  // Threads and Classes
+<a name='181'>  181 &nbsp;                 append(newLeftTable);
+  182 &nbsp;                 int tlCount = tmBean.getThreadCount();
+  183 &nbsp;                 int tdCount = tmBean.getDaemonThreadCount();
+  184 &nbsp;                 int tpCount = tmBean.getPeakThreadCount();
+  185 &nbsp;                 long ttCount = tmBean.getTotalStartedThreadCount();
+  186 &nbsp;                 String[] strings1 = formatLongs(tlCount, tpCount,
+  187 &nbsp;                                                 tdCount, ttCount);
+  188 &nbsp;                 append("Live Threads",          strings1[0]);
+  189 &nbsp;                 append("Peak",                  strings1[1]);
+  190 &nbsp;                 append("Daemon threads",        strings1[2]);
+<a name='191'>  191 &nbsp;                 append("Total threads started", strings1[3]);
+  192 &nbsp;                 append(endTable);
+  193 &nbsp; 
+  194 &nbsp;                 append(newRightTable);
+  195 &nbsp;                 long clCount = clMBean.getLoadedClassCount();
+  196 &nbsp;                 long cuCount = clMBean.getUnloadedClassCount();
+  197 &nbsp;                 long ctCount = clMBean.getTotalLoadedClassCount();
+  198 &nbsp;                 String[] strings2 = formatLongs(clCount, cuCount, ctCount);
+  199 &nbsp;                 append("Current classes loaded", strings2[0]);
+  200 &nbsp;                 append("Total classes loaded",   strings2[2]);
+<a name='201'>  201 &nbsp;                 append("Total classes unloaded", strings2[1]);
+  202 &nbsp;                 append(null, "");
+  203 &nbsp;                 append(endTable);
+  204 &nbsp;             }
+  205 &nbsp; 
+  206 &nbsp;             append(newDivider);
+  207 &nbsp; 
+  208 &nbsp;             {  // Memory
+  209 &nbsp;                 MemoryUsage u = memoryBean.getHeapMemoryUsage();
+  210 &nbsp; 
+<a name='211'>  211 &nbsp;                 append(newLeftTable);
+  212 &nbsp;                 String[] strings1 = formatKByteStrings(u.getUsed(), u.getMax());
+  213 &nbsp;                 append("Current heap size", strings1[0]);
+  214 &nbsp;                 append("Maximum heap size", strings1[1]);
+  215 &nbsp;                 append(endTable);
+  216 &nbsp; 
+  217 &nbsp;                 append(newRightTable);
+  218 &nbsp;                 String[] strings2 = formatKByteStrings(u.getCommitted());
+  219 &nbsp;                 append("Committed memory",  strings2[0]);
+  220 &nbsp;                 append("SummaryTab.pendingFinalization.label",
+<a name='221'>  221 &nbsp;                        getText("SummaryTab.pendingFinalization.value",
+  222 &nbsp;                                memoryBean.getObjectPendingFinalizationCount()));
+  223 &nbsp;                 append(endTable);
+  224 &nbsp; 
+  225 &nbsp;                 append(newTable);
+  226 &nbsp;                 Collection&lt;GarbageCollectorMXBean&gt; garbageCollectors =
+  227 &nbsp;                                             proxyClient.getGarbageCollectorMXBeans();
+  228 &nbsp;                 for (GarbageCollectorMXBean garbageCollectorMBean : garbageCollectors) {
+  229 &nbsp;                     String gcName = garbageCollectorMBean.getName();
+  230 &nbsp;                     long gcCount = garbageCollectorMBean.getCollectionCount();
+<a name='231'>  231 &nbsp;                     long gcTime = garbageCollectorMBean.getCollectionTime();
+  232 &nbsp; 
+  233 &nbsp;                     append("Garbage collector",
+  234 &nbsp;                            getText("GcInfo", gcName, gcCount,
+  235 &nbsp;                                    (gcTime &gt;= 0) ? formatTime(gcTime)
+  236 &nbsp;                                                  : getText("Unavailable")),
+  237 &nbsp;                            4);
+  238 &nbsp;                 }
+  239 &nbsp;                 append(endTable);
+  240 &nbsp;             }
+<a name='241'>  241 &nbsp; 
+  242 &nbsp;             append(newDivider);
+  243 &nbsp; 
+  244 &nbsp;             {  // Operating System info
+  245 &nbsp;                 append(newLeftTable);
+  246 &nbsp;                 String osName = osMBean.getName();
+  247 &nbsp;                 String osVersion = osMBean.getVersion();
+  248 &nbsp;                 String osArch = osMBean.getArch();
+  249 &nbsp;                 result.nCPUs = osMBean.getAvailableProcessors();
+  250 &nbsp;                 append("Operating System", osName + " " + osVersion);
+<a name='251'>  251 &nbsp;                 append("Architecture", osArch);
+  252 &nbsp;                 append("Number of processors", result.nCPUs+"");
+  253 &nbsp; 
+  254 &nbsp;                 if (pathSeparator == null) {
+  255 &nbsp;                     // Must use separator of remote OS, not File.pathSeparator
+  256 &nbsp;                     // from this local VM. In the future, consider using
+  257 &nbsp;                     // RuntimeMXBean to get the remote system property.
+  258 &nbsp;                     pathSeparator = osName.startsWith("Windows ") ? ";" : ":";
+  259 &nbsp;                 }
+  260 &nbsp; 
+<a name='261'>  261 &nbsp;                 if (sunOSMBean != null) {
+  262 &nbsp;                     String[] kbStrings1 =
+  263 &nbsp;                         formatKByteStrings(sunOSMBean.getCommittedVirtualMemorySize());
+  264 &nbsp; 
+  265 &nbsp;                     String[] kbStrings2 =
+  266 &nbsp;                         formatKByteStrings(sunOSMBean.getTotalPhysicalMemorySize(),
+  267 &nbsp;                                            sunOSMBean.getFreePhysicalMemorySize(),
+  268 &nbsp;                                            sunOSMBean.getTotalSwapSpaceSize(),
+  269 &nbsp;                                            sunOSMBean.getFreeSwapSpaceSize());
+  270 &nbsp; 
+<a name='271'>  271 &nbsp;                     append("Committed virtual memory", kbStrings1[0]);
+  272 &nbsp;                     append(endTable);
+  273 &nbsp; 
+  274 &nbsp;                     append(newRightTable);
+  275 &nbsp;                     append("Total physical memory", kbStrings2[0]);
+  276 &nbsp;                     append("Free physical memory",  kbStrings2[1]);
+  277 &nbsp;                     append("Total swap space",      kbStrings2[2]);
+  278 &nbsp;                     append("Free swap space",       kbStrings2[3]);
+  279 &nbsp;                 }
+  280 &nbsp; 
+<a name='281'>  281 &nbsp;                 append(endTable);
+  282 &nbsp;             }
+  283 &nbsp; 
+  284 &nbsp;             append(newDivider);
+  285 &nbsp; 
+  286 &nbsp;             {  // VM arguments and paths
+  287 &nbsp;                 append(newTable);
+  288 &nbsp;                 String args = "";
+  289 &nbsp;                 java.util.List&lt;String&gt; inputArguments = rmBean.getInputArguments();
+  290 &nbsp;                 for (String arg : inputArguments) {
+<a name='291'>  291 &nbsp;                     args += arg + " ";
+  292 &nbsp;                 }
+  293 &nbsp;                 append("VM arguments", args, 4);
+  294 &nbsp;                 append("Class path",   rmBean.getClassPath(), 4);
+  295 &nbsp;                 append("Library path", rmBean.getLibraryPath(), 4);
+  296 &nbsp;                 append("Boot class path",
+  297 &nbsp;                        rmBean.isBootClassPathSupported()
+  298 &nbsp;                                     ? rmBean.getBootClassPath()
+  299 &nbsp;                                     : getText("Unavailable"),
+  300 &nbsp;                        4);
+<a name='301'>  301 &nbsp;                 append(endTable);
+  302 &nbsp;             }
+  303 &nbsp;         } catch (IOException e) {
+  304 &nbsp;             if (JConsole.isDebug()) {
+  305 &nbsp;                 e.printStackTrace();
+  306 &nbsp;             }
+  307 &nbsp;             proxyClient.markAsDead();
+  308 &nbsp;             return null;
+  309 &nbsp;         } catch (UndeclaredThrowableException e) {
+  310 &nbsp;             if (JConsole.isDebug()) {
+<a name='311'>  311 &nbsp;                 e.printStackTrace();
+  312 &nbsp;             }
+  313 &nbsp;             proxyClient.markAsDead();
+  314 &nbsp;             return null;
+  315 &nbsp;         }
+  316 &nbsp; 
+  317 &nbsp;         append("&lt;/table&gt;");
+  318 &nbsp; 
+  319 &nbsp;         result.timeStamp = System.currentTimeMillis();
+  320 &nbsp;         result.summary = buf.toString();
+<a name='321'>  321 &nbsp; 
+  322 &nbsp;         return result;
+  323 &nbsp;     }
+  324 &nbsp; 
+  325 &nbsp;     private synchronized void append(String str) {
+  326 &nbsp;         buf.append(str);
+  327 &nbsp;     }
+  328 &nbsp; 
+  329 &nbsp;     void append(String label, String value) {
+  330 &nbsp;         append(newRow((label != null) ? getText(label) : label, value));
+<a name='331'>  331 &nbsp;     }
+  332 &nbsp; 
+  333 &nbsp;     private void append(String label, String value, int columnPerRow) {
+  334 &nbsp;         if (columnPerRow == 4 &amp;&amp; pathSeparator != null) {
+  335 &nbsp;             value = value.replace(pathSeparator,
+  336 &nbsp;                                   "&lt;b&gt;&lt;/b&gt;" + pathSeparator);
+  337 &nbsp;         }
+  338 &nbsp;         append(newRow(getText(label), value, columnPerRow));
+  339 &nbsp;     }
+  340 &nbsp; 
+<a name='341'>  341 &nbsp;     void append(String label1, String value1,
+  342 &nbsp;                 String label2, String value2) {
+  343 &nbsp;         append(newRow(getText(label1), value1,
+  344 &nbsp;                       getText(label2), value2));
+  345 &nbsp;     }
+  346 &nbsp; 
+  347 &nbsp;     OverviewPanel[] getOverviewPanels() {
+  348 &nbsp;         if (overviewPanel == null) {
+  349 &nbsp;             overviewPanel = new CPUOverviewPanel();
+  350 &nbsp;         }
+<a name='351'>  351 &nbsp;         return new OverviewPanel[] { overviewPanel };
+  352 &nbsp;     }
+  353 &nbsp; 
+  354 &nbsp;     private static class CPUOverviewPanel extends OverviewPanel {
+  355 &nbsp;         private long prevUpTime, prevProcessCpuTime;
+  356 &nbsp; 
+  357 &nbsp;         CPUOverviewPanel() {
+  358 &nbsp;             super(getText("CPU Usage"), cpuUsageKey, cpuUsageName, Plotter.Unit.PERCENT);
+  359 &nbsp;             getPlotter().setDecimals(CPU_DECIMALS);
+  360 &nbsp;         }
+<a name='361'>  361 &nbsp; 
+  362 &nbsp;         public void updateCPUInfo(Result result) {
+  363 &nbsp;             if (prevUpTime &gt; 0L &amp;&amp; result.upTime &gt; prevUpTime) {
+  364 &nbsp;                 // elapsedCpu is in ns and elapsedTime is in ms.
+  365 &nbsp;                 long elapsedCpu = result.processCpuTime - prevProcessCpuTime;
+  366 &nbsp;                 long elapsedTime = result.upTime - prevUpTime;
+  367 &nbsp;                 // cpuUsage could go higher than 100% because elapsedTime
+  368 &nbsp;                 // and elapsedCpu are not fetched simultaneously. Limit to
+  369 &nbsp;                 // 99% to avoid Plotter showing a scale from 0% to 200%.
+  370 &nbsp;                 float cpuUsage =
+<a name='371'>  371 &nbsp;                     Math.min(99F,
+  372 &nbsp;                              elapsedCpu / (elapsedTime * 10000F * result.nCPUs));
+  373 &nbsp; 
+  374 &nbsp;                 getPlotter().addValues(result.timeStamp,
+  375 &nbsp;                                 Math.round(cpuUsage * Math.pow(10.0, CPU_DECIMALS)));
+  376 &nbsp;                 getInfoLabel().setText(getText(cpuUsageFormat,
+  377 &nbsp;                                                String.format("%."+CPU_DECIMALS+"f", cpuUsage)));
+  378 &nbsp;             }
+  379 &nbsp;             this.prevUpTime = result.upTime;
+  380 &nbsp;             this.prevProcessCpuTime = result.processCpuTime;
+<a name='381'>  381 &nbsp;         }
+  382 &nbsp;     }
+  383 &nbsp; 
+  384 &nbsp; 
+  385 &nbsp; 
+  386 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/SummaryTab.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

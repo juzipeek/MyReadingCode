@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: PlotterPanel.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/PlotterPanel.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; 
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/accessibility/package-index.html>javax.accessibility</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   33 &nbsp; 
+   34 &nbsp; @SuppressWarnings("serial")
+   35 &nbsp; public class PlotterPanel extends BorderedComponent {
+   36 &nbsp;     Plotter plotter;
+   37 &nbsp; 
+   38 &nbsp;     public PlotterPanel(String labelStr, Plotter.Unit unit, boolean collapsible) {
+   39 &nbsp;         super(labelStr, new Plotter(unit), collapsible);
+   40 &nbsp; 
+<a name='41'>   41 &nbsp;         this.plotter = (Plotter)comp;
+   42 &nbsp; 
+   43 &nbsp;         init();
+   44 &nbsp;     }
+   45 &nbsp; 
+   46 &nbsp;     public PlotterPanel(String labelStr) {
+   47 &nbsp;         super(labelStr, null);
+   48 &nbsp; 
+   49 &nbsp;         init();
+   50 &nbsp;     }
+<a name='51'>   51 &nbsp; 
+   52 &nbsp;     public Plotter getPlotter() {
+   53 &nbsp;         return this.plotter;
+   54 &nbsp;     }
+   55 &nbsp; 
+   56 &nbsp;     public void setPlotter(Plotter plotter) {
+   57 &nbsp;         this.plotter = plotter;
+   58 &nbsp;         setComponent(plotter);
+   59 &nbsp;     }
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;     private void init() {
+   62 &nbsp;         setFocusable(true);
+   63 &nbsp; 
+   64 &nbsp;         addMouseListener(new MouseAdapter() {
+   65 &nbsp;             public void mousePressed(MouseEvent e) {
+   66 &nbsp;                 requestFocusInWindow();
+   67 &nbsp;             }
+   68 &nbsp;         });
+   69 &nbsp;     }
+   70 &nbsp; 
+<a name='71'>   71 &nbsp;     public JPopupMenu getComponentPopupMenu() {
+   72 &nbsp;         return (getPlotter() != null)? getPlotter().getComponentPopupMenu() : null;
+   73 &nbsp;     }
+   74 &nbsp; 
+   75 &nbsp;     public AccessibleContext getAccessibleContext() {
+   76 &nbsp;         if (accessibleContext == null) {
+   77 &nbsp;             accessibleContext = new AccessiblePlotterPanel();
+   78 &nbsp;         }
+   79 &nbsp;         return accessibleContext;
+   80 &nbsp;     }
+<a name='81'>   81 &nbsp; 
+   82 &nbsp;     protected class AccessiblePlotterPanel extends AccessibleJComponent {
+   83 &nbsp;         public String getAccessibleName() {
+   84 &nbsp;             String name = null;
+   85 &nbsp;             if (getPlotter() != null) {
+   86 &nbsp;                 name = getPlotter().getAccessibleContext().getAccessibleName();
+   87 &nbsp;             }
+   88 &nbsp;             if (name == null) {
+   89 &nbsp;                 name = super.getAccessibleName();
+   90 &nbsp;             }
+<a name='91'>   91 &nbsp;             return name;
+   92 &nbsp;         }
+   93 &nbsp;     }
+   94 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/PlotterPanel.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

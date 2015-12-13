@@ -1,0 +1,709 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: VMPanel.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/VMPanel.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2008, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/package-index.html>java.beans</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/package-index.html>java.lang.reflect</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/List.html>java.util.List</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/Timer.html>java.util.Timer</a>;
+   36 &nbsp; 
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/plaf/package-index.html>javax.swing.plaf</a>;
+   39 &nbsp; 
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/jconsole/JConsolePlugin.html>com.sun.tools.jconsole.JConsolePlugin</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/jconsole/JConsoleContext.html>com.sun.tools.jconsole.JConsoleContext</a>;
+   42 &nbsp; import static com.sun.tools.jconsole.JConsoleContext.ConnectionState.*;
+   43 &nbsp; 
+   44 &nbsp; import static sun.tools.jconsole.ProxyClient.*;
+   45 &nbsp; 
+   46 &nbsp; @SuppressWarnings("serial")
+   47 &nbsp; public class VMPanel extends JTabbedPane implements PropertyChangeListener {
+   48 &nbsp; 
+   49 &nbsp;     private ProxyClient proxyClient;
+   50 &nbsp;     private Timer timer;
+<a name='51'>   51 &nbsp;     private int updateInterval;
+   52 &nbsp;     private String hostName;
+   53 &nbsp;     private int port;
+   54 &nbsp;     private int vmid;
+   55 &nbsp;     private String userName;
+   56 &nbsp;     private String password;
+   57 &nbsp;     private String url;
+   58 &nbsp;     private VMInternalFrame vmIF = null;
+   59 &nbsp;     private static final String windowsLaF =
+   60 &nbsp;             "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
+<a name='61'>   61 &nbsp;     private static ArrayList&lt;TabInfo&gt; tabInfos = new ArrayList&lt;TabInfo&gt;();
+   62 &nbsp;     private boolean wasConnected = false;
+   63 &nbsp; 
+   64 &nbsp;     // The everConnected flag keeps track of whether the window can be
+   65 &nbsp;     // closed if the user clicks Cancel after a failed connection attempt.
+   66 &nbsp;     //
+   67 &nbsp;     private boolean everConnected = false;
+   68 &nbsp; 
+   69 &nbsp;     // The initialUpdate flag is used to enable/disable tabs each time
+   70 &nbsp;     // a connect or reconnect takes place. This flag avoids having to
+<a name='71'>   71 &nbsp;     // enable/disable tabs on each update call.
+   72 &nbsp;     //
+   73 &nbsp;     private boolean initialUpdate = true;
+   74 &nbsp; 
+   75 &nbsp;     // Each VMPanel has its own instance of the JConsolePlugin
+   76 &nbsp;     // A map of JConsolePlugin to the previous SwingWorker
+   77 &nbsp;     private Map&lt;JConsolePlugin, SwingWorker&lt;?, ?&gt;&gt; plugins = null;
+   78 &nbsp;     private boolean pluginTabsAdded = false;
+   79 &nbsp; 
+   80 &nbsp;     // Update these only on the EDT
+<a name='81'>   81 &nbsp;     private JOptionPane optionPane;
+   82 &nbsp;     private JProgressBar progressBar;
+   83 &nbsp;     private long time0;
+   84 &nbsp; 
+   85 &nbsp;     static {
+   86 &nbsp;         tabInfos.add(new TabInfo(OverviewTab.class, OverviewTab.getTabName(), true));
+   87 &nbsp;         tabInfos.add(new TabInfo(MemoryTab.class, MemoryTab.getTabName(), true));
+   88 &nbsp;         tabInfos.add(new TabInfo(ThreadTab.class, ThreadTab.getTabName(), true));
+   89 &nbsp;         tabInfos.add(new TabInfo(ClassTab.class, ClassTab.getTabName(), true));
+   90 &nbsp;         tabInfos.add(new TabInfo(SummaryTab.class, SummaryTab.getTabName(), true));
+<a name='91'>   91 &nbsp;         tabInfos.add(new TabInfo(MBeansTab.class, MBeansTab.getTabName(), true));
+   92 &nbsp;     }
+   93 &nbsp; 
+   94 &nbsp;     public static TabInfo[] getTabInfos() {
+   95 &nbsp;         return tabInfos.toArray(new TabInfo[tabInfos.size()]);
+   96 &nbsp;     }
+   97 &nbsp; 
+   98 &nbsp;     VMPanel(ProxyClient proxyClient, int updateInterval) {
+   99 &nbsp;         this.proxyClient = proxyClient;
+  100 &nbsp;         this.updateInterval = updateInterval;
+<a name='101'>  101 &nbsp;         this.hostName = proxyClient.getHostName();
+  102 &nbsp;         this.port = proxyClient.getPort();
+  103 &nbsp;         this.vmid = proxyClient.getVmid();
+  104 &nbsp;         this.userName = proxyClient.getUserName();
+  105 &nbsp;         this.password = proxyClient.getPassword();
+  106 &nbsp;         this.url = proxyClient.getUrl();
+  107 &nbsp; 
+  108 &nbsp;         for (TabInfo tabInfo : tabInfos) {
+  109 &nbsp;             if (tabInfo.tabVisible) {
+  110 &nbsp;                 addTab(tabInfo);
+<a name='111'>  111 &nbsp;             }
+  112 &nbsp;         }
+  113 &nbsp; 
+  114 &nbsp;         plugins = new LinkedHashMap&lt;JConsolePlugin, SwingWorker&lt;?, ?&gt;&gt;();
+  115 &nbsp;         for (JConsolePlugin p : JConsole.getPlugins()) {
+  116 &nbsp;             p.setContext(proxyClient);
+  117 &nbsp;             plugins.put(p, null);
+  118 &nbsp;         }
+  119 &nbsp; 
+  120 &nbsp;         Utilities.updateTransparency(this);
+<a name='121'>  121 &nbsp; 
+  122 &nbsp;         ToolTipManager.sharedInstance().registerComponent(this);
+  123 &nbsp; 
+  124 &nbsp;         // Start listening to connection state events
+  125 &nbsp;         //
+  126 &nbsp;         proxyClient.addPropertyChangeListener(this);
+  127 &nbsp; 
+  128 &nbsp;         addMouseListener(new MouseAdapter() {
+  129 &nbsp; 
+  130 &nbsp;             public void mouseClicked(MouseEvent e) {
+<a name='131'>  131 &nbsp;                 if (connectedIconBounds != null &amp;&amp; (e.getModifiers() &amp; MouseEvent.BUTTON1_MASK) != 0 &amp;&amp; connectedIconBounds.contains(e.getPoint())) {
+  132 &nbsp; 
+  133 &nbsp;                     if (isConnected()) {
+  134 &nbsp;                         disconnect();
+  135 &nbsp;                         wasConnected = false;
+  136 &nbsp;                     } else {
+  137 &nbsp;                         connect();
+  138 &nbsp;                     }
+  139 &nbsp;                     repaint();
+  140 &nbsp;                 }
+<a name='141'>  141 &nbsp;             }
+  142 &nbsp;         });
+  143 &nbsp; 
+  144 &nbsp;     }
+  145 &nbsp;     private static Icon connectedIcon16 =
+  146 &nbsp;             new ImageIcon(VMPanel.class.getResource("resources/connected16.png"));
+  147 &nbsp;     private static Icon connectedIcon24 =
+  148 &nbsp;             new ImageIcon(VMPanel.class.getResource("resources/connected24.png"));
+  149 &nbsp;     private static Icon disconnectedIcon16 =
+  150 &nbsp;             new ImageIcon(VMPanel.class.getResource("resources/disconnected16.png"));
+<a name='151'>  151 &nbsp;     private static Icon disconnectedIcon24 =
+  152 &nbsp;             new ImageIcon(VMPanel.class.getResource("resources/disconnected24.png"));
+  153 &nbsp;     private Rectangle connectedIconBounds;
+  154 &nbsp; 
+  155 &nbsp;     // Override to increase right inset for tab area,
+  156 &nbsp;     // in order to reserve space for the connect toggle.
+  157 &nbsp;     public void setUI(TabbedPaneUI ui) {
+  158 &nbsp;         Insets insets = (Insets) UIManager.getLookAndFeelDefaults().get("TabbedPane.tabAreaInsets");
+  159 &nbsp;         insets = (Insets) insets.clone();
+  160 &nbsp;         insets.right += connectedIcon24.getIconWidth() + 8;
+<a name='161'>  161 &nbsp;         UIManager.put("TabbedPane.tabAreaInsets", insets);
+  162 &nbsp;         super.setUI(ui);
+  163 &nbsp;     }
+  164 &nbsp; 
+  165 &nbsp;     // Override to paint the connect toggle
+  166 &nbsp;     protected void paintComponent(Graphics g) {
+  167 &nbsp;         super.paintComponent(g);
+  168 &nbsp; 
+  169 &nbsp;         Icon icon;
+  170 &nbsp;         Component c0 = getComponent(0);
+<a name='171'>  171 &nbsp;         if (c0 != null &amp;&amp; c0.getY() &gt; 24) {
+  172 &nbsp;             icon = isConnected() ? connectedIcon24 : disconnectedIcon24;
+  173 &nbsp;         } else {
+  174 &nbsp;             icon = isConnected() ? connectedIcon16 : disconnectedIcon16;
+  175 &nbsp;         }
+  176 &nbsp;         Insets insets = getInsets();
+  177 &nbsp;         int x = getWidth() - insets.right - icon.getIconWidth() - 4;
+  178 &nbsp;         int y = insets.top;
+  179 &nbsp;         if (c0 != null) {
+  180 &nbsp;             y = (c0.getY() - icon.getIconHeight()) / 2;
+<a name='181'>  181 &nbsp;         }
+  182 &nbsp;         icon.paintIcon(this, g, x, y);
+  183 &nbsp;         connectedIconBounds = new Rectangle(x, y, icon.getIconWidth(), icon.getIconHeight());
+  184 &nbsp;     }
+  185 &nbsp; 
+  186 &nbsp;     public String getToolTipText(MouseEvent event) {
+  187 &nbsp;         if (connectedIconBounds.contains(event.getPoint())) {
+  188 &nbsp;             if (isConnected()) {
+  189 &nbsp;                 return getText("Connected. Click to disconnect.");
+  190 &nbsp;             } else {
+<a name='191'>  191 &nbsp;                 return getText("Disconnected. Click to connect.");
+  192 &nbsp;             }
+  193 &nbsp;         } else {
+  194 &nbsp;             return super.getToolTipText(event);
+  195 &nbsp;         }
+  196 &nbsp;     }
+  197 &nbsp; 
+  198 &nbsp;     private synchronized void addTab(TabInfo tabInfo) {
+  199 &nbsp;         Tab tab = instantiate(tabInfo);
+  200 &nbsp;         if (tab != null) {
+<a name='201'>  201 &nbsp;             addTab(tabInfo.name, tab);
+  202 &nbsp;         } else {
+  203 &nbsp;             tabInfo.tabVisible = false;
+  204 &nbsp;         }
+  205 &nbsp;     }
+  206 &nbsp; 
+  207 &nbsp;     private synchronized void insertTab(TabInfo tabInfo, int index) {
+  208 &nbsp;         Tab tab = instantiate(tabInfo);
+  209 &nbsp;         if (tab != null) {
+  210 &nbsp;             insertTab(tabInfo.name, null, tab, null, index);
+<a name='211'>  211 &nbsp;         } else {
+  212 &nbsp;             tabInfo.tabVisible = false;
+  213 &nbsp;         }
+  214 &nbsp;     }
+  215 &nbsp; 
+  216 &nbsp;     public synchronized void removeTabAt(int index) {
+  217 &nbsp;         super.removeTabAt(index);
+  218 &nbsp;     }
+  219 &nbsp; 
+  220 &nbsp;     private Tab instantiate(TabInfo tabInfo) {
+<a name='221'>  221 &nbsp;         try {
+  222 &nbsp;             Constructor con = tabInfo.tabClass.getConstructor(VMPanel.class);
+  223 &nbsp;             return (Tab) con.newInstance(this);
+  224 &nbsp;         } catch (Exception ex) {
+  225 &nbsp;             System.err.println(ex);
+  226 &nbsp;             return null;
+  227 &nbsp;         }
+  228 &nbsp;     }
+  229 &nbsp; 
+  230 &nbsp;     boolean isConnected() {
+<a name='231'>  231 &nbsp;         return proxyClient.isConnected();
+  232 &nbsp;     }
+  233 &nbsp; 
+  234 &nbsp;     public int getUpdateInterval() {
+  235 &nbsp;         return updateInterval;
+  236 &nbsp;     }
+  237 &nbsp; 
+  238 &nbsp;     /**
+  239 &nbsp;      * WARNING NEVER CALL THIS METHOD TO MAKE JMX REQUEST
+  240 &nbsp;      * IF  assertThread == false.
+<a name='241'>  241 &nbsp;      * DISPATCHER THREAD IS NOT ASSERTED.
+  242 &nbsp;      * IT IS USED TO MAKE SOME LOCAL MANIPULATIONS.
+  243 &nbsp;      */
+  244 &nbsp;     ProxyClient getProxyClient(boolean assertThread) {
+  245 &nbsp;         if (assertThread) {
+  246 &nbsp;             return getProxyClient();
+  247 &nbsp;         } else {
+  248 &nbsp;             return proxyClient;
+  249 &nbsp;         }
+  250 &nbsp;     }
+<a name='251'>  251 &nbsp; 
+  252 &nbsp;     public ProxyClient getProxyClient() {
+  253 &nbsp;         String threadClass = Thread.currentThread().getClass().getName();
+  254 &nbsp;         if (threadClass.equals("java.awt.EventDispatchThread")) {
+  255 &nbsp;             String msg = "Calling VMPanel.getProxyClient() from the Event Dispatch Thread!";
+  256 &nbsp;             new RuntimeException(msg).printStackTrace();
+  257 &nbsp;             System.exit(1);
+  258 &nbsp;         }
+  259 &nbsp;         return proxyClient;
+  260 &nbsp;     }
+<a name='261'>  261 &nbsp; 
+  262 &nbsp;     public void cleanUp() {
+  263 &nbsp;         //proxyClient.disconnect();
+  264 &nbsp;         for (Tab tab : getTabs()) {
+  265 &nbsp;             tab.dispose();
+  266 &nbsp;         }
+  267 &nbsp;         for (JConsolePlugin p : plugins.keySet()) {
+  268 &nbsp;             p.dispose();
+  269 &nbsp;         }
+  270 &nbsp;         // Cancel pending update tasks
+<a name='271'>  271 &nbsp;         //
+  272 &nbsp;         if (timer != null) {
+  273 &nbsp;             timer.cancel();
+  274 &nbsp;         }
+  275 &nbsp;         // Stop listening to connection state events
+  276 &nbsp;         //
+  277 &nbsp;         proxyClient.removePropertyChangeListener(this);
+  278 &nbsp;     }
+  279 &nbsp; 
+  280 &nbsp;     // Call on EDT
+<a name='281'>  281 &nbsp;     public void connect() {
+  282 &nbsp;         if (isConnected()) {
+  283 &nbsp;             // create plugin tabs if not done
+  284 &nbsp;             createPluginTabs();
+  285 &nbsp;             // Notify tabs
+  286 &nbsp;             fireConnectedChange(true);
+  287 &nbsp;             // Enable/disable tabs on initial update
+  288 &nbsp;             initialUpdate = true;
+  289 &nbsp;             // Start/Restart update timer on connect/reconnect
+  290 &nbsp;             startUpdateTimer();
+<a name='291'>  291 &nbsp;         } else {
+  292 &nbsp;             new Thread("VMPanel.connect") {
+  293 &nbsp; 
+  294 &nbsp;                 public void run() {
+  295 &nbsp;                     proxyClient.connect();
+  296 &nbsp;                 }
+  297 &nbsp;             }.start();
+  298 &nbsp;         }
+  299 &nbsp;     }
+  300 &nbsp; 
+<a name='301'>  301 &nbsp;     // Call on EDT
+  302 &nbsp;     public void disconnect() {
+  303 &nbsp;         proxyClient.disconnect();
+  304 &nbsp;         updateFrameTitle();
+  305 &nbsp;     }
+  306 &nbsp; 
+  307 &nbsp;     // Called on EDT
+  308 &nbsp;     public void propertyChange(PropertyChangeEvent ev) {
+  309 &nbsp;         String prop = ev.getPropertyName();
+  310 &nbsp; 
+<a name='311'>  311 &nbsp;         if (prop == CONNECTION_STATE_PROPERTY) {
+  312 &nbsp;             ConnectionState oldState = (ConnectionState) ev.getOldValue();
+  313 &nbsp;             ConnectionState newState = (ConnectionState) ev.getNewValue();
+  314 &nbsp;             switch (newState) {
+  315 &nbsp;                 case CONNECTING:
+  316 &nbsp;                     onConnecting();
+  317 &nbsp;                     break;
+  318 &nbsp; 
+  319 &nbsp;                 case CONNECTED:
+  320 &nbsp;                     if (progressBar != null) {
+<a name='321'>  321 &nbsp;                         progressBar.setIndeterminate(false);
+  322 &nbsp;                         progressBar.setValue(100);
+  323 &nbsp;                     }
+  324 &nbsp;                     closeOptionPane();
+  325 &nbsp;                     updateFrameTitle();
+  326 &nbsp;                     // create tabs if not done
+  327 &nbsp;                     createPluginTabs();
+  328 &nbsp;                     repaint();
+  329 &nbsp;                     // Notify tabs
+  330 &nbsp;                     fireConnectedChange(true);
+<a name='331'>  331 &nbsp;                     // Enable/disable tabs on initial update
+  332 &nbsp;                     initialUpdate = true;
+  333 &nbsp;                     // Start/Restart update timer on connect/reconnect
+  334 &nbsp;                     startUpdateTimer();
+  335 &nbsp;                     break;
+  336 &nbsp; 
+  337 &nbsp;                 case DISCONNECTED:
+  338 &nbsp;                     if (progressBar != null) {
+  339 &nbsp;                         progressBar.setIndeterminate(false);
+  340 &nbsp;                         progressBar.setValue(0);
+<a name='341'>  341 &nbsp;                         closeOptionPane();
+  342 &nbsp;                     }
+  343 &nbsp;                     vmPanelDied();
+  344 &nbsp;                     if (oldState == ConnectionState.CONNECTED) {
+  345 &nbsp;                         // Notify tabs
+  346 &nbsp;                         fireConnectedChange(false);
+  347 &nbsp;                     }
+  348 &nbsp;                     break;
+  349 &nbsp;             }
+  350 &nbsp;         }
+<a name='351'>  351 &nbsp;     }
+  352 &nbsp; 
+  353 &nbsp;     // Called on EDT
+  354 &nbsp;     private void onConnecting() {
+  355 &nbsp;         time0 = System.currentTimeMillis();
+  356 &nbsp; 
+  357 &nbsp;         final JConsole jc = (JConsole) SwingUtilities.getWindowAncestor(this);
+  358 &nbsp; 
+  359 &nbsp;         String connectionName = getConnectionName();
+  360 &nbsp;         progressBar = new JProgressBar();
+<a name='361'>  361 &nbsp;         progressBar.setIndeterminate(true);
+  362 &nbsp;         JPanel progressPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+  363 &nbsp;         progressPanel.add(progressBar);
+  364 &nbsp; 
+  365 &nbsp;         Object[] message = {
+  366 &nbsp;             "&lt;html&gt;&lt;h3&gt;" + getText("connectingTo1", connectionName) + "&lt;/h3&gt;&lt;/html&gt;",
+  367 &nbsp;             progressPanel,
+  368 &nbsp;             "&lt;html&gt;&lt;b&gt;" + getText("connectingTo2", connectionName) + "&lt;/b&gt;&lt;/html&gt;"
+  369 &nbsp;         };
+  370 &nbsp; 
+<a name='371'>  371 &nbsp;         optionPane =
+  372 &nbsp;                 SheetDialog.showOptionDialog(this,
+  373 &nbsp;                 message,
+  374 &nbsp;                 JOptionPane.DEFAULT_OPTION,
+  375 &nbsp;                 JOptionPane.INFORMATION_MESSAGE, null,
+  376 &nbsp;                 new String[]{getText("Cancel")},
+  377 &nbsp;                 0);
+  378 &nbsp; 
+  379 &nbsp; 
+  380 &nbsp;     }
+<a name='381'>  381 &nbsp; 
+  382 &nbsp;     // Called on EDT
+  383 &nbsp;     private void closeOptionPane() {
+  384 &nbsp;         if (optionPane != null) {
+  385 &nbsp;             new Thread("VMPanel.sleeper") {
+  386 &nbsp;                 public void run() {
+  387 &nbsp;                     long elapsed = System.currentTimeMillis() - time0;
+  388 &nbsp;                     if (elapsed &lt; 2000) {
+  389 &nbsp;                         try {
+  390 &nbsp;                             sleep(2000 - elapsed);
+<a name='391'>  391 &nbsp;                         } catch (InterruptedException ex) {
+  392 &nbsp;                         // Ignore
+  393 &nbsp;                         }
+  394 &nbsp;                     }
+  395 &nbsp;                     SwingUtilities.invokeLater(new Runnable() {
+  396 &nbsp; 
+  397 &nbsp;                         public void run() {
+  398 &nbsp;                             optionPane.setVisible(false);
+  399 &nbsp;                             progressBar = null;
+  400 &nbsp;                         }
+<a name='401'>  401 &nbsp;                     });
+  402 &nbsp;                 }
+  403 &nbsp;             }.start();
+  404 &nbsp;         }
+  405 &nbsp;     }
+  406 &nbsp; 
+  407 &nbsp;     void updateFrameTitle() {
+  408 &nbsp;         VMInternalFrame vmIF = getFrame();
+  409 &nbsp;         if (vmIF != null) {
+  410 &nbsp;             String displayName = getDisplayName();
+<a name='411'>  411 &nbsp;             if (!proxyClient.isConnected()) {
+  412 &nbsp;                 displayName = getText("ConnectionName (disconnected)", displayName);
+  413 &nbsp;             }
+  414 &nbsp;             vmIF.setTitle(displayName);
+  415 &nbsp;         }
+  416 &nbsp;     }
+  417 &nbsp; 
+  418 &nbsp;     private VMInternalFrame getFrame() {
+  419 &nbsp;         if (vmIF == null) {
+  420 &nbsp;             vmIF = (VMInternalFrame) SwingUtilities.getAncestorOfClass(VMInternalFrame.class,
+<a name='421'>  421 &nbsp;                     this);
+  422 &nbsp;         }
+  423 &nbsp;         return vmIF;
+  424 &nbsp;     }
+  425 &nbsp; 
+  426 &nbsp;     // TODO: this method is not needed when all JConsole tabs
+  427 &nbsp;     // are migrated to use the new JConsolePlugin API.
+  428 &nbsp;     //
+  429 &nbsp;     // A thread safe clone of all JConsole tabs
+  430 &nbsp;     synchronized List&lt;Tab&gt; getTabs() {
+<a name='431'>  431 &nbsp;         ArrayList&lt;Tab&gt; list = new ArrayList&lt;Tab&gt;();
+  432 &nbsp;         int n = getTabCount();
+  433 &nbsp;         for (int i = 0; i &lt; n; i++) {
+  434 &nbsp;             Component c = getComponentAt(i);
+  435 &nbsp;             if (c instanceof Tab) {
+  436 &nbsp;                 list.add((Tab) c);
+  437 &nbsp;             }
+  438 &nbsp;         }
+  439 &nbsp;         return list;
+  440 &nbsp;     }
+<a name='441'>  441 &nbsp; 
+  442 &nbsp;     private void startUpdateTimer() {
+  443 &nbsp;         if (timer != null) {
+  444 &nbsp;             timer.cancel();
+  445 &nbsp;         }
+  446 &nbsp;         TimerTask timerTask = new TimerTask() {
+  447 &nbsp; 
+  448 &nbsp;             public void run() {
+  449 &nbsp;                 update();
+  450 &nbsp;             }
+<a name='451'>  451 &nbsp;         };
+  452 &nbsp;         String timerName = "Timer-" + getConnectionName();
+  453 &nbsp;         timer = new Timer(timerName, true);
+  454 &nbsp;         timer.schedule(timerTask, 0, updateInterval);
+  455 &nbsp;     }
+  456 &nbsp; 
+  457 &nbsp;     // Call on EDT
+  458 &nbsp;     private void vmPanelDied() {
+  459 &nbsp;         disconnect();
+  460 &nbsp; 
+<a name='461'>  461 &nbsp;         final JConsole jc = (JConsole) SwingUtilities.getWindowAncestor(this);
+  462 &nbsp; 
+  463 &nbsp;         JOptionPane optionPane;
+  464 &nbsp; 
+  465 &nbsp;         final String connectStr = getText("Connect");
+  466 &nbsp;         final String reconnectStr = getText("Reconnect");
+  467 &nbsp;         final String cancelStr = getText("Cancel");
+  468 &nbsp; 
+  469 &nbsp;         String msgTitle, msgExplanation, buttonStr;
+  470 &nbsp; 
+<a name='471'>  471 &nbsp;         if (wasConnected) {
+  472 &nbsp;             wasConnected = false;
+  473 &nbsp;             msgTitle = getText("connectionLost1");
+  474 &nbsp;             msgExplanation = getText("connectionLost2", getConnectionName());
+  475 &nbsp;             buttonStr = reconnectStr;
+  476 &nbsp;         } else {
+  477 &nbsp;             msgTitle = getText("connectionFailed1");
+  478 &nbsp;             msgExplanation = getText("connectionFailed2", getConnectionName());
+  479 &nbsp;             buttonStr = connectStr;
+  480 &nbsp;         }
+<a name='481'>  481 &nbsp; 
+  482 &nbsp;         optionPane =
+  483 &nbsp;                 SheetDialog.showOptionDialog(this,
+  484 &nbsp;                 "&lt;html&gt;&lt;h3&gt;" + msgTitle + "&lt;/h3&gt;" +
+  485 &nbsp;                 "&lt;b&gt;" + msgExplanation + "&lt;/b&gt;",
+  486 &nbsp;                 JOptionPane.DEFAULT_OPTION,
+  487 &nbsp;                 JOptionPane.WARNING_MESSAGE, null,
+  488 &nbsp;                 new String[]{buttonStr, cancelStr},
+  489 &nbsp;                 0);
+  490 &nbsp; 
+<a name='491'>  491 &nbsp;         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
+  492 &nbsp; 
+  493 &nbsp;             public void propertyChange(PropertyChangeEvent event) {
+  494 &nbsp;                 if (event.getPropertyName().equals(JOptionPane.VALUE_PROPERTY)) {
+  495 &nbsp;                     Object value = event.getNewValue();
+  496 &nbsp; 
+  497 &nbsp;                     if (value == reconnectStr || value == connectStr) {
+  498 &nbsp;                         connect();
+  499 &nbsp;                     } else if (!everConnected) {
+  500 &nbsp;                         try {
+<a name='501'>  501 &nbsp;                             getFrame().setClosed(true);
+  502 &nbsp;                         } catch (PropertyVetoException ex) {
+  503 &nbsp;                         // Should not happen, but can be ignored.
+  504 &nbsp;                         }
+  505 &nbsp;                     }
+  506 &nbsp;                 }
+  507 &nbsp;             }
+  508 &nbsp;         });
+  509 &nbsp;     }
+  510 &nbsp; 
+<a name='511'>  511 &nbsp;     // Note: This method is called on a TimerTask thread. Any GUI manipulation
+  512 &nbsp;     // must be performed with invokeLater() or invokeAndWait().
+  513 &nbsp;     private Object lockObject = new Object();
+  514 &nbsp; 
+  515 &nbsp;     private void update() {
+  516 &nbsp;         synchronized (lockObject) {
+  517 &nbsp;             if (!isConnected()) {
+  518 &nbsp;                 if (wasConnected) {
+  519 &nbsp;                     EventQueue.invokeLater(new Runnable() {
+  520 &nbsp; 
+<a name='521'>  521 &nbsp;                         public void run() {
+  522 &nbsp;                             vmPanelDied();
+  523 &nbsp;                         }
+  524 &nbsp;                     });
+  525 &nbsp;                 }
+  526 &nbsp;                 wasConnected = false;
+  527 &nbsp;                 return;
+  528 &nbsp;             } else {
+  529 &nbsp;                 wasConnected = true;
+  530 &nbsp;                 everConnected = true;
+<a name='531'>  531 &nbsp;             }
+  532 &nbsp;             proxyClient.flush();
+  533 &nbsp;             List&lt;Tab&gt; tabs = getTabs();
+  534 &nbsp;             final int n = tabs.size();
+  535 &nbsp;             for (int i = 0; i &lt; n; i++) {
+  536 &nbsp;                 final int index = i;
+  537 &nbsp;                 try {
+  538 &nbsp;                     if (!proxyClient.isDead()) {
+  539 &nbsp;                         // Update tab
+  540 &nbsp;                         //
+<a name='541'>  541 &nbsp;                         tabs.get(index).update();
+  542 &nbsp;                         // Enable tab on initial update
+  543 &nbsp;                         //
+  544 &nbsp;                         if (initialUpdate) {
+  545 &nbsp;                             EventQueue.invokeLater(new Runnable() {
+  546 &nbsp; 
+  547 &nbsp;                                 public void run() {
+  548 &nbsp;                                     setEnabledAt(index, true);
+  549 &nbsp;                                 }
+  550 &nbsp;                             });
+<a name='551'>  551 &nbsp;                         }
+  552 &nbsp;                     }
+  553 &nbsp;                 } catch (Exception e) {
+  554 &nbsp;                     // Disable tab on initial update
+  555 &nbsp;                     //
+  556 &nbsp;                     if (initialUpdate) {
+  557 &nbsp;                         EventQueue.invokeLater(new Runnable() {
+  558 &nbsp;                             public void run() {
+  559 &nbsp;                                 setEnabledAt(index, false);
+  560 &nbsp;                             }
+<a name='561'>  561 &nbsp;                         });
+  562 &nbsp;                     }
+  563 &nbsp;                 }
+  564 &nbsp;             }
+  565 &nbsp; 
+  566 &nbsp;             // plugin GUI update
+  567 &nbsp;             for (JConsolePlugin p : plugins.keySet()) {
+  568 &nbsp;                 SwingWorker&lt;?, ?&gt; sw = p.newSwingWorker();
+  569 &nbsp;                 SwingWorker&lt;?, ?&gt; prevSW = plugins.get(p);
+  570 &nbsp;                 // schedule SwingWorker to run only if the previous
+<a name='571'>  571 &nbsp;                 // SwingWorker has finished its task and it hasn't started.
+  572 &nbsp;                 if (prevSW == null || prevSW.isDone()) {
+  573 &nbsp;                     if (sw == null || sw.getState() == SwingWorker.StateValue.PENDING) {
+  574 &nbsp;                         plugins.put(p, sw);
+  575 &nbsp;                         if (sw != null) {
+  576 &nbsp;                             sw.execute();
+  577 &nbsp;                         }
+  578 &nbsp;                     }
+  579 &nbsp;                 }
+  580 &nbsp;             }
+<a name='581'>  581 &nbsp; 
+  582 &nbsp;             // Set the first enabled tab in the tab's list
+  583 &nbsp;             // as the selected tab on initial update
+  584 &nbsp;             //
+  585 &nbsp;             if (initialUpdate) {
+  586 &nbsp;                 EventQueue.invokeLater(new Runnable() {
+  587 &nbsp;                     public void run() {
+  588 &nbsp;                         // Select first enabled tab if current tab isn't.
+  589 &nbsp;                         int index = getSelectedIndex();
+  590 &nbsp;                         if (index &lt; 0 || !isEnabledAt(index)) {
+<a name='591'>  591 &nbsp;                             for (int i = 0; i &lt; n; i++) {
+  592 &nbsp;                                 if (isEnabledAt(i)) {
+  593 &nbsp;                                     setSelectedIndex(i);
+  594 &nbsp;                                     break;
+  595 &nbsp;                                 }
+  596 &nbsp;                             }
+  597 &nbsp;                         }
+  598 &nbsp;                     }
+  599 &nbsp;                 });
+  600 &nbsp;                 initialUpdate = false;
+<a name='601'>  601 &nbsp;             }
+  602 &nbsp;         }
+  603 &nbsp;     }
+  604 &nbsp; 
+  605 &nbsp;     public String getHostName() {
+  606 &nbsp;         return hostName;
+  607 &nbsp;     }
+  608 &nbsp; 
+  609 &nbsp;     public int getPort() {
+  610 &nbsp;         return port;
+<a name='611'>  611 &nbsp;     }
+  612 &nbsp; 
+  613 &nbsp;     public String getUserName() {
+  614 &nbsp;         return userName;
+  615 &nbsp;     }
+  616 &nbsp; 
+  617 &nbsp;     public String getUrl() {
+  618 &nbsp;         return url;
+  619 &nbsp;     }
+  620 &nbsp; 
+<a name='621'>  621 &nbsp;     public String getPassword() {
+  622 &nbsp;         return password;
+  623 &nbsp;     }
+  624 &nbsp; 
+  625 &nbsp;     public String getConnectionName() {
+  626 &nbsp;         return proxyClient.connectionName();
+  627 &nbsp;     }
+  628 &nbsp; 
+  629 &nbsp;     public String getDisplayName() {
+  630 &nbsp;         return proxyClient.getDisplayName();
+<a name='631'>  631 &nbsp;     }
+  632 &nbsp; 
+  633 &nbsp;     static class TabInfo {
+  634 &nbsp; 
+  635 &nbsp;         Class&lt;? extends Tab&gt; tabClass;
+  636 &nbsp;         String name;
+  637 &nbsp;         boolean tabVisible;
+  638 &nbsp; 
+  639 &nbsp;         TabInfo(Class&lt;? extends Tab&gt; tabClass, String name, boolean tabVisible) {
+  640 &nbsp;             this.tabClass = tabClass;
+<a name='641'>  641 &nbsp;             this.name = name;
+  642 &nbsp;             this.tabVisible = tabVisible;
+  643 &nbsp;         }
+  644 &nbsp;     }
+  645 &nbsp; 
+  646 &nbsp;     // Convenience methods
+  647 &nbsp;     private static String getText(String key, Object... args) {
+  648 &nbsp;         return Resources.getText(key, args);
+  649 &nbsp;     }
+  650 &nbsp; 
+<a name='651'>  651 &nbsp;     private void createPluginTabs() {
+  652 &nbsp;         // add plugin tabs if not done
+  653 &nbsp;         if (!pluginTabsAdded) {
+  654 &nbsp;             for (JConsolePlugin p : plugins.keySet()) {
+  655 &nbsp;                 Map&lt;String, JPanel&gt; tabs = p.getTabs();
+  656 &nbsp;                 for (Map.Entry&lt;String, JPanel&gt; e : tabs.entrySet()) {
+  657 &nbsp;                     addTab(e.getKey(), e.getValue());
+  658 &nbsp;                 }
+  659 &nbsp;             }
+  660 &nbsp;             pluginTabsAdded = true;
+<a name='661'>  661 &nbsp;         }
+  662 &nbsp;     }
+  663 &nbsp; 
+  664 &nbsp;     private void fireConnectedChange(boolean connected) {
+  665 &nbsp;         for (Tab tab : getTabs()) {
+  666 &nbsp;             tab.firePropertyChange(JConsoleContext.CONNECTION_STATE_PROPERTY, !connected, connected);
+  667 &nbsp;         }
+  668 &nbsp;     }
+  669 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/VMPanel.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

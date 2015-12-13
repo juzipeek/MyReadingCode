@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: InternalDialog.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/InternalDialog.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2005, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; 
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   32 &nbsp; 
+   33 &nbsp; import static javax.swing.JLayeredPane.*;
+   34 &nbsp; import static sun.tools.jconsole.Resources.*;
+   35 &nbsp; 
+   36 &nbsp; /**
+   37 &nbsp;  * Used instead of JDialog in a JDesktopPane/JInternalFrame environment.
+   38 &nbsp;  */
+   39 &nbsp; @SuppressWarnings("serial")
+   40 &nbsp; public class InternalDialog extends JInternalFrame {
+<a name='41'>   41 &nbsp;     protected JLabel statusBar;
+   42 &nbsp; 
+   43 &nbsp;     public InternalDialog(JConsole jConsole, String title, boolean modal) {
+   44 &nbsp;         super(title, true, true, false, false);
+   45 &nbsp; 
+   46 &nbsp;         setLayer(PALETTE_LAYER);
+   47 &nbsp;         putClientProperty("JInternalFrame.frameType", "optionDialog");
+   48 &nbsp; 
+   49 &nbsp;         jConsole.getDesktopPane().add(this);
+   50 &nbsp; 
+<a name='51'>   51 &nbsp; 
+   52 &nbsp;         getActionMap().put("cancel", new AbstractAction() {
+   53 &nbsp;             public void actionPerformed(ActionEvent evt) {
+   54 &nbsp;                 setVisible(false);
+   55 &nbsp;                 if (statusBar != null) {
+   56 &nbsp;                     statusBar.setText("");
+   57 &nbsp;                 }
+   58 &nbsp;             }
+   59 &nbsp;         });
+   60 &nbsp;         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+<a name='61'>   61 &nbsp;         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");
+   62 &nbsp;     }
+   63 &nbsp; 
+   64 &nbsp;     public void setLocationRelativeTo(Component c) {
+   65 &nbsp;         setLocation((c.getWidth()  - getWidth())  / 2,
+   66 &nbsp;                     (c.getHeight() - getHeight()) / 2);
+   67 &nbsp;     }
+   68 &nbsp; 
+   69 &nbsp;     protected class MastheadIcon implements Icon {
+   70 &nbsp;         // Important: Assume image background is white!
+<a name='71'>   71 &nbsp;         private ImageIcon leftIcon =
+   72 &nbsp;             new ImageIcon(InternalDialog.class.getResource("resources/masthead-left.png"));
+   73 &nbsp;         private ImageIcon rightIcon =
+   74 &nbsp;             new ImageIcon(InternalDialog.class.getResource("resources/masthead-right.png"));
+   75 &nbsp; 
+   76 &nbsp;         private Font font = Font.decode(getText("Masthead.font"));
+   77 &nbsp;         private int gap = 10;
+   78 &nbsp;         private String title;
+   79 &nbsp; 
+   80 &nbsp;         public MastheadIcon(String title) {
+<a name='81'>   81 &nbsp;             this.title = title;
+   82 &nbsp;         }
+   83 &nbsp; 
+   84 &nbsp;         public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+   85 &nbsp;             // Clone the Graphics object
+   86 &nbsp;             g = g.create();
+   87 &nbsp; 
+   88 &nbsp;             // Ignore x to make sure we fill entire component width
+   89 &nbsp;             x = 0;
+   90 &nbsp;             int width = c.getWidth();
+<a name='91'>   91 &nbsp;             int lWidth = leftIcon.getIconWidth();
+   92 &nbsp;             int rWidth = rightIcon.getIconWidth();
+   93 &nbsp;             int height = getIconHeight();
+   94 &nbsp;             int textHeight = g.getFontMetrics(font).getAscent();
+   95 &nbsp; 
+   96 &nbsp;             g.setColor(Color.white);
+   97 &nbsp;             g.fillRect(x, y, width, height);
+   98 &nbsp; 
+   99 &nbsp;             leftIcon.paintIcon(c, g, x, y);
+  100 &nbsp;             rightIcon.paintIcon(c, g, width - rWidth, y);
+<a name='101'>  101 &nbsp; 
+  102 &nbsp;             g.setFont(font);
+  103 &nbsp;             ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+  104 &nbsp;                                              RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+  105 &nbsp;             g.setColor(new Color(0x35556b));
+  106 &nbsp;             g.drawString(title, lWidth + gap, height/2 + textHeight/2);
+  107 &nbsp;         }
+  108 &nbsp; 
+  109 &nbsp;         public int getIconWidth() {
+  110 &nbsp;             int textWidth = 0;
+<a name='111'>  111 &nbsp;             Graphics g = getGraphics();
+  112 &nbsp;             if (g != null) {
+  113 &nbsp;                 FontMetrics fm = g.getFontMetrics(font);
+  114 &nbsp;                 if (fm != null) {
+  115 &nbsp;                     textWidth = fm.stringWidth(title);
+  116 &nbsp;                 }
+  117 &nbsp;             }
+  118 &nbsp;             return (leftIcon.getIconWidth() + gap + textWidth +
+  119 &nbsp;                     gap + rightIcon.getIconWidth());
+  120 &nbsp;         }
+<a name='121'>  121 &nbsp; 
+  122 &nbsp; 
+  123 &nbsp;         public int getIconHeight() {
+  124 &nbsp;             return leftIcon.getIconHeight();
+  125 &nbsp;         }
+  126 &nbsp;     }
+  127 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/InternalDialog.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: Tab.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Tab.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/package-index.html>java.beans</a>;
+<a name='31'>   31 &nbsp; 
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   33 &nbsp; 
+   34 &nbsp; public abstract class Tab extends JPanel {
+   35 &nbsp;     private String name;
+   36 &nbsp;     private Worker worker;
+   37 &nbsp; 
+   38 &nbsp;     protected VMPanel vmPanel;
+   39 &nbsp; 
+   40 &nbsp;     private SwingWorker&lt;?, ?&gt; prevSW;
+<a name='41'>   41 &nbsp; 
+   42 &nbsp;     public Tab(VMPanel vmPanel, String name) {
+   43 &nbsp;         this.vmPanel = vmPanel;
+   44 &nbsp;         this.name = name;
+   45 &nbsp;     }
+   46 &nbsp; 
+   47 &nbsp;     public SwingWorker&lt;?, ?&gt; newSwingWorker() {
+   48 &nbsp;         return null;
+   49 &nbsp;     }
+   50 &nbsp; 
+<a name='51'>   51 &nbsp;     public void update() {
+   52 &nbsp;         final ProxyClient proxyClient = vmPanel.getProxyClient();
+   53 &nbsp;         if (!proxyClient.hasPlatformMXBeans()) {
+   54 &nbsp;             throw new UnsupportedOperationException(
+   55 &nbsp;                 "Platform MXBeans not registered in MBeanServer");
+   56 &nbsp;         }
+   57 &nbsp; 
+   58 &nbsp;         SwingWorker&lt;?,?&gt; sw = newSwingWorker();
+   59 &nbsp;         // schedule SwingWorker to run only if the previous
+   60 &nbsp;         // SwingWorker has finished its task and it hasn't started.
+<a name='61'>   61 &nbsp;         if (prevSW == null || prevSW.isDone()) {
+   62 &nbsp;             if (sw == null || sw.getState() == SwingWorker.StateValue.PENDING) {
+   63 &nbsp;                 prevSW = sw;
+   64 &nbsp;                 if (sw != null) {
+   65 &nbsp;                     sw.execute();
+   66 &nbsp;                 }
+   67 &nbsp;             }
+   68 &nbsp;         }
+   69 &nbsp;     }
+   70 &nbsp; 
+<a name='71'>   71 &nbsp;     public synchronized void dispose() {
+   72 &nbsp;         if(worker != null)
+   73 &nbsp;             worker.stopWorker();
+   74 &nbsp; 
+   75 &nbsp;         // Subclasses will override to clean up
+   76 &nbsp;     }
+   77 &nbsp; 
+   78 &nbsp;     protected VMPanel getVMPanel() {
+   79 &nbsp;         return vmPanel;
+   80 &nbsp;     }
+<a name='81'>   81 &nbsp; 
+   82 &nbsp;     OverviewPanel[] getOverviewPanels() {
+   83 &nbsp;         return null;
+   84 &nbsp;     }
+   85 &nbsp; 
+   86 &nbsp;     public synchronized void workerAdd(Runnable job) {
+   87 &nbsp;         if (worker == null) {
+   88 &nbsp;             worker = new Worker(name+"-"+vmPanel.getConnectionName());
+   89 &nbsp;             worker.start();
+   90 &nbsp;         }
+<a name='91'>   91 &nbsp;         worker.add(job);
+   92 &nbsp;     }
+   93 &nbsp; 
+   94 &nbsp;     public Dimension getPreferredSize() {
+   95 &nbsp;         return new Dimension(700, 500);
+   96 &nbsp;     }
+   97 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Tab.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

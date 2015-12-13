@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: Worker.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Worker.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   29 &nbsp; 
+   30 &nbsp; public class Worker extends Thread {
+<a name='31'>   31 &nbsp;     ArrayList&lt;Runnable&gt; jobs = new ArrayList&lt;Runnable&gt;();
+   32 &nbsp;     private boolean stopped = false;
+   33 &nbsp; 
+   34 &nbsp;     public Worker(String name) {
+   35 &nbsp;         super("Worker-"+name);
+   36 &nbsp; 
+   37 &nbsp;         setPriority(NORM_PRIORITY - 1);
+   38 &nbsp;     }
+   39 &nbsp; 
+   40 &nbsp;     public void run() {
+<a name='41'>   41 &nbsp;         while (!isStopped()) {
+   42 &nbsp;             Runnable job;
+   43 &nbsp;             synchronized(jobs) {
+   44 &nbsp;                 while (!isStopped() &amp;&amp; jobs.size() == 0) {
+   45 &nbsp;                     try {
+   46 &nbsp;                         jobs.wait();
+   47 &nbsp;                     } catch (InterruptedException ex) {
+   48 &nbsp;                     }
+   49 &nbsp;                 }
+   50 &nbsp; 
+<a name='51'>   51 &nbsp;                 if(isStopped()) break;
+   52 &nbsp; 
+   53 &nbsp;                 job = jobs.remove(0);
+   54 &nbsp;             }
+   55 &nbsp;             job.run();
+   56 &nbsp;         }
+   57 &nbsp;     }
+   58 &nbsp; 
+   59 &nbsp;     private synchronized boolean isStopped() {
+   60 &nbsp;         return stopped;
+<a name='61'>   61 &nbsp;     }
+   62 &nbsp; 
+   63 &nbsp;     public synchronized void stopWorker() {
+   64 &nbsp;         stopped = true;
+   65 &nbsp;         synchronized(jobs) {
+   66 &nbsp;             jobs.notify();
+   67 &nbsp;         }
+   68 &nbsp;     }
+   69 &nbsp; 
+   70 &nbsp;     public void add(Runnable job) {
+<a name='71'>   71 &nbsp;         synchronized(jobs) {
+   72 &nbsp;             jobs.add(job);
+   73 &nbsp;             jobs.notify();
+   74 &nbsp;         }
+   75 &nbsp;     }
+   76 &nbsp; 
+   77 &nbsp;     public boolean queueFull() {
+   78 &nbsp;         synchronized(jobs) {
+   79 &nbsp;             return (jobs.size() &gt; 0);
+   80 &nbsp;         }
+<a name='81'>   81 &nbsp;     }
+   82 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/Worker.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: LocalVirtualMachine.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/LocalVirtualMachine.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2005, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/IOException.html>java.io.IOException</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/File.html>java.io.File</a>;
+<a name='31'>   31 &nbsp; 
+   32 &nbsp; // Sun specific
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/attach/VirtualMachine.html>com.sun.tools.attach.VirtualMachine</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/attach/VirtualMachineDescriptor.html>com.sun.tools.attach.VirtualMachineDescriptor</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/attach/AgentInitializationException.html>com.sun.tools.attach.AgentInitializationException</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/attach/AgentLoadException.html>com.sun.tools.attach.AgentLoadException</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/attach/AttachNotSupportedException.html>com.sun.tools.attach.AttachNotSupportedException</a>;
+   38 &nbsp; 
+   39 &nbsp; // Sun private
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/management/ConnectorAddressLink.html>sun.management.ConnectorAddressLink</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/jvmstat/monitor/HostIdentifier.html>sun.jvmstat.monitor.HostIdentifier</a>;
+   42 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/jvmstat/monitor/Monitor.html>sun.jvmstat.monitor.Monitor</a>;
+   43 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/jvmstat/monitor/MonitoredHost.html>sun.jvmstat.monitor.MonitoredHost</a>;
+   44 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/jvmstat/monitor/MonitoredVm.html>sun.jvmstat.monitor.MonitoredVm</a>;
+   45 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/jvmstat/monitor/MonitoredVmUtil.html>sun.jvmstat.monitor.MonitoredVmUtil</a>;
+   46 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/jvmstat/monitor/MonitorException.html>sun.jvmstat.monitor.MonitorException</a>;
+   47 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/jvmstat/monitor/VmIdentifier.html>sun.jvmstat.monitor.VmIdentifier</a>;
+   48 &nbsp; 
+   49 &nbsp; public class LocalVirtualMachine {
+   50 &nbsp;     private String address;
+<a name='51'>   51 &nbsp;     private String commandLine;
+   52 &nbsp;     private String displayName;
+   53 &nbsp;     private int vmid;
+   54 &nbsp;     private boolean isAttachSupported;
+   55 &nbsp; 
+   56 &nbsp;     public LocalVirtualMachine(int vmid, String commandLine, boolean canAttach, String connectorAddress) {
+   57 &nbsp;         this.vmid = vmid;
+   58 &nbsp;         this.commandLine = commandLine;
+   59 &nbsp;         this.address = connectorAddress;
+   60 &nbsp;         this.isAttachSupported = canAttach;
+<a name='61'>   61 &nbsp;         this.displayName = getDisplayName(commandLine);
+   62 &nbsp;     }
+   63 &nbsp; 
+   64 &nbsp;     private static String getDisplayName(String commandLine) {
+   65 &nbsp;         // trim the pathname of jar file if it's a jar
+   66 &nbsp;         String[] res = commandLine.split(" ", 2);
+   67 &nbsp;         if (res[0].endsWith(".jar")) {
+   68 &nbsp;            File jarfile = new File(res[0]);
+   69 &nbsp;            String displayName = jarfile.getName();
+   70 &nbsp;            if (res.length == 2) {
+<a name='71'>   71 &nbsp;                displayName += " " + res[1];
+   72 &nbsp;            }
+   73 &nbsp;            return displayName;
+   74 &nbsp;         }
+   75 &nbsp;         return commandLine;
+   76 &nbsp;     }
+   77 &nbsp; 
+   78 &nbsp;     public int vmid() {
+   79 &nbsp;         return vmid;
+   80 &nbsp;     }
+<a name='81'>   81 &nbsp; 
+   82 &nbsp;     public boolean isManageable() {
+   83 &nbsp;         return (address != null);
+   84 &nbsp;     }
+   85 &nbsp; 
+   86 &nbsp;     public boolean isAttachable() {
+   87 &nbsp;         return isAttachSupported;
+   88 &nbsp;     }
+   89 &nbsp; 
+   90 &nbsp;     public void startManagementAgent() throws IOException {
+<a name='91'>   91 &nbsp;         if (address != null) {
+   92 &nbsp;             // already started
+   93 &nbsp;             return;
+   94 &nbsp;         }
+   95 &nbsp; 
+   96 &nbsp;         if (!isAttachable()) {
+   97 &nbsp;             throw new IOException("This virtual machine \"" + vmid +
+   98 &nbsp;                 "\" does not support dynamic attach.");
+   99 &nbsp;         }
+  100 &nbsp; 
+<a name='101'>  101 &nbsp;         loadManagementAgent();
+  102 &nbsp;         // fails to load or start the management agent
+  103 &nbsp;         if (address == null) {
+  104 &nbsp;             // should never reach here
+  105 &nbsp;             throw new IOException("Fails to find connector address");
+  106 &nbsp;         }
+  107 &nbsp;     }
+  108 &nbsp; 
+  109 &nbsp;     public String connectorAddress() {
+  110 &nbsp;         // return null if not available or no JMX agent
+<a name='111'>  111 &nbsp;         return address;
+  112 &nbsp;     }
+  113 &nbsp; 
+  114 &nbsp;     public String displayName() {
+  115 &nbsp;         return displayName;
+  116 &nbsp;     }
+  117 &nbsp; 
+  118 &nbsp;     public String toString() {
+  119 &nbsp;         return commandLine;
+  120 &nbsp;     }
+<a name='121'>  121 &nbsp; 
+  122 &nbsp;     // This method returns the list of all virtual machines currently
+  123 &nbsp;     // running on the machine
+  124 &nbsp;     public static Map&lt;Integer, LocalVirtualMachine&gt; getAllVirtualMachines() {
+  125 &nbsp;         Map&lt;Integer, LocalVirtualMachine&gt; map =
+  126 &nbsp;             new HashMap&lt;Integer, LocalVirtualMachine&gt;();
+  127 &nbsp;         getMonitoredVMs(map);
+  128 &nbsp;         getAttachableVMs(map);
+  129 &nbsp;         return map;
+  130 &nbsp;     }
+<a name='131'>  131 &nbsp; 
+  132 &nbsp;     private static void getMonitoredVMs(Map&lt;Integer, LocalVirtualMachine&gt; map) {
+  133 &nbsp;         MonitoredHost host;
+  134 &nbsp;         Set vms;
+  135 &nbsp;         try {
+  136 &nbsp;             host = MonitoredHost.getMonitoredHost(new HostIdentifier((String)null));
+  137 &nbsp;             vms = host.activeVms();
+  138 &nbsp;         } catch (java.net.URISyntaxException sx) {
+  139 &nbsp;             throw new InternalError(sx.getMessage());
+  140 &nbsp;         } catch (MonitorException mx) {
+<a name='141'>  141 &nbsp;             throw new InternalError(mx.getMessage());
+  142 &nbsp;         }
+  143 &nbsp;         for (Object vmid: vms) {
+  144 &nbsp;             if (vmid instanceof Integer) {
+  145 &nbsp;                 int pid = ((Integer) vmid).intValue();
+  146 &nbsp;                 String name = vmid.toString(); // default to pid if name not available
+  147 &nbsp;                 boolean attachable = false;
+  148 &nbsp;                 String address = null;
+  149 &nbsp;                 try {
+  150 &nbsp;                      MonitoredVm mvm = host.getMonitoredVm(new VmIdentifier(name));
+<a name='151'>  151 &nbsp;                      // use the command line as the display name
+  152 &nbsp;                      name =  MonitoredVmUtil.commandLine(mvm);
+  153 &nbsp;                      attachable = MonitoredVmUtil.isAttachable(mvm);
+  154 &nbsp;                      address = ConnectorAddressLink.importFrom(pid);
+  155 &nbsp;                      mvm.detach();
+  156 &nbsp;                 } catch (Exception x) {
+  157 &nbsp;                      // ignore
+  158 &nbsp;                 }
+  159 &nbsp;                 map.put((Integer) vmid,
+  160 &nbsp;                         new LocalVirtualMachine(pid, name, attachable, address));
+<a name='161'>  161 &nbsp;             }
+  162 &nbsp;         }
+  163 &nbsp;     }
+  164 &nbsp; 
+  165 &nbsp;     private static final String LOCAL_CONNECTOR_ADDRESS_PROP =
+  166 &nbsp;         "com.sun.management.jmxremote.localConnectorAddress";
+  167 &nbsp; 
+  168 &nbsp;     private static void getAttachableVMs(Map&lt;Integer, LocalVirtualMachine&gt; map) {
+  169 &nbsp;         List&lt;VirtualMachineDescriptor&gt; vms = VirtualMachine.list();
+  170 &nbsp;         for (VirtualMachineDescriptor vmd : vms) {
+<a name='171'>  171 &nbsp;             try {
+  172 &nbsp;                 Integer vmid = Integer.valueOf(vmd.id());
+  173 &nbsp;                 if (!map.containsKey(vmid)) {
+  174 &nbsp;                     boolean attachable = false;
+  175 &nbsp;                     String address = null;
+  176 &nbsp;                     try {
+  177 &nbsp;                         VirtualMachine vm = VirtualMachine.attach(vmd);
+  178 &nbsp;                         attachable = true;
+  179 &nbsp;                         Properties agentProps = vm.getAgentProperties();
+  180 &nbsp;                         address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+<a name='181'>  181 &nbsp;                         vm.detach();
+  182 &nbsp;                     } catch (AttachNotSupportedException x) {
+  183 &nbsp;                         // not attachable
+  184 &nbsp;                     } catch (IOException x) {
+  185 &nbsp;                         // ignore
+  186 &nbsp;                     }
+  187 &nbsp;                     map.put(vmid, new LocalVirtualMachine(vmid.intValue(),
+  188 &nbsp;                                                           vmd.displayName(),
+  189 &nbsp;                                                           attachable,
+  190 &nbsp;                                                           address));
+<a name='191'>  191 &nbsp;                 }
+  192 &nbsp;             } catch (NumberFormatException e) {
+  193 &nbsp;                 // do not support vmid different than pid
+  194 &nbsp;             }
+  195 &nbsp;         }
+  196 &nbsp;     }
+  197 &nbsp; 
+  198 &nbsp;     public static LocalVirtualMachine getLocalVirtualMachine(int vmid) {
+  199 &nbsp;         Map&lt;Integer, LocalVirtualMachine&gt; map = getAllVirtualMachines();
+  200 &nbsp;         LocalVirtualMachine lvm = map.get(vmid);
+<a name='201'>  201 &nbsp;         if (lvm == null) {
+  202 &nbsp;             // Check if the VM is attachable but not included in the list
+  203 &nbsp;             // if it's running with a different security context.
+  204 &nbsp;             // For example, Windows services running
+  205 &nbsp;             // local SYSTEM account are attachable if you have Adminstrator
+  206 &nbsp;             // privileges.
+  207 &nbsp;             boolean attachable = false;
+  208 &nbsp;             String address = null;
+  209 &nbsp;             String name = String.valueOf(vmid); // default display name to pid
+  210 &nbsp;             try {
+<a name='211'>  211 &nbsp;                 VirtualMachine vm = VirtualMachine.attach(name);
+  212 &nbsp;                 attachable = true;
+  213 &nbsp;                 Properties agentProps = vm.getAgentProperties();
+  214 &nbsp;                 address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+  215 &nbsp;                 vm.detach();
+  216 &nbsp;                 lvm = new LocalVirtualMachine(vmid, name, attachable, address);
+  217 &nbsp;             } catch (AttachNotSupportedException x) {
+  218 &nbsp;                 // not attachable
+  219 &nbsp;                 if (JConsole.isDebug()) {
+  220 &nbsp;                     x.printStackTrace();
+<a name='221'>  221 &nbsp;                 }
+  222 &nbsp;             } catch (IOException x) {
+  223 &nbsp;                 // ignore
+  224 &nbsp;                 if (JConsole.isDebug()) {
+  225 &nbsp;                     x.printStackTrace();
+  226 &nbsp;                 }
+  227 &nbsp;             }
+  228 &nbsp;         }
+  229 &nbsp;         return lvm;
+  230 &nbsp;     }
+<a name='231'>  231 &nbsp; 
+  232 &nbsp;     // load the management agent into the target VM
+  233 &nbsp;     private void loadManagementAgent() throws IOException {
+  234 &nbsp;         VirtualMachine vm = null;
+  235 &nbsp;         String name = String.valueOf(vmid);
+  236 &nbsp;         try {
+  237 &nbsp;             vm = VirtualMachine.attach(name);
+  238 &nbsp;         } catch (AttachNotSupportedException x) {
+  239 &nbsp;             IOException ioe = new IOException(x.getMessage());
+  240 &nbsp;             ioe.initCause(x);
+<a name='241'>  241 &nbsp;             throw ioe;
+  242 &nbsp;         }
+  243 &nbsp; 
+  244 &nbsp;         String home = vm.getSystemProperties().getProperty("java.home");
+  245 &nbsp; 
+  246 &nbsp;         // Normally in ${java.home}/jre/lib/management-agent.jar but might
+  247 &nbsp;         // be in ${java.home}/lib in build environments.
+  248 &nbsp; 
+  249 &nbsp;         String agent = home + File.separator + "jre" + File.separator +
+  250 &nbsp;                            "lib" + File.separator + "management-agent.jar";
+<a name='251'>  251 &nbsp;         File f = new File(agent);
+  252 &nbsp;         if (!f.exists()) {
+  253 &nbsp;             agent = home + File.separator +  "lib" + File.separator +
+  254 &nbsp;                         "management-agent.jar";
+  255 &nbsp;             f = new File(agent);
+  256 &nbsp;             if (!f.exists()) {
+  257 &nbsp;                 throw new IOException("Management agent not found");
+  258 &nbsp;             }
+  259 &nbsp;         }
+  260 &nbsp; 
+<a name='261'>  261 &nbsp;         agent = f.getCanonicalPath();
+  262 &nbsp;         try {
+  263 &nbsp;             vm.loadAgent(agent, "com.sun.management.jmxremote");
+  264 &nbsp;         } catch (AgentLoadException x) {
+  265 &nbsp;             IOException ioe = new IOException(x.getMessage());
+  266 &nbsp;             ioe.initCause(x);
+  267 &nbsp;             throw ioe;
+  268 &nbsp;         } catch (AgentInitializationException x) {
+  269 &nbsp;             IOException ioe = new IOException(x.getMessage());
+  270 &nbsp;             ioe.initCause(x);
+<a name='271'>  271 &nbsp;             throw ioe;
+  272 &nbsp;         }
+  273 &nbsp; 
+  274 &nbsp;         // get the connector address
+  275 &nbsp;         Properties agentProps = vm.getAgentProperties();
+  276 &nbsp;         address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+  277 &nbsp; 
+  278 &nbsp;         vm.detach();
+  279 &nbsp;     }
+  280 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/LocalVirtualMachine.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

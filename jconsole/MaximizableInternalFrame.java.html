@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: MaximizableInternalFrame.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MaximizableInternalFrame.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/package-index.html>java.beans</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/package-index.html>java.lang.reflect</a>;
+<a name='31'>   31 &nbsp; 
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/plaf/basic/package-index.html>javax.swing.plaf.basic</a>;
+   35 &nbsp; 
+   36 &nbsp; 
+   37 &nbsp; /**
+   38 &nbsp;  * This class is a temporary workaround for bug 4834918:
+   39 &nbsp;  * Win L&amp;F: JInternalFrame should merge with JMenuBar when maximized.
+   40 &nbsp;  * It is not a general solution, but intended for use within the
+<a name='41'>   41 &nbsp;  * limited scope of JConsole when running with XP/Vista styles.
+   42 &nbsp;  */
+   43 &nbsp; @SuppressWarnings("serial")
+   44 &nbsp; public class MaximizableInternalFrame extends JInternalFrame {
+   45 &nbsp;     private boolean isXP;
+   46 &nbsp;     private JFrame mainFrame;
+   47 &nbsp;     private JMenuBar mainMenuBar;
+   48 &nbsp;     private String mainTitle;
+   49 &nbsp;     private JComponent titlePane;
+   50 &nbsp;     private Border normalBorder;
+<a name='51'>   51 &nbsp;     private PropertyChangeListener pcl;
+   52 &nbsp; 
+   53 &nbsp;     public MaximizableInternalFrame(String title, boolean resizable,
+   54 &nbsp;                                     boolean closable, boolean maximizable,
+   55 &nbsp;                                     boolean iconifiable) {
+   56 &nbsp;         super(title, resizable, closable, maximizable, iconifiable);
+   57 &nbsp; 
+   58 &nbsp;         init();
+   59 &nbsp;     }
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;     private void init() {
+   62 &nbsp;         normalBorder = getBorder();
+   63 &nbsp;         isXP = normalBorder.getClass().getName().endsWith("XPBorder");
+   64 &nbsp;         if (isXP) {
+   65 &nbsp;             setRootPaneCheckingEnabled(false);
+   66 &nbsp;             titlePane = ((BasicInternalFrameUI)getUI()).getNorthPane();
+   67 &nbsp; 
+   68 &nbsp;             if (pcl == null) {
+   69 &nbsp;                 pcl = new PropertyChangeListener() {
+   70 &nbsp;                     public void propertyChange(PropertyChangeEvent ev) {
+<a name='71'>   71 &nbsp;                         String prop = ev.getPropertyName();
+   72 &nbsp;                         if (prop.equals("icon") ||
+   73 &nbsp;                             prop.equals("maximum") ||
+   74 &nbsp;                             prop.equals("closed")) {
+   75 &nbsp; 
+   76 &nbsp;                             updateFrame();
+   77 &nbsp;                         }
+   78 &nbsp;                     }
+   79 &nbsp;                 };
+   80 &nbsp;                 addPropertyChangeListener(pcl);
+<a name='81'>   81 &nbsp;             }
+   82 &nbsp;         } else if (pcl != null) {
+   83 &nbsp;             removePropertyChangeListener(pcl);
+   84 &nbsp;             pcl = null;
+   85 &nbsp;         }
+   86 &nbsp;     }
+   87 &nbsp; 
+   88 &nbsp;     private void updateFrame() {
+   89 &nbsp;         JFrame mainFrame;
+   90 &nbsp;         if (!isXP || (mainFrame = getMainFrame()) == null) {
+<a name='91'>   91 &nbsp;             return;
+   92 &nbsp;         }
+   93 &nbsp;         JMenuBar menuBar = getMainMenuBar();
+   94 &nbsp;         BasicInternalFrameUI ui = (BasicInternalFrameUI)getUI();
+   95 &nbsp;         if (isMaximum() &amp;&amp; !isIcon() &amp;&amp; !isClosed()) {
+   96 &nbsp;             if (ui.getNorthPane() != null) {
+   97 &nbsp;                 // Merge title bar into menu bar
+   98 &nbsp;                 mainTitle = mainFrame.getTitle();
+   99 &nbsp;                 mainFrame.setTitle(mainTitle + " - " + getTitle());
+  100 &nbsp;                 if (menuBar != null) {
+<a name='101'>  101 &nbsp;                     // Move buttons to menu bar
+  102 &nbsp;                     updateButtonStates();
+  103 &nbsp;                     menuBar.add(Box.createGlue());
+  104 &nbsp;                     for (Component c : titlePane.getComponents()) {
+  105 &nbsp;                         if (c instanceof JButton) {
+  106 &nbsp;                             menuBar.add(c);
+  107 &nbsp;                         } else if (c instanceof JLabel) {
+  108 &nbsp;                             // This is the system menu icon
+  109 &nbsp;                             menuBar.add(Box.createHorizontalStrut(3), 0);
+  110 &nbsp;                             menuBar.add(c, 1);
+<a name='111'>  111 &nbsp;                             menuBar.add(Box.createHorizontalStrut(3), 2);
+  112 &nbsp;                         }
+  113 &nbsp;                     }
+  114 &nbsp;                     ui.setNorthPane(null);
+  115 &nbsp;                     setBorder(null);
+  116 &nbsp;                 }
+  117 &nbsp;             }
+  118 &nbsp;         } else {
+  119 &nbsp;             if (ui.getNorthPane() == null) {
+  120 &nbsp;                 // Restore title bar
+<a name='121'>  121 &nbsp;                 mainFrame.setTitle(mainTitle);
+  122 &nbsp;                 if (menuBar != null) {
+  123 &nbsp;                     // Move buttons back to title bar
+  124 &nbsp;                     for (Component c : menuBar.getComponents()) {
+  125 &nbsp;                         if (c instanceof JButton || c instanceof JLabel) {
+  126 &nbsp;                             titlePane.add(c);
+  127 &nbsp;                         } else if (c instanceof Box.Filler) {
+  128 &nbsp;                             menuBar.remove(c);
+  129 &nbsp;                         }
+  130 &nbsp;                     }
+<a name='131'>  131 &nbsp;                     menuBar.repaint();
+  132 &nbsp;                     updateButtonStates();
+  133 &nbsp;                     ui.setNorthPane(titlePane);
+  134 &nbsp;                     setBorder(normalBorder);
+  135 &nbsp;                 }
+  136 &nbsp;             }
+  137 &nbsp;         }
+  138 &nbsp;     }
+  139 &nbsp; 
+  140 &nbsp;     public void updateUI() {
+<a name='141'>  141 &nbsp;         boolean isMax = (isXP &amp;&amp; getBorder() == null);
+  142 &nbsp;         if (isMax) {
+  143 &nbsp;             try {
+  144 &nbsp;                 setMaximum(false);
+  145 &nbsp;             } catch (PropertyVetoException ex) { }
+  146 &nbsp;         }
+  147 &nbsp;         super.updateUI();
+  148 &nbsp;         init();
+  149 &nbsp;         if (isMax) {
+  150 &nbsp;             try {
+<a name='151'>  151 &nbsp;                 setMaximum(true);
+  152 &nbsp;             } catch (PropertyVetoException ex) { }
+  153 &nbsp;         }
+  154 &nbsp;     }
+  155 &nbsp; 
+  156 &nbsp;     private JFrame getMainFrame() {
+  157 &nbsp;         if (mainFrame == null) {
+  158 &nbsp;             JDesktopPane desktop = getDesktopPane();
+  159 &nbsp;             if (desktop != null) {
+  160 &nbsp;                 mainFrame = (JFrame)SwingUtilities.getWindowAncestor(desktop);
+<a name='161'>  161 &nbsp;             }
+  162 &nbsp;         }
+  163 &nbsp;         return mainFrame;
+  164 &nbsp;     }
+  165 &nbsp; 
+  166 &nbsp;     private JMenuBar getMainMenuBar() {
+  167 &nbsp;         if (mainMenuBar == null) {
+  168 &nbsp;             JFrame mainFrame = getMainFrame();
+  169 &nbsp;             if (mainFrame != null) {
+  170 &nbsp;                 mainMenuBar = mainFrame.getJMenuBar();
+<a name='171'>  171 &nbsp;                 if (mainMenuBar != null &amp;&amp;
+  172 &nbsp;                     !(mainMenuBar.getLayout() instanceof FixedMenuBarLayout)) {
+  173 &nbsp; 
+  174 &nbsp;                     mainMenuBar.setLayout(new FixedMenuBarLayout(mainMenuBar,
+  175 &nbsp;                                                             BoxLayout.X_AXIS));
+  176 &nbsp;                 }
+  177 &nbsp;             }
+  178 &nbsp;         }
+  179 &nbsp;         return mainMenuBar;
+  180 &nbsp;     }
+<a name='181'>  181 &nbsp; 
+  182 &nbsp;     public void setTitle(String title) {
+  183 &nbsp;         if (isXP &amp;&amp; isMaximum()) {
+  184 &nbsp;             if (getMainFrame() != null) {
+  185 &nbsp;                 getMainFrame().setTitle(mainTitle + " - " + title);
+  186 &nbsp;             }
+  187 &nbsp;         }
+  188 &nbsp;         super.setTitle(title);
+  189 &nbsp;     }
+  190 &nbsp; 
+<a name='191'>  191 &nbsp; 
+  192 &nbsp;     private class FixedMenuBarLayout extends BoxLayout {
+  193 &nbsp;         public FixedMenuBarLayout(Container target, int axis) {
+  194 &nbsp;             super(target, axis);
+  195 &nbsp;         }
+  196 &nbsp; 
+  197 &nbsp;         public void layoutContainer(Container target) {
+  198 &nbsp;             super.layoutContainer(target);
+  199 &nbsp; 
+  200 &nbsp;             for (Component c : target.getComponents()) {
+<a name='201'>  201 &nbsp;                 if (c instanceof JButton) {
+  202 &nbsp;                     int y = (target.getHeight() - c.getHeight()) / 2;
+  203 &nbsp;                     c.setLocation(c.getX(), Math.max(2, y));
+  204 &nbsp;                 }
+  205 &nbsp;             }
+  206 &nbsp;         }
+  207 &nbsp;     }
+  208 &nbsp; 
+  209 &nbsp; 
+  210 &nbsp;     // The rest of this class is messy and should not be relied upon. It
+<a name='211'>  211 &nbsp;     // uses reflection to access private, undocumented, and unsupported
+  212 &nbsp;     // classes and fields.
+  213 &nbsp;     //
+  214 &nbsp;     // Install icon wrappers to display MDI icons when the buttons
+  215 &nbsp;     // are in the menubar.
+  216 &nbsp;     //
+  217 &nbsp;     // Please note that this will very likely fail in a future version
+  218 &nbsp;     // of Swing, but at least it should fail silently.
+  219 &nbsp;     //
+  220 &nbsp;     private static Object WP_MINBUTTON, WP_RESTOREBUTTON, WP_CLOSEBUTTON,
+<a name='221'>  221 &nbsp;                           WP_MDIMINBUTTON, WP_MDIRESTOREBUTTON, WP_MDICLOSEBUTTON;
+  222 &nbsp;     static {
+  223 &nbsp;         if (JConsole.IS_WIN) {
+  224 &nbsp;             try {
+  225 &nbsp;                 Class Part =
+  226 &nbsp;                     Class.forName("com.sun.java.swing.plaf.windows.TMSchema$Part");
+  227 &nbsp;                 if (Part != null) {
+  228 &nbsp;                     WP_MINBUTTON        = Part.getField("WP_MINBUTTON").get(null);
+  229 &nbsp;                     WP_RESTOREBUTTON    = Part.getField("WP_RESTOREBUTTON").get(null);
+  230 &nbsp;                     WP_CLOSEBUTTON      = Part.getField("WP_CLOSEBUTTON").get(null);
+<a name='231'>  231 &nbsp;                     WP_MDIMINBUTTON     = Part.getField("WP_MDIMINBUTTON").get(null);
+  232 &nbsp;                     WP_MDIRESTOREBUTTON = Part.getField("WP_MDIRESTOREBUTTON").get(null);
+  233 &nbsp;                     WP_MDICLOSEBUTTON   = Part.getField("WP_MDICLOSEBUTTON").get(null);
+  234 &nbsp;                 }
+  235 &nbsp; 
+  236 &nbsp;                 for (String str : new String[] { "maximize", "minimize",
+  237 &nbsp;                                                  "iconify", "close" }) {
+  238 &nbsp;                     String key = "InternalFrame." + str + "Icon";
+  239 &nbsp;                     UIManager.put(key,
+  240 &nbsp;                                   new MDIButtonIcon(UIManager.getIcon(key)));
+<a name='241'>  241 &nbsp;                 }
+  242 &nbsp;             } catch (ClassNotFoundException ex) {
+  243 &nbsp;                 if (JConsole.debug) {
+  244 &nbsp;                     ex.printStackTrace();
+  245 &nbsp;                 }
+  246 &nbsp;             } catch (NoSuchFieldException ex) {
+  247 &nbsp;                 if (JConsole.debug) {
+  248 &nbsp;                     ex.printStackTrace();
+  249 &nbsp;                 }
+  250 &nbsp;             } catch (IllegalAccessException ex) {
+<a name='251'>  251 &nbsp;                 if (JConsole.debug) {
+  252 &nbsp;                     ex.printStackTrace();
+  253 &nbsp;                 }
+  254 &nbsp;             }
+  255 &nbsp;         }
+  256 &nbsp;     }
+  257 &nbsp; 
+  258 &nbsp; 
+  259 &nbsp;     // A wrapper class for the title pane button icons.
+  260 &nbsp;     // This code should really go in the WindowsIconsFactory class.
+<a name='261'>  261 &nbsp;     private static class MDIButtonIcon implements Icon {
+  262 &nbsp;         Icon windowsIcon;
+  263 &nbsp;         Field part;
+  264 &nbsp; 
+  265 &nbsp;         MDIButtonIcon(Icon icon) {
+  266 &nbsp;             windowsIcon = icon;
+  267 &nbsp; 
+  268 &nbsp;             if (WP_MINBUTTON != null) {
+  269 &nbsp;                 try {
+  270 &nbsp;                     part = windowsIcon.getClass().getDeclaredField("part");
+<a name='271'>  271 &nbsp;                     part.setAccessible(true);
+  272 &nbsp;                 } catch (NoSuchFieldException ex) {
+  273 &nbsp;                     if (JConsole.debug) {
+  274 &nbsp;                         ex.printStackTrace();
+  275 &nbsp;                     }
+  276 &nbsp;                 }
+  277 &nbsp;             }
+  278 &nbsp;         }
+  279 &nbsp; 
+  280 &nbsp;         public void paintIcon(Component c, Graphics g, int x, int y) {
+<a name='281'>  281 &nbsp;             if (part != null) {
+  282 &nbsp;                 try {
+  283 &nbsp;                     Object v = part.get(windowsIcon);
+  284 &nbsp; 
+  285 &nbsp;                     if (c.getParent() instanceof JMenuBar) {
+  286 &nbsp;                         // Use MDI icons
+  287 &nbsp;                         if (v == WP_MINBUTTON) {
+  288 &nbsp;                             part.set(windowsIcon, WP_MDIMINBUTTON);
+  289 &nbsp;                         } else if (v == WP_RESTOREBUTTON) {
+  290 &nbsp;                             part.set(windowsIcon, WP_MDIRESTOREBUTTON);
+<a name='291'>  291 &nbsp;                         } else if (v == WP_CLOSEBUTTON) {
+  292 &nbsp;                             part.set(windowsIcon, WP_MDICLOSEBUTTON);
+  293 &nbsp;                         }
+  294 &nbsp;                     } else {
+  295 &nbsp;                         // Use regular icons
+  296 &nbsp;                         if (v == WP_MDIMINBUTTON) {
+  297 &nbsp;                             part.set(windowsIcon, WP_MINBUTTON);
+  298 &nbsp;                         } else if (v == WP_MDIRESTOREBUTTON) {
+  299 &nbsp;                             part.set(windowsIcon, WP_RESTOREBUTTON);
+  300 &nbsp;                         } else if (v == WP_MDICLOSEBUTTON) {
+<a name='301'>  301 &nbsp;                             part.set(windowsIcon, WP_CLOSEBUTTON);
+  302 &nbsp;                         }
+  303 &nbsp;                     }
+  304 &nbsp;                 } catch (IllegalAccessException ex) {
+  305 &nbsp;                     if (JConsole.debug) {
+  306 &nbsp;                         ex.printStackTrace();
+  307 &nbsp;                     }
+  308 &nbsp;                 }
+  309 &nbsp;             }
+  310 &nbsp;             windowsIcon.paintIcon(c, g, x, y);
+<a name='311'>  311 &nbsp;         }
+  312 &nbsp; 
+  313 &nbsp;         public int getIconWidth(){
+  314 &nbsp;             return windowsIcon.getIconWidth();
+  315 &nbsp;         }
+  316 &nbsp; 
+  317 &nbsp;         public int getIconHeight() {
+  318 &nbsp;             return windowsIcon.getIconHeight();
+  319 &nbsp;         }
+  320 &nbsp;     }
+<a name='321'>  321 &nbsp; 
+  322 &nbsp; 
+  323 &nbsp;     // Use reflection to invoke protected methods in BasicInternalFrameTitlePane
+  324 &nbsp;     private Method setButtonIcons;
+  325 &nbsp;     private Method enableActions;
+  326 &nbsp; 
+  327 &nbsp;     private void updateButtonStates() {
+  328 &nbsp;         try {
+  329 &nbsp;             if (setButtonIcons == null) {
+  330 &nbsp;                 Class&lt;? extends JComponent&gt; cls = titlePane.getClass();
+<a name='331'>  331 &nbsp;                 Class&lt;?&gt; superCls = cls.getSuperclass();
+  332 &nbsp;                 setButtonIcons = cls.getDeclaredMethod("setButtonIcons");
+  333 &nbsp;                 enableActions  = superCls.getDeclaredMethod("enableActions");
+  334 &nbsp;                 setButtonIcons.setAccessible(true);
+  335 &nbsp;                 enableActions.setAccessible(true);
+  336 &nbsp;             }
+  337 &nbsp;             setButtonIcons.invoke(titlePane);
+  338 &nbsp;             enableActions.invoke(titlePane);
+  339 &nbsp;         } catch (Exception ex) {
+  340 &nbsp;             if (JConsole.debug) {
+<a name='341'>  341 &nbsp;                 ex.printStackTrace();
+  342 &nbsp;             }
+  343 &nbsp;         }
+  344 &nbsp;     }
+  345 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MaximizableInternalFrame.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

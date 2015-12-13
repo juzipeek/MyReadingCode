@@ -1,0 +1,327 @@
+
+    
+    <!-- classdoc.jsp -->
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>sun.tools.jconsole: protected static class: BorderedComponent.LabeledBorder</title>
+	<style>
+#jdoc {margin:10px 10px 10px 10px}
+#pkg {font-size:1em;font-weight:bold}
+#cls {font-size:2em;font-weight:bold}
+body {margin:0 0 0 0; padding:0 0 0 0} 
+table {margin-top:10px;background-color:#ffffff;}
+
+th {background:#ddeeff;text-align:left}	
+td {padding:5px 2px 2px 5px;border-top:1px solid #999999;margin:0 0 0 0}
+pre {padding:0;margin:0}
+.withborder {border-left:1px solid #999999;border-right:1px solid #999999;background-color:#eeeeee}
+	</style>
+	
+	<script type="text/javascript">
+	
+	function src(m) {
+	  s = 	document.getElementById(m);
+	  i = document.getElementById(m+"i");
+	  if (s != null && s.style.visibility!='visible') {
+	   s.style.visibility='visible';
+	   s.style.height="auto";
+	   s.style.overflow='auto';
+	   i.src = "/minus.gif";
+	  } else if (s != null) {
+	   s.style.visibility='hidden';
+	   s.style.height="1px";
+	   s.style.overflow='hidden';
+	   i.src = "/plus.gif";
+	  }
+	}
+	
+	</script>
+<style type="text/css">
+#fixme {
+	/* Netscape 4, IE 4.x-5.0/Win and other lesser browsers will use this */
+  position: absolute; left: 0; top: 0;
+}
+body > div#fixme {
+  /* used by Opera 5+, Netscape6+/Mozilla, Konqueror, Safari, OmniWeb 4.5+, iCab, ICEbrowser */
+  position: fixed;
+}
+</style>
+<!--[if gte IE 5.5]>
+<style type="text/css">
+div#fixme {
+  /* IE5.5+/Win - this is more specific than the IE 5.0 version */
+  left: expression( ( 0 + ( ignoreMe2 = document.documentElement.scrollLeft ? document.documentElement.scrollLeft : document.body.scrollLeft ) ) + 'px' );
+  top: expression( ( 0 + ( ignoreMe = document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop ) ) + 'px' );
+}
+</style>
+<![endif]--></head><body>
+<div id="fixme" style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+[javadoc | 
+ <a href="/html/api/sun/tools/jconsole/BorderedComponent.java.html">source</a>]
+</div>
+<div style="height:20px"></div>
+<div id="jdoc">
+
+
+<!-- classname.jsp -->
+    
+<span id="pkg">sun.tools.jconsole</span><br>
+    <span id="cls">protected static class: BorderedComponent.LabeledBorder</span> [javadoc | 
+ <a href="/html/api/sun/tools/jconsole/BorderedComponent.java.html">source</a>]
+    
+    	<br><pre><a href=/docs/api/java/lang/Object.html>java.lang.Object</a>
+ &nbsp; <img src=/inherit.gif><a href=/docs/api/javax/swing/border/AbstractBorder.html>javax.swing.border.AbstractBorder</a>
+ &nbsp;  &nbsp; <img src=/inherit.gif><a href=/docs/api/javax/swing/border/TitledBorder.html>javax.swing.border.TitledBorder</a>
+ &nbsp;  &nbsp;  &nbsp; <img src=/inherit.gif><b>sun.tools.jconsole.BorderedComponent$LabeledBorder</b></pre>
+    
+
+
+
+
+<!-- end -->
+
+
+<!-- classimplements.jsp -->
+    <p><b>All Implemented Interfaces:</b>
+		<br> &nbsp; &nbsp; <a href='/docs/api/javax/swing/border/Border.html'>Border</a>, <a href='/docs/api/java/io/Serializable.html'>Serializable</a></p>
+
+
+
+
+<!-- end -->
+
+
+    <!-- classcomment.jsp -->
+    A subclass of <code>TitledBorder</code> which implements an arbitrary border
+with the addition of a JComponent (JLabel, JPanel, etc) in the
+default position.
+<p>
+If the border property value is not
+specified in the constuctor or by invoking the appropriate
+set method, the property value will be defined by the current
+look and feel, using the following property name in the
+Defaults Table:
+<ul>
+<li>&quot;TitledBorder.border&quot;
+</ul>
+
+
+
+<!-- end -->
+
+
+
+<!-- nestedclass.jsp -->
+    
+
+
+
+<!-- end -->
+
+
+<!-- fieldsummary.jsp -->
+    
+<table width='100%'><tr><th colspan=3>Field Summary</td></tr><tr valign=top><td valign='top' nowrap>protected  &nbsp;<a href=/docs/api/javax/swing/JComponent.html>JComponent</a></td> <td class='withborder' nowrap><b>label</b>&nbsp; &nbsp; </td><td width='100%'>&nbsp;</td></tr><table width='100%'><tr><th>Fields inherited from <a href='/docs/api/javax/swing/border/TitledBorder.html'>javax.swing.border.TitledBorder</a>: </td></tr><tr><td> <a href='/docs/api/javax/swing/border/TitledBorder.html#title'>title</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#border'>border</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#titlePosition'>titlePosition</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#titleJustification'>titleJustification</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#titleFont'>titleFont</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#titleColor'>titleColor</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#DEFAULT_POSITION'>DEFAULT_POSITION</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#ABOVE_TOP'>ABOVE_TOP</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#TOP'>TOP</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#BELOW_TOP'>BELOW_TOP</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#ABOVE_BOTTOM'>ABOVE_BOTTOM</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#BOTTOM'>BOTTOM</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#BELOW_BOTTOM'>BELOW_BOTTOM</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#DEFAULT_JUSTIFICATION'>DEFAULT_JUSTIFICATION</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#LEFT'>LEFT</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#CENTER'>CENTER</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#RIGHT'>RIGHT</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#LEADING'>LEADING</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#TRAILING'>TRAILING</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#EDGE_SPACING'>EDGE_SPACING</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#TEXT_SPACING'>TEXT_SPACING</a>, &nbsp;<a href='/docs/api/javax/swing/border/TitledBorder.html#TEXT_INSET_H'>TEXT_INSET_H</a></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+
+
+<!-- constructsummary.jsp -->
+    <table width='100%'><tr><th>Constructor:</td></tr>
+<tr><td><pre><a href='javascript:src("cs0")'><img id='cs0i' src=/plus.gif border=0></a> <a name='LabeledBorder(JComponent)'>public <b>LabeledBorder</b>(<a href=/docs/api/javax/swing/JComponent.html>JComponent</a> label) <pre id='cs0' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            this(null, label);
+}</pre></pre></pre><ul>Creates a LabeledBorder instance.</ul><ul><b>Parameters:</b><br><dd><code>label</code> -   the label the border should display<br></dd></ul></td></tr><tr><td><pre><a href='javascript:src("cs1")'><img id='cs1i' src=/plus.gif border=0></a> <a name='LabeledBorder(Border)'>public <b>LabeledBorder</b>(<a href=/docs/api/javax/swing/border/Border.html>Border</a> border) <pre id='cs1' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            this(border, null);
+}</pre></pre></pre><ul>Creates a LabeledBorder instance with the specified border
+and an empty label.</ul><ul><b>Parameters:</b><br><dd><code>border</code> -   the border<br></dd></ul></td></tr><tr><td><pre><a href='javascript:src("cs2")'><img id='cs2i' src=/plus.gif border=0></a> <a name='LabeledBorder(Border, JComponent)'>public <b>LabeledBorder</b>(<a href=/docs/api/javax/swing/border/Border.html>Border</a> border,
+    <a href=/docs/api/javax/swing/JComponent.html>JComponent</a> label) <pre id='cs2' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            super(border);
+            this.label = label;
+            if (label instanceof JLabel &&
+                label.getForeground() instanceof ColorUIResource) {
+                label.setForeground(getTitleColor());
+            }
+}</pre></pre></pre><ul>Creates a LabeledBorder instance with the specified border and
+label.</ul><ul><b>Parameters:</b><br><dd><code>border</code> -   the border<br></dd><dd><code>label</code> -   the label the border should display<br></dd></ul></td></tr></table>
+
+
+
+
+
+<!-- end -->
+
+
+<!-- methodsummary.jsp -->
+    <table width='100%'><tr><th>Method from <b>sun.tools.jconsole.BorderedComponent$LabeledBorder</b> Summary:</td></tr><tr><td>
+<a href='/docs/api/sun/tools/jconsole/BorderedComponent$LabeledBorder.html#getBorderInsets(Component, Insets)'>getBorderInsets</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/BorderedComponent$LabeledBorder.html#getLabel'>getLabel</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/BorderedComponent$LabeledBorder.html#getMinimumSize(Component)'>getMinimumSize</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/BorderedComponent$LabeledBorder.html#paintBorder(Component, Graphics, int, int, int, int)'>paintBorder</a>, &nbsp; <a href='/docs/api/sun/tools/jconsole/BorderedComponent$LabeledBorder.html#setLabel(JComponent)'>setLabel</a></td></tr></table><table width='100%'><tr><th>Methods from <b>javax.swing.border.TitledBorder</b>:</td></tr><tr><td>
+<a href='/docs/api/javax/swing/border/TitledBorder.html#getBaseline(Component, int, int)'>getBaseline</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getBaselineResizeBehavior(Component)'>getBaselineResizeBehavior</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getBorder'>getBorder</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getBorderInsets(Component)'>getBorderInsets</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getBorderInsets(Component, Insets)'>getBorderInsets</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getFont(Component)'>getFont</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getMinimumSize(Component)'>getMinimumSize</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getTitle'>getTitle</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getTitleColor'>getTitleColor</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getTitleFont'>getTitleFont</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getTitleJustification'>getTitleJustification</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#getTitlePosition'>getTitlePosition</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#isBorderOpaque'>isBorderOpaque</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#paintBorder(Component, Graphics, int, int, int, int)'>paintBorder</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#setBorder(Border)'>setBorder</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#setTitle(String)'>setTitle</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#setTitleColor(Color)'>setTitleColor</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#setTitleFont(Font)'>setTitleFont</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#setTitleJustification(int)'>setTitleJustification</a>, &nbsp; <a href='/docs/api/javax/swing/border/TitledBorder.html#setTitlePosition(int)'>setTitlePosition</a></td></tr></table><table width='100%'><tr><th>Methods from <b>javax.swing.border.AbstractBorder</b>:</td></tr><tr><td>
+<a href='/docs/api/javax/swing/border/AbstractBorder.html#getBaseline(Component, int, int)'>getBaseline</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#getBaselineResizeBehavior(Component)'>getBaselineResizeBehavior</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#getBorderInsets(Component)'>getBorderInsets</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#getBorderInsets(Component, Insets)'>getBorderInsets</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#getInteriorRectangle(Component, int, int, int, int)'>getInteriorRectangle</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#getInteriorRectangle(Component, Border, int, int, int, int)'>getInteriorRectangle</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#isBorderOpaque'>isBorderOpaque</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#isLeftToRight(Component)'>isLeftToRight</a>, &nbsp; <a href='/docs/api/javax/swing/border/AbstractBorder.html#paintBorder(Component, Graphics, int, int, int, int)'>paintBorder</a></td></tr></table><table width='100%'><tr><th>Methods from <b>java.lang.Object</b>:</td></tr><tr><td>
+<a href='/docs/api/java/lang/Object.html#clone'>clone</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#equals(Object)'>equals</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#finalize'>finalize</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#getClass'>getClass</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#hashCode'>hashCode</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notify'>notify</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#notifyAll'>notifyAll</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#toString'>toString</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long)'>wait</a>, &nbsp; <a href='/docs/api/java/lang/Object.html#wait(long, int)'>wait</a></td></tr></table><table width='100%'><tr><th>Method from <b>sun.tools.jconsole.BorderedComponent$LabeledBorder</b> Detail:</td></tr>
+<tr><td><pre><a href='javascript:src("ms4")'><img id='ms4i' src=/plus.gif border=0></a> public <a href=/docs/api/java/awt/Insets.html>Insets</a><a name='getBorderInsets(Component, Insets)'> <b>getBorderInsets</b>(<a href=/docs/api/java/awt/Component.html>Component</a> c,
+    <a href=/docs/api/java/awt/Insets.html>Insets</a> insets)</a> <pre id='ms4' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            int height = 16;
+            Border border = getBorder();
+            if (border != null) {
+                if (border instanceof AbstractBorder) {
+                    ((AbstractBorder)border).getBorderInsets(c, insets);
+                } else {
+                    // Can't reuse border insets because the Border interface
+                    // can't be enhanced.
+                    Insets i = border.getBorderInsets(c);
+                    insets.top = i.top;
+                    insets.right = i.right;
+                    insets.bottom = i.bottom;
+                    insets.left = i.left;
+                }
+            } else {
+                insets.left = insets.top = insets.right = insets.bottom = 0;
+            }
+            insets.left += EDGE_SPACING + TEXT_SPACING;
+            insets.right += EDGE_SPACING + TEXT_SPACING;
+            insets.top += EDGE_SPACING + TEXT_SPACING;
+            insets.bottom += EDGE_SPACING + TEXT_SPACING;
+            if (c == null || label == null) {
+                return insets;
+            }
+            insets.top += label.getHeight();
+            return insets;
+}</pre></pre><ul>Reinitialize the insets parameter with this Border's current Insets.</ul></td></tr><tr><td><pre><a href='javascript:src("ms5")'><img id='ms5i' src=/plus.gif border=0></a> public <a href=/docs/api/javax/swing/JComponent.html>JComponent</a><a name='getLabel'> <b>getLabel</b>()</a> <pre id='ms5' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            return label;
+}</pre></pre><ul>Returns the label of the labeled border.</ul></td></tr><tr><td><pre><a href='javascript:src("ms6")'><img id='ms6i' src=/plus.gif border=0></a> public <a href=/docs/api/java/awt/Dimension.html>Dimension</a><a name='getMinimumSize(Component)'> <b>getMinimumSize</b>(<a href=/docs/api/java/awt/Component.html>Component</a> c)</a> <pre id='ms6' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            Insets insets = getBorderInsets(c);
+            Dimension minSize = new Dimension(insets.right + insets.left,
+                                              insets.top + insets.bottom);
+            minSize.width += label.getWidth();
+            return minSize;
+}</pre></pre><ul>Returns the minimum dimensions this border requires
+in order to fully display the border and title.</ul></td></tr><tr><td><pre><a href='javascript:src("ms7")'><img id='ms7i' src=/plus.gif border=0></a> public  void<a name='paintBorder(Component, Graphics, int, int, int, int)'> <b>paintBorder</b>(<a href=/docs/api/java/awt/Component.html>Component</a> c,
+    <a href=/docs/api/java/awt/Graphics.html>Graphics</a> g,
+    int x,
+    int y,
+    int width,
+    int height)</a> <pre id='ms7' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            Border border = getBorder();
+            if (label == null) {
+                if (border != null) {
+                    border.paintBorder(c, g, x, y, width, height);
+                }
+                return;
+            }
+            Rectangle grooveRect = new Rectangle(x + EDGE_SPACING, y + EDGE_SPACING,
+                                                 width - (EDGE_SPACING * 2),
+                                                 height - (EDGE_SPACING * 2));
+            Dimension   labelDim = label.getPreferredSize();
+            int baseline = label.getBaseline(labelDim.width, labelDim.height);
+            int         ascent = Math.max(0, baseline);
+            int         descent = labelDim.height - ascent;
+            int         diff;
+            Insets      insets;
+            if (border != null) {
+                insets = border.getBorderInsets(c);
+            } else {
+                insets = new Insets(0, 0, 0, 0);
+            }
+            diff = Math.max(0, ascent/2 + TEXT_SPACING - EDGE_SPACING);
+            grooveRect.y += diff;
+            grooveRect.height -= diff;
+            compLoc.y = grooveRect.y + insets.top/2 - (ascent + descent) / 2 - 1;
+            int justification;
+            if (c.getComponentOrientation().isLeftToRight()) {
+                justification = LEFT;
+            } else {
+                justification = RIGHT;
+            }
+            switch (justification) {
+                case LEFT:
+                    compLoc.x = grooveRect.x + TEXT_INSET_H + insets.left;
+                    break;
+                case RIGHT:
+                    compLoc.x = (grooveRect.x + grooveRect.width
+                                 - (labelDim.width + TEXT_INSET_H + insets.right));
+                    break;
+            }
+            // If title is positioned in middle of border AND its fontsize
+            // is greater than the border's thickness, we'll need to paint
+            // the border in sections to leave space for the component's background
+            // to show through the title.
+            //
+            if (border != null) {
+                if (grooveRect.y  > compLoc.y - ascent) {
+                    Rectangle clipRect = new Rectangle();
+                    // save original clip
+                    Rectangle saveClip = g.getClipBounds();
+                    // paint strip left of text
+                    clipRect.setBounds(saveClip);
+                    if (computeIntersection(clipRect, x, y, compLoc.x-1-x, height)) {
+                        g.setClip(clipRect);
+                        border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+                                      grooveRect.width, grooveRect.height);
+                    }
+                    // paint strip right of text
+                    clipRect.setBounds(saveClip);
+                    if (computeIntersection(clipRect, compLoc.x+ labelDim.width +1, y,
+                                   x+width-(compLoc.x+ labelDim.width +1), height)) {
+                        g.setClip(clipRect);
+                        border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+                                      grooveRect.width, grooveRect.height);
+                    }
+                    // paint strip below text
+                    clipRect.setBounds(saveClip);
+                    if (computeIntersection(clipRect,
+                                            compLoc.x - 1, compLoc.y + ascent + descent,
+                                            labelDim.width + 2,
+                                            y + height - compLoc.y - ascent - descent)) {
+                        g.setClip(clipRect);
+                        border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+                                  grooveRect.width, grooveRect.height);
+                    }
+                    // restore clip
+                    g.setClip(saveClip);
+                } else {
+                    border.paintBorder(c, g, grooveRect.x, grooveRect.y,
+                                      grooveRect.width, grooveRect.height);
+                }
+                label.setLocation(compLoc);
+                label.setSize(labelDim);
+            }
+}</pre></pre><ul>Paints the border for the specified component with the
+specified position and size.</ul></td></tr><tr><td><pre><a href='javascript:src("ms8")'><img id='ms8i' src=/plus.gif border=0></a> public  void<a name='setLabel(JComponent)'> <b>setLabel</b>(<a href=/docs/api/javax/swing/JComponent.html>JComponent</a> label)</a> <pre id='ms8' style='height:1px;overflow:hidden;visibility:hidden;width:100%'>{
+            this.label = label;
+}</pre></pre><ul>Sets the title of the titled border.
+param title the title for the border</ul></td></tr></table>
+
+
+
+
+
+
+
+
+<!-- end -->
+
+
+</div>
+</body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- end -->
+

@@ -1,0 +1,820 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: MemoryTab.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MemoryTab.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2007, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/management/package-index.html>java.lang.management</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/package-index.html>java.lang.reflect</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/concurrent/package-index.html>java.util.concurrent</a>;
+   35 &nbsp; 
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/accessibility/package-index.html>javax.accessibility</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/package-index.html>javax.management</a>;
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/openmbean/CompositeData.html>javax.management.openmbean.CompositeData</a>;
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/text/package-index.html>javax.swing.text</a>;
+   42 &nbsp; 
+   43 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/management/package-index.html>sun.management</a>;
+   44 &nbsp; 
+   45 &nbsp; import static sun.tools.jconsole.Formatter.*;
+   46 &nbsp; import static sun.tools.jconsole.OverviewPanel.*;
+   47 &nbsp; import static sun.tools.jconsole.Resources.*;
+   48 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   49 &nbsp; 
+   50 &nbsp; @SuppressWarnings("serial")
+<a name='51'>   51 &nbsp; class MemoryTab extends Tab implements ActionListener, ItemListener {
+   52 &nbsp;     JComboBox plotterChoice;
+   53 &nbsp;     TimeComboBox timeComboBox;
+   54 &nbsp;     JButton gcButton;
+   55 &nbsp; 
+   56 &nbsp;     PlotterPanel plotterPanel;
+   57 &nbsp;     JPanel bottomPanel;
+   58 &nbsp;     HTMLPane details;
+   59 &nbsp;     PoolChart poolChart;
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;     ArrayList&lt;Plotter&gt; plotterList;
+   62 &nbsp;     Plotter heapPlotter, nonHeapPlotter;
+   63 &nbsp; 
+   64 &nbsp;     private MemoryOverviewPanel overviewPanel;
+   65 &nbsp; 
+   66 &nbsp;     private static final String usedKey        = "used";
+   67 &nbsp;     private static final String committedKey   = "committed";
+   68 &nbsp;     private static final String maxKey         = "max";
+   69 &nbsp;     private static final String thresholdKey   = "threshold";
+   70 &nbsp; 
+<a name='71'>   71 &nbsp;     private static final String usedName        = Resources.getText("Used");
+   72 &nbsp;     private static final String committedName   = Resources.getText("Committed");
+   73 &nbsp;     private static final String maxName         = Resources.getText("Max");
+   74 &nbsp;     private static final String thresholdName   = Resources.getText("Threshold");
+   75 &nbsp; 
+   76 &nbsp;     private static final Color  usedColor      = Plotter.defaultColor;
+   77 &nbsp;     private static final Color  committedColor = null;
+   78 &nbsp;     private static final Color  maxColor       = null;
+   79 &nbsp;     private static final Color  thresholdColor = Color.red;
+   80 &nbsp; 
+<a name='81'>   81 &nbsp;     private static final String infoLabelFormat = "MemoryTab.infoLabelFormat";
+   82 &nbsp; 
+   83 &nbsp;     /*
+   84 &nbsp;       Hierarchy of panels and layouts for this tab:
+   85 &nbsp; 
+   86 &nbsp;         MemoryTab (BorderLayout)
+   87 &nbsp; 
+   88 &nbsp;             North:  topPanel (BorderLayout)
+   89 &nbsp; 
+   90 &nbsp;                         Center: controlPanel (FlowLayout)
+<a name='91'>   91 &nbsp;                                     plotterChoice, timeComboBox
+   92 &nbsp; 
+   93 &nbsp;                         East:   topRightPanel (FlowLayout)
+   94 &nbsp;                                     gcButton
+   95 &nbsp; 
+   96 &nbsp;             Center: plotterPanel
+   97 &nbsp; 
+   98 &nbsp;                         Center: plotter
+   99 &nbsp; 
+  100 &nbsp;             South:  bottomPanel (BorderLayout)
+<a name='101'>  101 &nbsp; 
+  102 &nbsp;                         Center: details
+  103 &nbsp;                         East:   poolChart
+  104 &nbsp;     */
+  105 &nbsp; 
+  106 &nbsp; 
+  107 &nbsp;     public static String getTabName() {
+  108 &nbsp;         return getText("Memory");
+  109 &nbsp;     }
+  110 &nbsp; 
+<a name='111'>  111 &nbsp;     public MemoryTab(VMPanel vmPanel) {
+  112 &nbsp;         super(vmPanel, getTabName());
+  113 &nbsp; 
+  114 &nbsp;         setLayout(new BorderLayout(0, 0));
+  115 &nbsp;         setBorder(new EmptyBorder(4, 4, 3, 4));
+  116 &nbsp; 
+  117 &nbsp;         JPanel topPanel     = new JPanel(new BorderLayout());
+  118 &nbsp;                plotterPanel = new PlotterPanel(null);
+  119 &nbsp;                bottomPanel  = new JPanel(new BorderLayout());
+  120 &nbsp; 
+<a name='121'>  121 &nbsp;         add(topPanel,     BorderLayout.NORTH);
+  122 &nbsp;         add(plotterPanel, BorderLayout.CENTER);
+  123 &nbsp; 
+  124 &nbsp;         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 20, 5));
+  125 &nbsp;         topPanel.add(controlPanel, BorderLayout.CENTER);
+  126 &nbsp; 
+  127 &nbsp;         // Plotter choice
+  128 &nbsp;         plotterChoice = new JComboBox();
+  129 &nbsp;         plotterChoice.addItemListener(this);
+  130 &nbsp;         controlPanel.add(new LabeledComponent(getText("Chart:"),
+<a name='131'>  131 &nbsp;                                               getMnemonicInt("Chart:"),
+  132 &nbsp;                                               plotterChoice));
+  133 &nbsp; 
+  134 &nbsp;         // Range control
+  135 &nbsp;         timeComboBox = new TimeComboBox();
+  136 &nbsp;         controlPanel.add(new LabeledComponent(getText("Time Range:"),
+  137 &nbsp;                                               getMnemonicInt("Time Range:"),
+  138 &nbsp;                                               timeComboBox));
+  139 &nbsp; 
+  140 &nbsp;         gcButton = new JButton(getText("Perform GC"));
+<a name='141'>  141 &nbsp;         gcButton.setMnemonic(getMnemonicInt("Perform GC"));
+  142 &nbsp;         gcButton.addActionListener(this);
+  143 &nbsp;         gcButton.setToolTipText(getText("Perform GC.toolTip"));
+  144 &nbsp;         JPanel topRightPanel = new JPanel();
+  145 &nbsp;         topRightPanel.setBorder(new EmptyBorder(0, 65-8, 0, 70));
+  146 &nbsp;         topRightPanel.add(gcButton);
+  147 &nbsp;         topPanel.add(topRightPanel, BorderLayout.AFTER_LINE_ENDS);
+  148 &nbsp; 
+  149 &nbsp;         bottomPanel.setBorder(new CompoundBorder(new TitledBorder(getText("Details")),
+  150 &nbsp;                                                   new EmptyBorder(10, 10, 10, 10)));
+<a name='151'>  151 &nbsp; 
+  152 &nbsp;         details = new HTMLPane();
+  153 &nbsp;         setAccessibleName(details, getText("Details"));
+  154 &nbsp;         bottomPanel.add(new JScrollPane(details), BorderLayout.CENTER);
+  155 &nbsp; 
+  156 &nbsp;         poolChart = new PoolChart();
+  157 &nbsp;         bottomPanel.add(poolChart, BorderLayout.AFTER_LINE_ENDS);
+  158 &nbsp;     }
+  159 &nbsp; 
+  160 &nbsp; 
+<a name='161'>  161 &nbsp;     private void createPlotters() throws IOException {
+  162 &nbsp;         plotterList = new ArrayList&lt;Plotter&gt;();
+  163 &nbsp; 
+  164 &nbsp;         ProxyClient proxyClient = vmPanel.getProxyClient();
+  165 &nbsp; 
+  166 &nbsp;         heapPlotter = new Plotter(Plotter.Unit.BYTES) {
+  167 &nbsp;             public String toString() {
+  168 &nbsp;                 return Resources.getText("Heap Memory Usage");
+  169 &nbsp;             }
+  170 &nbsp;         };
+<a name='171'>  171 &nbsp;         proxyClient.addWeakPropertyChangeListener(heapPlotter);
+  172 &nbsp; 
+  173 &nbsp;         nonHeapPlotter = new Plotter(Plotter.Unit.BYTES) {
+  174 &nbsp;             public String toString() {
+  175 &nbsp;                 return Resources.getText("Non-Heap Memory Usage");
+  176 &nbsp;             }
+  177 &nbsp;         };
+  178 &nbsp; 
+  179 &nbsp;         setAccessibleName(heapPlotter,
+  180 &nbsp;                           getText("MemoryTab.heapPlotter.accessibleName"));
+<a name='181'>  181 &nbsp;         setAccessibleName(nonHeapPlotter,
+  182 &nbsp;                           getText("MemoryTab.nonHeapPlotter.accessibleName"));
+  183 &nbsp; 
+  184 &nbsp;         proxyClient.addWeakPropertyChangeListener(nonHeapPlotter);
+  185 &nbsp; 
+  186 &nbsp;         heapPlotter.createSequence(usedKey,         usedName,      usedColor,      true);
+  187 &nbsp;         heapPlotter.createSequence(committedKey,    committedName, committedColor, false);
+  188 &nbsp;         heapPlotter.createSequence(maxKey,          maxName,       maxColor,       false);
+  189 &nbsp; 
+  190 &nbsp;         nonHeapPlotter.createSequence(usedKey,      usedName,      usedColor,      true);
+<a name='191'>  191 &nbsp;         nonHeapPlotter.createSequence(committedKey, committedName, committedColor, false);
+  192 &nbsp;         nonHeapPlotter.createSequence(maxKey,       maxName,       maxColor,       false);
+  193 &nbsp; 
+  194 &nbsp;         plotterList.add(heapPlotter);
+  195 &nbsp;         plotterList.add(nonHeapPlotter);
+  196 &nbsp; 
+  197 &nbsp;         // Now add memory pools
+  198 &nbsp;         Map&lt;ObjectName, MBeanInfo&gt; mBeanMap = proxyClient.getMBeans("java.lang");
+  199 &nbsp;         Set&lt;ObjectName&gt; keys = mBeanMap.keySet();
+  200 &nbsp;         ObjectName[] objectNames = keys.toArray(new ObjectName[keys.size()]);
+<a name='201'>  201 &nbsp;         ArrayList&lt;PoolPlotter&gt; nonHeapPlotters = new ArrayList&lt;PoolPlotter&gt;(2);
+  202 &nbsp;         for (ObjectName objectName : objectNames) {
+  203 &nbsp;             String type = objectName.getKeyProperty("type");
+  204 &nbsp;             if (type.equals("MemoryPool")) {
+  205 &nbsp;                 String name = getText("MemoryPoolLabel",
+  206 &nbsp;                                       objectName.getKeyProperty("name"));
+  207 &nbsp;                 // Heap or non-heap?
+  208 &nbsp;                 boolean isHeap = false;
+  209 &nbsp;                 AttributeList al =
+  210 &nbsp;                     proxyClient.getAttributes(objectName,
+<a name='211'>  211 &nbsp;                                               new String[] { "Type" });
+  212 &nbsp;                 if (al.size() &gt; 0) {
+  213 &nbsp;                     isHeap = MemoryType.HEAP.name().equals(((Attribute)al.get(0)).getValue());
+  214 &nbsp;                 }
+  215 &nbsp;                 PoolPlotter poolPlotter = new PoolPlotter(objectName, name, isHeap);
+  216 &nbsp;                 proxyClient.addWeakPropertyChangeListener(poolPlotter);
+  217 &nbsp; 
+  218 &nbsp;                 poolPlotter.createSequence(usedKey,      usedName,      usedColor,      true);
+  219 &nbsp;                 poolPlotter.createSequence(committedKey, committedName, committedColor, false);
+  220 &nbsp;                 poolPlotter.createSequence(maxKey,       maxName,       maxColor,       false);
+<a name='221'>  221 &nbsp;                 poolPlotter.createSequence(thresholdKey, thresholdName, thresholdColor, false);
+  222 &nbsp;                 poolPlotter.setUseDashedTransitions(thresholdKey, true);
+  223 &nbsp; 
+  224 &nbsp;                 if (isHeap) {
+  225 &nbsp;                     plotterList.add(poolPlotter);
+  226 &nbsp;                 } else {
+  227 &nbsp;                     // Will be added to plotterList below
+  228 &nbsp;                     nonHeapPlotters.add(poolPlotter);
+  229 &nbsp;                 }
+  230 &nbsp;             }
+<a name='231'>  231 &nbsp;         }
+  232 &nbsp;         // Add non-heap plotters last
+  233 &nbsp;         for (PoolPlotter poolPlotter : nonHeapPlotters) {
+  234 &nbsp;             plotterList.add(poolPlotter);
+  235 &nbsp;         }
+  236 &nbsp;     }
+  237 &nbsp; 
+  238 &nbsp; 
+  239 &nbsp;     public void itemStateChanged(ItemEvent ev) {
+  240 &nbsp;         if (ev.getStateChange() == ItemEvent.SELECTED) {
+<a name='241'>  241 &nbsp;             Plotter plotter = (Plotter)plotterChoice.getSelectedItem();
+  242 &nbsp;             plotterPanel.setPlotter(plotter);
+  243 &nbsp;         }
+  244 &nbsp;     }
+  245 &nbsp; 
+  246 &nbsp;     public void gc() {
+  247 &nbsp;         new Thread("MemoryPanel.gc") {
+  248 &nbsp;             public void run() {
+  249 &nbsp;                 ProxyClient proxyClient = vmPanel.getProxyClient();
+  250 &nbsp;                 try {
+<a name='251'>  251 &nbsp;                     proxyClient.getMemoryMXBean().gc();
+  252 &nbsp;                 } catch (UndeclaredThrowableException e) {
+  253 &nbsp;                     proxyClient.markAsDead();
+  254 &nbsp;                 } catch (IOException e) {
+  255 &nbsp;                     // Ignore
+  256 &nbsp;                 }
+  257 &nbsp;             }
+  258 &nbsp;         }.start();
+  259 &nbsp;     }
+  260 &nbsp; 
+<a name='261'>  261 &nbsp;     public SwingWorker&lt;?, ?&gt; newSwingWorker() {
+  262 &nbsp;         return new SwingWorker&lt;Boolean, Object&gt;() {
+  263 &nbsp;             private long[] used, committed, max, threshold;
+  264 &nbsp;             private long timeStamp;
+  265 &nbsp;             private String detailsStr;
+  266 &nbsp;             private boolean initialRun = false;
+  267 &nbsp; 
+  268 &nbsp;             public Boolean doInBackground() {
+  269 &nbsp;                 ProxyClient proxyClient = vmPanel.getProxyClient();
+  270 &nbsp; 
+<a name='271'>  271 &nbsp;                 if (plotterList == null) {
+  272 &nbsp;                     try {
+  273 &nbsp;                         createPlotters();
+  274 &nbsp;                     } catch (UndeclaredThrowableException e) {
+  275 &nbsp;                         proxyClient.markAsDead();
+  276 &nbsp;                         return false;
+  277 &nbsp;                     } catch (final IOException ex) {
+  278 &nbsp;                         return false;
+  279 &nbsp;                     }
+  280 &nbsp;                     initialRun = true;
+<a name='281'>  281 &nbsp;                 }
+  282 &nbsp; 
+  283 &nbsp;                 int n = plotterList.size();
+  284 &nbsp;                 used      = new long[n];
+  285 &nbsp;                 committed = new long[n];
+  286 &nbsp;                 max       = new long[n];
+  287 &nbsp;                 threshold = new long[n];
+  288 &nbsp;                 timeStamp = System.currentTimeMillis();
+  289 &nbsp;                 int poolCount = 0;
+  290 &nbsp; 
+<a name='291'>  291 &nbsp;                 for (int i = 0; i &lt; n; i++) {
+  292 &nbsp;                     Plotter plotter = plotterList.get(i);
+  293 &nbsp;                     MemoryUsage mu = null;
+  294 &nbsp;                     used[i] = -1L;
+  295 &nbsp;                     threshold[i] = -1L;
+  296 &nbsp; 
+  297 &nbsp;                     try {
+  298 &nbsp;                         if (plotter instanceof PoolPlotter) {
+  299 &nbsp;                             PoolPlotter poolPlotter = (PoolPlotter)plotter;
+  300 &nbsp;                             ObjectName objectName = poolPlotter.objectName;
+<a name='301'>  301 &nbsp;                             AttributeList al =
+  302 &nbsp;                                 proxyClient.getAttributes(objectName,
+  303 &nbsp;                                                           new String[] { "Usage", "UsageThreshold" });
+  304 &nbsp;                             if (al.size() &gt; 0) {
+  305 &nbsp;                                 CompositeData cd = (CompositeData)((Attribute)al.get(0)).getValue();
+  306 &nbsp;                                 mu = MemoryUsage.from(cd);
+  307 &nbsp; 
+  308 &nbsp;                                 if (al.size() &gt; 1) {
+  309 &nbsp;                                     threshold[i] = (Long)((Attribute)al.get(1)).getValue();
+  310 &nbsp;                                 }
+<a name='311'>  311 &nbsp;                             }
+  312 &nbsp;                         } else if (plotter == heapPlotter) {
+  313 &nbsp;                             mu = proxyClient.getMemoryMXBean().getHeapMemoryUsage();
+  314 &nbsp;                         } else if (plotter == nonHeapPlotter) {
+  315 &nbsp;                             mu = proxyClient.getMemoryMXBean().getNonHeapMemoryUsage();
+  316 &nbsp;                         }
+  317 &nbsp;                     } catch (UndeclaredThrowableException e) {
+  318 &nbsp;                         proxyClient.markAsDead();
+  319 &nbsp;                         return false;
+  320 &nbsp;                     } catch (IOException ex) {
+<a name='321'>  321 &nbsp;                         // Skip this plotter
+  322 &nbsp;                     }
+  323 &nbsp; 
+  324 &nbsp;                     if (mu != null) {
+  325 &nbsp;                         used[i]      = mu.getUsed();
+  326 &nbsp;                         committed[i] = mu.getCommitted();
+  327 &nbsp;                         max[i]       = mu.getMax();
+  328 &nbsp;                     }
+  329 &nbsp;                 }
+  330 &nbsp;                 detailsStr = formatDetails();
+<a name='331'>  331 &nbsp; 
+  332 &nbsp;                 return true;
+  333 &nbsp;             }
+  334 &nbsp; 
+  335 &nbsp;             protected void done() {
+  336 &nbsp;                 try {
+  337 &nbsp;                     if (!get()) {
+  338 &nbsp;                         return;
+  339 &nbsp;                     }
+  340 &nbsp;                 } catch (InterruptedException ex) {
+<a name='341'>  341 &nbsp;                     return;
+  342 &nbsp;                 } catch (ExecutionException ex) {
+  343 &nbsp;                     if (JConsole.isDebug()) {
+  344 &nbsp;                         ex.printStackTrace();
+  345 &nbsp;                     }
+  346 &nbsp;                     return;
+  347 &nbsp;                 }
+  348 &nbsp; 
+  349 &nbsp;                 if (initialRun) {
+  350 &nbsp;                     // Add Memory Pools
+<a name='351'>  351 &nbsp;                     for (Plotter p : plotterList) {
+  352 &nbsp;                         plotterChoice.addItem(p);
+  353 &nbsp;                         timeComboBox.addPlotter(p);
+  354 &nbsp;                     }
+  355 &nbsp;                     add(bottomPanel,  BorderLayout.SOUTH);
+  356 &nbsp;                 }
+  357 &nbsp; 
+  358 &nbsp; 
+  359 &nbsp;                 int n = plotterList.size();
+  360 &nbsp;                 int poolCount = 0;
+<a name='361'>  361 &nbsp; 
+  362 &nbsp;                 for (int i = 0; i &lt; n; i++) {
+  363 &nbsp;                     Plotter plotter = plotterList.get(i);
+  364 &nbsp;                     if (used[i] &gt;= 0L) {
+  365 &nbsp;                         if (plotter instanceof PoolPlotter) {
+  366 &nbsp;                             plotter.addValues(timeStamp, used[i], committed[i], max[i], threshold[i]);
+  367 &nbsp;                             if (threshold[i] &gt; 0L) {
+  368 &nbsp;                                 plotter.setIsPlotted(thresholdKey, true);
+  369 &nbsp;                             }
+  370 &nbsp;                             poolChart.setValue(poolCount++, (PoolPlotter)plotter,
+<a name='371'>  371 &nbsp;                                                used[i], threshold[i], max[i]);
+  372 &nbsp;                         } else {
+  373 &nbsp;                             plotter.addValues(timeStamp, used[i], committed[i], max[i]);
+  374 &nbsp;                         }
+  375 &nbsp; 
+  376 &nbsp;                         if (plotter == heapPlotter &amp;&amp; overviewPanel != null) {
+  377 &nbsp;                             overviewPanel.getPlotter().addValues(timeStamp, used[i]);
+  378 &nbsp;                             overviewPanel.updateMemoryInfo(used[i], committed[i], max[i]);
+  379 &nbsp;                         }
+  380 &nbsp;                     }
+<a name='381'>  381 &nbsp;                 }
+  382 &nbsp;                 details.setText(detailsStr);
+  383 &nbsp;             }
+  384 &nbsp;         };
+  385 &nbsp;     }
+  386 &nbsp; 
+  387 &nbsp;     private String formatDetails() {
+  388 &nbsp;         ProxyClient proxyClient = vmPanel.getProxyClient();
+  389 &nbsp;         if (proxyClient.isDead()) {
+  390 &nbsp;             return "";
+<a name='391'>  391 &nbsp;         }
+  392 &nbsp; 
+  393 &nbsp;         String text = "&lt;table cellspacing=0 cellpadding=0&gt;";
+  394 &nbsp; 
+  395 &nbsp;         Plotter plotter = (Plotter)plotterChoice.getSelectedItem();
+  396 &nbsp;         if (plotter == null) {
+  397 &nbsp;             return "";
+  398 &nbsp;         }
+  399 &nbsp; 
+  400 &nbsp;         //long time = plotter.getLastTimeStamp();
+<a name='401'>  401 &nbsp;         long time = System.currentTimeMillis();
+  402 &nbsp;         String timeStamp = formatDateTime(time);
+  403 &nbsp;         text += newRow(getText("Time"), timeStamp);
+  404 &nbsp; 
+  405 &nbsp;         long used = plotter.getLastValue(usedKey);
+  406 &nbsp;         long committed = plotter.getLastValue(committedKey);
+  407 &nbsp;         long max = plotter.getLastValue(maxKey);
+  408 &nbsp;         long threshold = plotter.getLastValue(thresholdKey);
+  409 &nbsp; 
+  410 &nbsp;         text += newRow(getText("Used"), formatKBytes(used));
+<a name='411'>  411 &nbsp;         if (committed &gt; 0L) {
+  412 &nbsp;             text += newRow(getText("Committed"), formatKBytes(committed));
+  413 &nbsp;         }
+  414 &nbsp;         if (max &gt; 0L) {
+  415 &nbsp;             text += newRow(getText("Max"), formatKBytes(max));
+  416 &nbsp;         }
+  417 &nbsp;         if (threshold &gt; 0L) {
+  418 &nbsp;             text += newRow(getText("Usage Threshold"), formatKBytes(threshold));
+  419 &nbsp;         }
+  420 &nbsp; 
+<a name='421'>  421 &nbsp;         try {
+  422 &nbsp;             Collection&lt;GarbageCollectorMXBean&gt; garbageCollectors =
+  423 &nbsp;                 proxyClient.getGarbageCollectorMXBeans();
+  424 &nbsp; 
+  425 &nbsp;             boolean descPrinted = false;
+  426 &nbsp;             for (GarbageCollectorMXBean garbageCollectorMBean : garbageCollectors) {
+  427 &nbsp;                 String gcName = garbageCollectorMBean.getName();
+  428 &nbsp;                 long gcCount = garbageCollectorMBean.getCollectionCount();
+  429 &nbsp;                 long gcTime = garbageCollectorMBean.getCollectionTime();
+  430 &nbsp;                 String str = getText("GC time details", justify(formatTime(gcTime), 14),
+<a name='431'>  431 &nbsp;                                      gcName,
+  432 &nbsp;                                      String.format("%,d",gcCount));
+  433 &nbsp;                 if (!descPrinted) {
+  434 &nbsp;                     text += newRow(getText("GC time"), str);
+  435 &nbsp;                     descPrinted = true;
+  436 &nbsp;                 } else {
+  437 &nbsp;                     text += newRow(null, str);
+  438 &nbsp;                 }
+  439 &nbsp;            }
+  440 &nbsp;         } catch (IOException e) {
+<a name='441'>  441 &nbsp;         }
+  442 &nbsp; 
+  443 &nbsp;         return text;
+  444 &nbsp;     }
+  445 &nbsp; 
+  446 &nbsp;     public void actionPerformed(ActionEvent ev) {
+  447 &nbsp;         Object src = ev.getSource();
+  448 &nbsp;         if (src == gcButton) {
+  449 &nbsp;             gc();
+  450 &nbsp;         }
+<a name='451'>  451 &nbsp;     }
+  452 &nbsp; 
+  453 &nbsp;     private class PoolPlotter extends Plotter {
+  454 &nbsp;         ObjectName objectName;
+  455 &nbsp;         String name;
+  456 &nbsp;         boolean isHeap;
+  457 &nbsp;         long value, threshold, max;
+  458 &nbsp;         int barX;
+  459 &nbsp; 
+  460 &nbsp;         public PoolPlotter(ObjectName objectName, String name, boolean isHeap) {
+<a name='461'>  461 &nbsp;             super(Plotter.Unit.BYTES);
+  462 &nbsp; 
+  463 &nbsp;             this.objectName = objectName;
+  464 &nbsp;             this.name       = name;
+  465 &nbsp;             this.isHeap     = isHeap;
+  466 &nbsp; 
+  467 &nbsp;             setAccessibleName(this,
+  468 &nbsp;                               getText("MemoryTab.poolPlotter.accessibleName",
+  469 &nbsp;                                       name));
+  470 &nbsp;         }
+<a name='471'>  471 &nbsp; 
+  472 &nbsp; 
+  473 &nbsp;         public String toString() {
+  474 &nbsp;             return name;
+  475 &nbsp;         }
+  476 &nbsp;     }
+  477 &nbsp; 
+  478 &nbsp;     private class PoolChart extends BorderedComponent
+  479 &nbsp;                             implements Accessible, MouseListener {
+  480 &nbsp;         final int height       = 150;
+<a name='481'>  481 &nbsp;         final int leftMargin   =  50;
+  482 &nbsp;         final int rightMargin  =  23;
+  483 &nbsp;         final int bottomMargin =  35;
+  484 &nbsp;         final int barWidth     =  22;
+  485 &nbsp;         final int barGap       =   3;
+  486 &nbsp;         final int groupGap     =   8;
+  487 &nbsp;         final int barHeight    = height * 2 / 3;
+  488 &nbsp; 
+  489 &nbsp;         final Color greenBar           = new Color(100, 255, 100);
+  490 &nbsp;         final Color greenBarBackground = new Color(210, 255, 210);
+<a name='491'>  491 &nbsp;         final Color redBarBackground   = new Color(255, 210, 210);
+  492 &nbsp; 
+  493 &nbsp;         Font smallFont = null;
+  494 &nbsp; 
+  495 &nbsp;         ArrayList&lt;PoolPlotter&gt; poolPlotters = new ArrayList&lt;PoolPlotter&gt;(5);
+  496 &nbsp; 
+  497 &nbsp;         int nHeapPools    = 0;
+  498 &nbsp;         int nNonHeapPools = 0;
+  499 &nbsp;         Rectangle heapRect    = new Rectangle(leftMargin,            height - bottomMargin + 6, barWidth, 20);
+  500 &nbsp;         Rectangle nonHeapRect = new Rectangle(leftMargin + groupGap, height - bottomMargin + 6, barWidth, 20);
+<a name='501'>  501 &nbsp; 
+  502 &nbsp;         public PoolChart() {
+  503 &nbsp;             super(null, null);
+  504 &nbsp; 
+  505 &nbsp;             setFocusable(true);
+  506 &nbsp;             addMouseListener(this);
+  507 &nbsp;             ToolTipManager.sharedInstance().registerComponent(this);
+  508 &nbsp;         }
+  509 &nbsp; 
+  510 &nbsp;         public void setValue(int poolIndex, PoolPlotter poolPlotter,
+<a name='511'>  511 &nbsp;                              long value, long threshold, long max) {
+  512 &nbsp;             poolPlotter.value = value;
+  513 &nbsp;             poolPlotter.threshold = threshold;
+  514 &nbsp;             poolPlotter.max = max;
+  515 &nbsp; 
+  516 &nbsp;             if (poolIndex == poolPlotters.size()) {
+  517 &nbsp;                 poolPlotters.add(poolPlotter);
+  518 &nbsp;                 if (poolPlotter.isHeap) {
+  519 &nbsp;                     poolPlotter.barX = nHeapPools * (barWidth + barGap);
+  520 &nbsp;                     nHeapPools++;
+<a name='521'>  521 &nbsp;                     heapRect.width = nHeapPools * barWidth + (nHeapPools - 1) * barGap;
+  522 &nbsp;                     nonHeapRect.x  = leftMargin + heapRect.width + groupGap;
+  523 &nbsp;                 } else {
+  524 &nbsp;                     poolPlotter.barX = nonHeapRect.x - leftMargin + nNonHeapPools * (barWidth + barGap);
+  525 &nbsp;                     nNonHeapPools++;
+  526 &nbsp;                     nonHeapRect.width = nNonHeapPools * barWidth + (nNonHeapPools - 1) * barGap;
+  527 &nbsp;                 }
+  528 &nbsp;             } else {
+  529 &nbsp;                 poolPlotters.set(poolIndex, poolPlotter);
+  530 &nbsp;             }
+<a name='531'>  531 &nbsp;             repaint();
+  532 &nbsp;         }
+  533 &nbsp; 
+  534 &nbsp;         private void paintPoolBar(Graphics g, PoolPlotter poolPlotter) {
+  535 &nbsp;             Rectangle barRect = getBarRect(poolPlotter);
+  536 &nbsp;             g.setColor(Color.gray);
+  537 &nbsp;             g.drawRect(barRect.x, barRect.y, barRect.width, barRect.height);
+  538 &nbsp; 
+  539 &nbsp;             long value = poolPlotter.value;
+  540 &nbsp;             long max   = poolPlotter.max;
+<a name='541'>  541 &nbsp;             if (max &gt; 0L) {
+  542 &nbsp;                 g.translate(barRect.x, barRect.y);
+  543 &nbsp; 
+  544 &nbsp;                 // Paint green background
+  545 &nbsp;                 g.setColor(greenBarBackground);
+  546 &nbsp;                 g.fillRect(1, 1, barRect.width - 1, barRect.height - 1);
+  547 &nbsp; 
+  548 &nbsp;                 int greenHeight = (int)(value * barRect.height / max);
+  549 &nbsp;                 long threshold = poolPlotter.threshold;
+  550 &nbsp;                 if (threshold &gt; 0L) {
+<a name='551'>  551 &nbsp;                     int redHeight = (int)(threshold * barRect.height / max);
+  552 &nbsp; 
+  553 &nbsp;                     // Paint red background
+  554 &nbsp;                     g.setColor(redBarBackground);
+  555 &nbsp;                     g.fillRect(1, 1, barRect.width - 1, barRect.height - redHeight);
+  556 &nbsp; 
+  557 &nbsp;                     if (value &gt; threshold) {
+  558 &nbsp;                         // Over threshold, paint red bar
+  559 &nbsp;                         g.setColor(thresholdColor);
+  560 &nbsp;                         g.fillRect(1, barRect.height - greenHeight,
+<a name='561'>  561 &nbsp;                                    barRect.width - 1, greenHeight - redHeight);
+  562 &nbsp;                         greenHeight = redHeight;
+  563 &nbsp;                     }
+  564 &nbsp;                 }
+  565 &nbsp; 
+  566 &nbsp;                 // Paint green bar
+  567 &nbsp;                 g.setColor(greenBar);
+  568 &nbsp;                 g.fillRect(1, barRect.height - greenHeight,
+  569 &nbsp;                            barRect.width - 1, greenHeight);
+  570 &nbsp; 
+<a name='571'>  571 &nbsp;                 g.translate(-barRect.x, -barRect.y);
+  572 &nbsp;             }
+  573 &nbsp;         }
+  574 &nbsp; 
+  575 &nbsp;         public void paintComponent(Graphics g) {
+  576 &nbsp;             super.paintComponent(g);
+  577 &nbsp; 
+  578 &nbsp;             if (poolPlotters.size() == 0) {
+  579 &nbsp;                 return;
+  580 &nbsp;             }
+<a name='581'>  581 &nbsp; 
+  582 &nbsp;             if (smallFont == null) {
+  583 &nbsp;                 smallFont = g.getFont().deriveFont(9.0F);
+  584 &nbsp;             }
+  585 &nbsp; 
+  586 &nbsp;             // Paint background for chart area
+  587 &nbsp;             g.setColor(getBackground());
+  588 &nbsp;             Rectangle r = g.getClipBounds();
+  589 &nbsp;             g.fillRect(r.x, r.y, r.width, r.height);
+  590 &nbsp; 
+<a name='591'>  591 &nbsp;             g.setFont(smallFont);
+  592 &nbsp;             FontMetrics fm = g.getFontMetrics();
+  593 &nbsp;             int fontDescent = fm.getDescent();
+  594 &nbsp; 
+  595 &nbsp;             // Paint percentage axis
+  596 &nbsp;             g.setColor(getForeground());
+  597 &nbsp;             for (int pc : new int[] { 0, 25, 50, 75, 100 }) {
+  598 &nbsp;                 String str = pc + "% --";
+  599 &nbsp;                 g.drawString(str,
+  600 &nbsp;                              leftMargin - fm.stringWidth(str) - 4,
+<a name='601'>  601 &nbsp;                              height - bottomMargin - (pc * barHeight / 100) + fontDescent + 1);
+  602 &nbsp;             }
+  603 &nbsp; 
+  604 &nbsp;             for (PoolPlotter poolPlotter : poolPlotters) {
+  605 &nbsp;                 paintPoolBar(g, poolPlotter);
+  606 &nbsp;             }
+  607 &nbsp; 
+  608 &nbsp;             g.setColor(Color.gray);
+  609 &nbsp;             g.drawRect(heapRect.x,    heapRect.y,    heapRect.width,    heapRect.height);
+  610 &nbsp;             g.drawRect(nonHeapRect.x, nonHeapRect.y, nonHeapRect.width, nonHeapRect.height);
+<a name='611'>  611 &nbsp; 
+  612 &nbsp;             Color heapColor    = greenBar;
+  613 &nbsp;             Color nonHeapColor = greenBar;
+  614 &nbsp; 
+  615 &nbsp; 
+  616 &nbsp;             for (PoolPlotter poolPlotter : poolPlotters) {
+  617 &nbsp;                 if (poolPlotter.threshold &gt; 0L &amp;&amp; poolPlotter.value &gt; poolPlotter.threshold) {
+  618 &nbsp;                     if (poolPlotter.isHeap) {
+  619 &nbsp;                         heapColor = thresholdColor;
+  620 &nbsp;                     } else {
+<a name='621'>  621 &nbsp;                         nonHeapColor = thresholdColor;
+  622 &nbsp;                     }
+  623 &nbsp;                 }
+  624 &nbsp;             }
+  625 &nbsp;             g.setColor(heapColor);
+  626 &nbsp;             g.fillRect(heapRect.x + 1,    heapRect.y + 1,    heapRect.width - 1,    heapRect.height - 1);
+  627 &nbsp;             g.setColor(nonHeapColor);
+  628 &nbsp;             g.fillRect(nonHeapRect.x + 1, nonHeapRect.y + 1, nonHeapRect.width - 1, nonHeapRect.height - 1);
+  629 &nbsp; 
+  630 &nbsp;             String str = getText("Heap");
+<a name='631'>  631 &nbsp;             int stringWidth = fm.stringWidth(str);
+  632 &nbsp;             int x = heapRect.x + (heapRect.width - stringWidth) / 2;
+  633 &nbsp;             int y = heapRect.y + heapRect.height - 6;
+  634 &nbsp;             g.setColor(Color.white);
+  635 &nbsp;             g.drawString(str, x-1, y-1);
+  636 &nbsp;             g.drawString(str, x+1, y-1);
+  637 &nbsp;             g.drawString(str, x-1, y+1);
+  638 &nbsp;             g.drawString(str, x+1, y+1);
+  639 &nbsp;             g.setColor(Color.black);
+  640 &nbsp;             g.drawString(str, x, y);
+<a name='641'>  641 &nbsp; 
+  642 &nbsp;             str = getText("Non-Heap");
+  643 &nbsp;             stringWidth = fm.stringWidth(str);
+  644 &nbsp;             x = nonHeapRect.x + (nonHeapRect.width - stringWidth) / 2;
+  645 &nbsp;             y = nonHeapRect.y + nonHeapRect.height - 6;
+  646 &nbsp;             g.setColor(Color.white);
+  647 &nbsp;             g.drawString(str, x-1, y-1);
+  648 &nbsp;             g.drawString(str, x+1, y-1);
+  649 &nbsp;             g.drawString(str, x-1, y+1);
+  650 &nbsp;             g.drawString(str, x+1, y+1);
+<a name='651'>  651 &nbsp;             g.setColor(Color.black);
+  652 &nbsp;             g.drawString(str, x, y);
+  653 &nbsp; 
+  654 &nbsp;             // Highlight current plotter
+  655 &nbsp;             g.setColor(Color.blue);
+  656 &nbsp;             r = null;
+  657 &nbsp;             Plotter plotter = (Plotter)plotterChoice.getSelectedItem();
+  658 &nbsp;             if (plotter == heapPlotter) {
+  659 &nbsp;                 r = heapRect;
+  660 &nbsp;             } else if (plotter == nonHeapPlotter) {
+<a name='661'>  661 &nbsp;                 r = nonHeapRect;
+  662 &nbsp;             } else if (plotter instanceof PoolPlotter) {
+  663 &nbsp;                 r = getBarRect((PoolPlotter)plotter);
+  664 &nbsp;             }
+  665 &nbsp;             if (r != null) {
+  666 &nbsp;                 g.drawRect(r.x - 1, r.y - 1, r.width + 2, r.height + 2);
+  667 &nbsp;             }
+  668 &nbsp;         }
+  669 &nbsp; 
+  670 &nbsp;         private Rectangle getBarRect(PoolPlotter poolPlotter) {
+<a name='671'>  671 &nbsp;             return new Rectangle(leftMargin + poolPlotter.barX,
+  672 &nbsp;                                  height - bottomMargin - barHeight,
+  673 &nbsp;                                  barWidth, barHeight);
+  674 &nbsp;         }
+  675 &nbsp; 
+  676 &nbsp;         public Dimension getPreferredSize() {
+  677 &nbsp;             return new Dimension(nonHeapRect.x + nonHeapRect.width + rightMargin,
+  678 &nbsp;                                  height);
+  679 &nbsp;         }
+  680 &nbsp; 
+<a name='681'>  681 &nbsp;         public void mouseClicked(MouseEvent e) {
+  682 &nbsp;             requestFocusInWindow();
+  683 &nbsp;             Plotter plotter = getPlotter(e);
+  684 &nbsp; 
+  685 &nbsp;             if (plotter != null &amp;&amp; plotter != plotterChoice.getSelectedItem()) {
+  686 &nbsp;                 plotterChoice.setSelectedItem(plotter);
+  687 &nbsp;                 repaint();
+  688 &nbsp;             }
+  689 &nbsp;         }
+  690 &nbsp; 
+<a name='691'>  691 &nbsp;         public String getToolTipText(MouseEvent e) {
+  692 &nbsp;             Plotter plotter = getPlotter(e);
+  693 &nbsp; 
+  694 &nbsp;             return (plotter != null) ? plotter.toString() : null;
+  695 &nbsp;         }
+  696 &nbsp; 
+  697 &nbsp;         private Plotter getPlotter(MouseEvent e) {
+  698 &nbsp;             Point p = e.getPoint();
+  699 &nbsp;             Plotter plotter = null;
+  700 &nbsp; 
+<a name='701'>  701 &nbsp;             if (heapRect.contains(p)) {
+  702 &nbsp;                 plotter = heapPlotter;
+  703 &nbsp;             } else if (nonHeapRect.contains(p)) {
+  704 &nbsp;                 plotter = nonHeapPlotter;
+  705 &nbsp;             } else {
+  706 &nbsp;                 for (PoolPlotter poolPlotter : poolPlotters) {
+  707 &nbsp;                     if (getBarRect(poolPlotter).contains(p)) {
+  708 &nbsp;                         plotter = poolPlotter;
+  709 &nbsp;                         break;
+  710 &nbsp;                     }
+<a name='711'>  711 &nbsp;                 }
+  712 &nbsp;             }
+  713 &nbsp;             return plotter;
+  714 &nbsp;         }
+  715 &nbsp; 
+  716 &nbsp;         public void mousePressed(MouseEvent e) {}
+  717 &nbsp;         public void mouseReleased(MouseEvent e) {}
+  718 &nbsp;         public void mouseEntered(MouseEvent e) {}
+  719 &nbsp;         public void mouseExited(MouseEvent e) {}
+  720 &nbsp; 
+<a name='721'>  721 &nbsp; 
+  722 &nbsp;         public AccessibleContext getAccessibleContext() {
+  723 &nbsp;             if (accessibleContext == null) {
+  724 &nbsp;                 accessibleContext = new AccessiblePoolChart();
+  725 &nbsp;             }
+  726 &nbsp;             return accessibleContext;
+  727 &nbsp;         }
+  728 &nbsp; 
+  729 &nbsp;         protected class AccessiblePoolChart extends AccessibleJPanel {
+  730 &nbsp;             public String getAccessibleName() {
+<a name='731'>  731 &nbsp;                 String name = getText("MemoryTab.poolChart.accessibleName");
+  732 &nbsp; 
+  733 &nbsp;                 String keyValueList = "";
+  734 &nbsp;                 for (PoolPlotter poolPlotter : poolPlotters) {
+  735 &nbsp;                     String value = (poolPlotter.value * 100 / poolPlotter.max) + "%";
+  736 &nbsp;                     // Assume format string ends with newline
+  737 &nbsp;                     keyValueList +=
+  738 &nbsp;                         getText("Plotter.accessibleName.keyAndValue",
+  739 &nbsp;                                 poolPlotter.toString(), value);
+  740 &nbsp;                     if (poolPlotter.threshold &gt; 0L) {
+<a name='741'>  741 &nbsp;                         String threshold =
+  742 &nbsp;                             (poolPlotter.threshold * 100 / poolPlotter.max) + "%";
+  743 &nbsp;                         if (poolPlotter.value &gt; poolPlotter.threshold) {
+  744 &nbsp;                             keyValueList +=
+  745 &nbsp;                                 getText("MemoryTab.poolChart.aboveThreshold",
+  746 &nbsp;                                         threshold);
+  747 &nbsp;                         } else {
+  748 &nbsp;                             keyValueList +=
+  749 &nbsp;                                 getText("MemoryTab.poolChart.belowThreshold",
+  750 &nbsp;                                         threshold);
+<a name='751'>  751 &nbsp;                         }
+  752 &nbsp;                     }
+  753 &nbsp;                 }
+  754 &nbsp; 
+  755 &nbsp;                 return name + "\n" + keyValueList + ".";
+  756 &nbsp;             }
+  757 &nbsp;         }
+  758 &nbsp;     }
+  759 &nbsp; 
+  760 &nbsp; 
+<a name='761'>  761 &nbsp;     OverviewPanel[] getOverviewPanels() {
+  762 &nbsp;         if (overviewPanel == null) {
+  763 &nbsp;             overviewPanel = new MemoryOverviewPanel();
+  764 &nbsp;         }
+  765 &nbsp;         return new OverviewPanel[] { overviewPanel };
+  766 &nbsp;     }
+  767 &nbsp; 
+  768 &nbsp;     private static class MemoryOverviewPanel extends OverviewPanel {
+  769 &nbsp;         MemoryOverviewPanel() {
+  770 &nbsp;             super(getText("Heap Memory Usage"), usedKey, usedName, Plotter.Unit.BYTES);
+<a name='771'>  771 &nbsp;         }
+  772 &nbsp; 
+  773 &nbsp;         private void updateMemoryInfo(long used, long committed, long max) {
+  774 &nbsp;             getInfoLabel().setText(getText(infoLabelFormat,
+  775 &nbsp;                                            formatBytes(used, true),
+  776 &nbsp;                                            formatBytes(committed, true),
+  777 &nbsp;                                            formatBytes(max, true)));
+  778 &nbsp;         }
+  779 &nbsp;     }
+  780 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MemoryTab.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: VariableGridLayout.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/VariableGridLayout.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   30 &nbsp; 
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   32 &nbsp; 
+   33 &nbsp; @SuppressWarnings("serial")
+   34 &nbsp; public class VariableGridLayout extends GridLayout {
+   35 &nbsp; 
+   36 &nbsp;     private boolean fillRows, fillColumns;
+   37 &nbsp; 
+   38 &nbsp;     public VariableGridLayout(int rows, int cols,
+   39 &nbsp;                               int hgap, int vgap,
+   40 &nbsp;                               boolean fillRows, boolean fillColumns) {
+<a name='41'>   41 &nbsp;         super(rows, cols, hgap, vgap);
+   42 &nbsp; 
+   43 &nbsp;         this.fillRows    = fillRows;
+   44 &nbsp;         this.fillColumns = fillColumns;
+   45 &nbsp;     }
+   46 &nbsp; 
+   47 &nbsp;     public void setFillRow(JComponent c, boolean b) {
+   48 &nbsp;         c.putClientProperty("VariableGridLayout.fillRow", b);
+   49 &nbsp;     }
+   50 &nbsp; 
+<a name='51'>   51 &nbsp;     public void setFillColumn(JComponent c, boolean b) {
+   52 &nbsp;         c.putClientProperty("VariableGridLayout.fillColumn", b);
+   53 &nbsp;     }
+   54 &nbsp; 
+   55 &nbsp;     public boolean getFillRow(JComponent c) {
+   56 &nbsp;         Boolean b = (Boolean)c.getClientProperty("VariableGridLayout.fillRow");
+   57 &nbsp;         return (b != null) ? b : fillRows;
+   58 &nbsp;     }
+   59 &nbsp; 
+   60 &nbsp;     public boolean getFillColumn(JComponent c) {
+<a name='61'>   61 &nbsp;         Boolean b = (Boolean)c.getClientProperty("VariableGridLayout.fillColumn");
+   62 &nbsp;         return (b != null) ? b : fillColumns;
+   63 &nbsp;     }
+   64 &nbsp; 
+   65 &nbsp;     public void layoutContainer(Container parent) {
+   66 &nbsp;         Insets insets = parent.getInsets();
+   67 &nbsp;         int ncomponents = parent.getComponentCount();
+   68 &nbsp;         int nrows = getRows();
+   69 &nbsp;         int ncols = getColumns();
+   70 &nbsp;         int hgap =  getHgap();
+<a name='71'>   71 &nbsp;         int vgap =  getVgap();
+   72 &nbsp; 
+   73 &nbsp;         if (nrows &gt; 0) {
+   74 &nbsp;             ncols = (ncomponents + nrows - 1) / nrows;
+   75 &nbsp;         } else {
+   76 &nbsp;             nrows = (ncomponents + ncols - 1) / ncols;
+   77 &nbsp;         }
+   78 &nbsp; 
+   79 &nbsp;         // Set heights
+   80 &nbsp;         int x;
+<a name='81'>   81 &nbsp;         int y;
+   82 &nbsp;         int nFills = 0;
+   83 &nbsp;         boolean[] fills = new boolean[nrows];
+   84 &nbsp;         int lastFillRow = -1;
+   85 &nbsp;         int nComps = parent.getComponentCount();
+   86 &nbsp; 
+   87 &nbsp;         y = insets.top;
+   88 &nbsp;         for (int row = 0; row &lt; nrows; row++) {
+   89 &nbsp;             // Find largest minimum height for this row
+   90 &nbsp;             int h = 0;
+<a name='91'>   91 &nbsp;             for (int col = 0; col &lt; ncols; col++) {
+   92 &nbsp;                 if (row * ncols + col &lt; nComps) {
+   93 &nbsp;                     Component c = parent.getComponent(row * ncols + col);
+   94 &nbsp;                     h = Math.max(h, c.getMinimumSize().height);
+   95 &nbsp;                 }
+   96 &nbsp;             }
+   97 &nbsp;             // Set heights for this row
+   98 &nbsp;             x = insets.left;
+   99 &nbsp;             for (int col = 0; col &lt; ncols; col++) {
+  100 &nbsp;                 if (row * ncols + col &lt; nComps) {
+<a name='101'>  101 &nbsp;                     JComponent c = (JComponent)parent.getComponent(row * ncols + col);
+  102 &nbsp;                     int w = c.getWidth();
+  103 &nbsp;                     c.setBounds(x, y, w, h);
+  104 &nbsp;                     x += w + hgap;
+  105 &nbsp;                     if (col == 0 &amp;&amp; getFillRow(c)) {
+  106 &nbsp;                         fills[row] = true;
+  107 &nbsp;                     }
+  108 &nbsp;                 }
+  109 &nbsp;             }
+  110 &nbsp;             y += h + vgap;
+<a name='111'>  111 &nbsp;             if (fills[row]) {
+  112 &nbsp;                 nFills++;
+  113 &nbsp;                 lastFillRow = row;
+  114 &nbsp;             }
+  115 &nbsp;         }
+  116 &nbsp; 
+  117 &nbsp;         // Fill heights
+  118 &nbsp;         if (nFills &gt; 0 &amp;&amp; y &lt; parent.getHeight()) {
+  119 &nbsp;             // How much height to add
+  120 &nbsp;             int hAdd = (parent.getHeight() - y) / nFills;
+<a name='121'>  121 &nbsp;             int hAdded = 0;
+  122 &nbsp;             for (int row = 0; row &lt; nrows; row++) {
+  123 &nbsp;                 if (fills[row]) {
+  124 &nbsp;                     if (row == lastFillRow) {
+  125 &nbsp;                         // Compensate for rounding error
+  126 &nbsp;                         hAdd = parent.getHeight() - (y+hAdded);
+  127 &nbsp;                     }
+  128 &nbsp;                     for (int col = 0; col &lt; ncols; col++) {
+  129 &nbsp;                         if (row * ncols + col &lt; nComps) {
+  130 &nbsp;                             Component c = parent.getComponent(row * ncols + col);
+<a name='131'>  131 &nbsp;                             Rectangle b = c.getBounds();
+  132 &nbsp;                             c.setBounds(b.x, b.y + hAdded, b.width, b.height + hAdd);
+  133 &nbsp;                         }
+  134 &nbsp;                     }
+  135 &nbsp;                     hAdded += hAdd;
+  136 &nbsp;                 }
+  137 &nbsp;             }
+  138 &nbsp;         }
+  139 &nbsp; 
+  140 &nbsp;         // Set widths
+<a name='141'>  141 &nbsp;         nFills = 0;
+  142 &nbsp;         fills = new boolean[ncols];
+  143 &nbsp;         int lastFillCol = -1;
+  144 &nbsp; 
+  145 &nbsp;         x = insets.left;
+  146 &nbsp;         for (int col = 0; col &lt; ncols; col++) {
+  147 &nbsp;             // Find largest minimum width for this column
+  148 &nbsp;             int w = 0;
+  149 &nbsp;             for (int row = 0; row &lt; nrows; row++) {
+  150 &nbsp;                 if (row * ncols + col &lt; nComps) {
+<a name='151'>  151 &nbsp;                     Component c = parent.getComponent(row * ncols + col);
+  152 &nbsp;                     w = Math.max(w, c.getMinimumSize().width);
+  153 &nbsp;                 }
+  154 &nbsp;             }
+  155 &nbsp;             // Set widths for this column
+  156 &nbsp;             y = insets.top;
+  157 &nbsp;             for (int row = 0; row &lt; nrows; row++) {
+  158 &nbsp;                 if (row * ncols + col &lt; nComps) {
+  159 &nbsp;                     JComponent c = (JComponent)parent.getComponent(row * ncols + col);
+  160 &nbsp;                     int h = c.getHeight();
+<a name='161'>  161 &nbsp;                     c.setBounds(x, y, w, h);
+  162 &nbsp;                     y += h + vgap;
+  163 &nbsp;                     if (row == 0 &amp;&amp; getFillColumn(c)) {
+  164 &nbsp;                         fills[col] = true;
+  165 &nbsp;                     }
+  166 &nbsp;                 }
+  167 &nbsp;             }
+  168 &nbsp;             x += w + hgap;
+  169 &nbsp;             if (fills[col]) {
+  170 &nbsp;                 nFills++;
+<a name='171'>  171 &nbsp;                 lastFillCol = col;
+  172 &nbsp;             }
+  173 &nbsp;         }
+  174 &nbsp; 
+  175 &nbsp;         // Fill widths
+  176 &nbsp;         if (nFills &gt; 0 &amp;&amp; x &lt; parent.getWidth()) {
+  177 &nbsp;             // How much width to add
+  178 &nbsp;             int wAdd = (parent.getWidth() - x) / nFills;
+  179 &nbsp;             int wAdded = 0;
+  180 &nbsp;             for (int col = 0; col &lt; ncols; col++) {
+<a name='181'>  181 &nbsp;                 if (fills[col]) {
+  182 &nbsp;                     if (col == lastFillCol) {
+  183 &nbsp;                         wAdd = parent.getWidth() - (x+wAdded);
+  184 &nbsp;                     }
+  185 &nbsp;                     for (int row = 0; row &lt; nrows; row++) {
+  186 &nbsp;                         if (row * ncols + col &lt; nComps) {
+  187 &nbsp;                             Component c = parent.getComponent(row * ncols + col);
+  188 &nbsp;                             Rectangle b = c.getBounds();
+  189 &nbsp;                             c.setBounds(b.x + wAdded, b.y, b.width + wAdd, b.height);
+  190 &nbsp;                         }
+<a name='191'>  191 &nbsp;                     }
+  192 &nbsp;                     wAdded += wAdd;
+  193 &nbsp;                 }
+  194 &nbsp;             }
+  195 &nbsp;         }
+  196 &nbsp;     }
+  197 &nbsp; 
+  198 &nbsp;     public Dimension preferredLayoutSize(Container parent) {
+  199 &nbsp;         Insets insets = parent.getInsets();
+  200 &nbsp;         int ncomponents = parent.getComponentCount();
+<a name='201'>  201 &nbsp;         int nrows = getRows();
+  202 &nbsp;         int ncols = getColumns();
+  203 &nbsp;         int hgap =  getHgap();
+  204 &nbsp;         int vgap =  getVgap();
+  205 &nbsp; 
+  206 &nbsp;         if (nrows &gt; 0) {
+  207 &nbsp;             ncols = (ncomponents + nrows - 1) / nrows;
+  208 &nbsp;         } else {
+  209 &nbsp;             nrows = (ncomponents + ncols - 1) / ncols;
+  210 &nbsp;         }
+<a name='211'>  211 &nbsp; 
+  212 &nbsp;         int nComps = parent.getComponentCount();
+  213 &nbsp; 
+  214 &nbsp;         int y = insets.top;
+  215 &nbsp;         for (int row = 0; row &lt; nrows; row++) {
+  216 &nbsp;             int h = 0;
+  217 &nbsp;             for (int col = 0; col &lt; ncols; col++) {
+  218 &nbsp;                 if (row * ncols + col &lt; nComps) {
+  219 &nbsp;                     Component c = parent.getComponent(row * ncols + col);
+  220 &nbsp;                     h = Math.max(h, c.getMinimumSize().height);
+<a name='221'>  221 &nbsp;                 }
+  222 &nbsp;             }
+  223 &nbsp;             y += h + vgap;
+  224 &nbsp;         }
+  225 &nbsp; 
+  226 &nbsp;         int x = insets.left;
+  227 &nbsp;         for (int col = 0; col &lt; ncols; col++) {
+  228 &nbsp;             int w = 0;
+  229 &nbsp;             for (int row = 0; row &lt; nrows; row++) {
+  230 &nbsp;                 if (row * ncols + col &lt; nComps) {
+<a name='231'>  231 &nbsp;                     Component c = parent.getComponent(row * ncols + col);
+  232 &nbsp;                     w = Math.max(w, c.getMinimumSize().width);
+  233 &nbsp;                 }
+  234 &nbsp;             }
+  235 &nbsp;             x += w + hgap;
+  236 &nbsp;         }
+  237 &nbsp;         return new Dimension(x, y);
+  238 &nbsp;     }
+  239 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/VariableGridLayout.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

@@ -1,0 +1,1152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: JConsole.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/JConsole.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/package-index.html>java.beans</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/lang/reflect/InvocationTargetException.html>java.lang.reflect.InvocationTargetException</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/net/package-index.html>java.net</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/package-index.html>java.util</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/List.html>java.util.List</a>;
+   36 &nbsp; 
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/plaf/package-index.html>javax.swing.plaf</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/remote/JMXServiceURL.html>javax.management.remote.JMXServiceURL</a>;
+   42 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/remote/JMXConnector.html>javax.management.remote.JMXConnector</a>;
+   43 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/security/auth/login/FailedLoginException.html>javax.security.auth.login.FailedLoginException</a>;
+   44 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/net/ssl/SSLHandshakeException.html>javax.net.ssl.SSLHandshakeException</a>;
+   45 &nbsp; 
+   46 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/jconsole/JConsolePlugin.html>com.sun.tools.jconsole.JConsolePlugin</a>;
+   47 &nbsp; 
+   48 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/net/util/IPAddressUtil.html>sun.net.util.IPAddressUtil</a>;
+   49 &nbsp; 
+   50 &nbsp; import static sun.tools.jconsole.Resources.*;
+<a name='51'>   51 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   52 &nbsp; 
+   53 &nbsp; @SuppressWarnings("serial")
+   54 &nbsp; public class JConsole extends JFrame
+   55 &nbsp;     implements ActionListener, InternalFrameListener {
+   56 &nbsp; 
+   57 &nbsp;     static /*final*/ boolean IS_GTK;
+   58 &nbsp;     static /*final*/ boolean IS_WIN;
+   59 &nbsp; 
+   60 &nbsp;     static {
+<a name='61'>   61 &nbsp;         // Apply the system L&amp;F if it is GTK or Windows, and
+   62 &nbsp;         // the L&amp;F is not specified using a system property.
+   63 &nbsp;         if (System.getProperty("swing.defaultlaf") == null) {
+   64 &nbsp;             String systemLaF = UIManager.getSystemLookAndFeelClassName();
+   65 &nbsp;             if (systemLaF.equals("com.sun.java.swing.plaf.gtk.GTKLookAndFeel") ||
+   66 &nbsp;                 systemLaF.equals("com.sun.java.swing.plaf.windows.WindowsLookAndFeel")) {
+   67 &nbsp; 
+   68 &nbsp;                 try {
+   69 &nbsp;                     UIManager.setLookAndFeel(systemLaF);
+   70 &nbsp;                 } catch (Exception e) {
+<a name='71'>   71 &nbsp;                     System.err.println(Resources.getText("JConsole: ", e.getMessage()));
+   72 &nbsp;                 }
+   73 &nbsp;             }
+   74 &nbsp;         }
+   75 &nbsp; 
+   76 &nbsp;         updateLafValues();
+   77 &nbsp;     }
+   78 &nbsp; 
+   79 &nbsp; 
+   80 &nbsp;     static void updateLafValues() {
+<a name='81'>   81 &nbsp;         String lafName = UIManager.getLookAndFeel().getClass().getName();
+   82 &nbsp;         IS_GTK = lafName.equals("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+   83 &nbsp;         IS_WIN = lafName.equals("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+   84 &nbsp; 
+   85 &nbsp;         //BorderedComponent.updateLafValues();
+   86 &nbsp;     }
+   87 &nbsp; 
+   88 &nbsp; 
+   89 &nbsp;     private final static String title =
+   90 &nbsp;         Resources.getText("Java Monitoring &amp; Management Console");
+<a name='91'>   91 &nbsp;     public final static String ROOT_URL =
+   92 &nbsp;         "service:jmx:";
+   93 &nbsp; 
+   94 &nbsp;     private static int updateInterval = 4000;
+   95 &nbsp;     private static String pluginPath = "";
+   96 &nbsp; 
+   97 &nbsp;     private JMenuBar menuBar;
+   98 &nbsp;     private JMenuItem hotspotMI, connectMI, exitMI;
+   99 &nbsp;     private WindowMenu windowMenu;
+  100 &nbsp;     private JMenuItem tileMI, cascadeMI, minimizeAllMI, restoreAllMI;
+<a name='101'>  101 &nbsp;     private JMenuItem userGuideMI, aboutMI;
+  102 &nbsp; 
+  103 &nbsp;     private JButton connectButton;
+  104 &nbsp;     private JDesktopPane desktop;
+  105 &nbsp;     private ConnectDialog connectDialog;
+  106 &nbsp;     private CreateMBeanDialog createDialog;
+  107 &nbsp; 
+  108 &nbsp;     private ArrayList&lt;VMInternalFrame&gt; windows =
+  109 &nbsp;         new ArrayList&lt;VMInternalFrame&gt;();
+  110 &nbsp; 
+<a name='111'>  111 &nbsp;     private int frameLoc = 5;
+  112 &nbsp;     static boolean debug;
+  113 &nbsp; 
+  114 &nbsp;     public JConsole(boolean hotspot) {
+  115 &nbsp;         super(title);
+  116 &nbsp; 
+  117 &nbsp;         setRootPane(new FixedJRootPane());
+  118 &nbsp;         setAccessibleDescription(this,
+  119 &nbsp;                                  getText("JConsole.accessibleDescription"));
+  120 &nbsp;         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+<a name='121'>  121 &nbsp; 
+  122 &nbsp;         menuBar = new JMenuBar();
+  123 &nbsp;         setJMenuBar(menuBar);
+  124 &nbsp; 
+  125 &nbsp;         // TODO: Use Actions !
+  126 &nbsp; 
+  127 &nbsp;         JMenu connectionMenu = new JMenu(getText("Connection"));
+  128 &nbsp;         connectionMenu.setMnemonic(getMnemonicInt("Connection"));
+  129 &nbsp;         menuBar.add(connectionMenu);
+  130 &nbsp;         if(hotspot) {
+<a name='131'>  131 &nbsp;             hotspotMI = new JMenuItem(getText("Hotspot MBeans..."));
+  132 &nbsp;             hotspotMI.setMnemonic(getMnemonicInt("Hotspot MBeans..."));
+  133 &nbsp;             hotspotMI.setAccelerator(KeyStroke.
+  134 &nbsp;                                      getKeyStroke(KeyEvent.VK_H,
+  135 &nbsp;                                                   InputEvent.CTRL_MASK));
+  136 &nbsp;             hotspotMI.addActionListener(this);
+  137 &nbsp;             connectionMenu.add(hotspotMI);
+  138 &nbsp; 
+  139 &nbsp;             connectionMenu.addSeparator();
+  140 &nbsp;         }
+<a name='141'>  141 &nbsp; 
+  142 &nbsp;         connectMI = new JMenuItem(Resources.getText("New Connection..."));
+  143 &nbsp;         connectMI.setMnemonic(getMnemonicInt("New Connection..."));
+  144 &nbsp;         connectMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
+  145 &nbsp;                                                         InputEvent.CTRL_MASK));
+  146 &nbsp;         connectMI.addActionListener(this);
+  147 &nbsp;         connectionMenu.add(connectMI);
+  148 &nbsp; 
+  149 &nbsp;         connectionMenu.addSeparator();
+  150 &nbsp; 
+<a name='151'>  151 &nbsp;         exitMI = new JMenuItem(Resources.getText("Exit"));
+  152 &nbsp;         exitMI.setMnemonic(getMnemonicInt("Exit"));
+  153 &nbsp;         exitMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4,
+  154 &nbsp;                                                      InputEvent.ALT_MASK));
+  155 &nbsp;         exitMI.addActionListener(this);
+  156 &nbsp;         connectionMenu.add(exitMI);
+  157 &nbsp; 
+  158 &nbsp; 
+  159 &nbsp;         JMenu helpMenu = new JMenu(getText("HelpMenu.title"));
+  160 &nbsp;         helpMenu.setMnemonic(getMnemonicInt("HelpMenu.title"));
+<a name='161'>  161 &nbsp;         menuBar.add(helpMenu);
+  162 &nbsp; 
+  163 &nbsp;         if (AboutDialog.isBrowseSupported()) {
+  164 &nbsp;             userGuideMI = new JMenuItem(getText("HelpMenu.UserGuide.title"));
+  165 &nbsp;             userGuideMI.setMnemonic(getMnemonicInt("HelpMenu.UserGuide.title"));
+  166 &nbsp;             userGuideMI.addActionListener(this);
+  167 &nbsp;             helpMenu.add(userGuideMI);
+  168 &nbsp;             helpMenu.addSeparator();
+  169 &nbsp;         }
+  170 &nbsp;         aboutMI = new JMenuItem(getText("HelpMenu.About.title"));
+<a name='171'>  171 &nbsp;         aboutMI.setMnemonic(getMnemonicInt("HelpMenu.About.title"));
+  172 &nbsp;         aboutMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+  173 &nbsp;         aboutMI.addActionListener(this);
+  174 &nbsp;         helpMenu.add(aboutMI);
+  175 &nbsp;     }
+  176 &nbsp; 
+  177 &nbsp;     public JDesktopPane getDesktopPane() {
+  178 &nbsp;         return desktop;
+  179 &nbsp;     }
+  180 &nbsp; 
+<a name='181'>  181 &nbsp;     public List&lt;VMInternalFrame&gt; getInternalFrames() {
+  182 &nbsp;         return windows;
+  183 &nbsp;     }
+  184 &nbsp; 
+  185 &nbsp;     private void createMDI() {
+  186 &nbsp;         // Restore title - we now show connection name on internal frames
+  187 &nbsp;         setTitle(title);
+  188 &nbsp; 
+  189 &nbsp;         Container cp = getContentPane();
+  190 &nbsp;         Component oldCenter =
+<a name='191'>  191 &nbsp;             ((BorderLayout)cp.getLayout()).
+  192 &nbsp;             getLayoutComponent(BorderLayout.CENTER);
+  193 &nbsp; 
+  194 &nbsp;         windowMenu = new WindowMenu(Resources.getText("Window"));
+  195 &nbsp;         windowMenu.setMnemonic(getMnemonicInt("Window"));
+  196 &nbsp;         // Add Window menu before Help menu
+  197 &nbsp;         menuBar.add(windowMenu, menuBar.getComponentCount() - 1);
+  198 &nbsp; 
+  199 &nbsp;         desktop = new JDesktopPane();
+  200 &nbsp;         desktop.setBackground(new Color(235, 245, 255));
+<a name='201'>  201 &nbsp; 
+  202 &nbsp;         cp.add(desktop, BorderLayout.CENTER);
+  203 &nbsp; 
+  204 &nbsp;         if (oldCenter instanceof VMPanel) {
+  205 &nbsp;             addFrame((VMPanel)oldCenter);
+  206 &nbsp;         }
+  207 &nbsp;     }
+  208 &nbsp; 
+  209 &nbsp;     private class WindowMenu extends JMenu {
+  210 &nbsp;         VMInternalFrame[] windowMenuWindows = new VMInternalFrame[0];
+<a name='211'>  211 &nbsp;         int separatorPosition;
+  212 &nbsp; 
+  213 &nbsp;         // The width value of viewR is used to truncate long menu items.
+  214 &nbsp;         // The rest are placeholders and are ignored for this purpose.
+  215 &nbsp;         Rectangle viewR = new Rectangle(0, 0, 400, 20);
+  216 &nbsp;         Rectangle textR = new Rectangle(0, 0, 0, 0);
+  217 &nbsp;         Rectangle iconR = new Rectangle(0, 0, 0, 0);
+  218 &nbsp; 
+  219 &nbsp;         WindowMenu(String text) {
+  220 &nbsp;             super(text);
+<a name='221'>  221 &nbsp; 
+  222 &nbsp;             cascadeMI = new JMenuItem(Resources.getText("Cascade"));
+  223 &nbsp;             cascadeMI.setMnemonic(getMnemonicInt("Cascade"));
+  224 &nbsp;             cascadeMI.addActionListener(JConsole.this);
+  225 &nbsp;             add(cascadeMI);
+  226 &nbsp; 
+  227 &nbsp;             tileMI = new JMenuItem(Resources.getText("Tile"));
+  228 &nbsp;             tileMI.setMnemonic(getMnemonicInt("Tile"));
+  229 &nbsp;             tileMI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
+  230 &nbsp;                                                          InputEvent.CTRL_MASK));
+<a name='231'>  231 &nbsp;             tileMI.addActionListener(JConsole.this);
+  232 &nbsp;             add(tileMI);
+  233 &nbsp; 
+  234 &nbsp;             minimizeAllMI = new JMenuItem(Resources.getText("Minimize All"));
+  235 &nbsp;             minimizeAllMI.setMnemonic(getMnemonicInt("Minimize All"));
+  236 &nbsp;             minimizeAllMI.addActionListener(JConsole.this);
+  237 &nbsp;             add(minimizeAllMI);
+  238 &nbsp; 
+  239 &nbsp;             restoreAllMI = new JMenuItem(Resources.getText("Restore All"));
+  240 &nbsp;             restoreAllMI.setMnemonic(getMnemonicInt("Restore All"));
+<a name='241'>  241 &nbsp;             restoreAllMI.addActionListener(JConsole.this);
+  242 &nbsp;             add(restoreAllMI);
+  243 &nbsp; 
+  244 &nbsp;             separatorPosition = getMenuComponentCount();
+  245 &nbsp;         }
+  246 &nbsp; 
+  247 &nbsp;         private void add(VMInternalFrame vmIF) {
+  248 &nbsp;             if (separatorPosition == getMenuComponentCount()) {
+  249 &nbsp;                 addSeparator();
+  250 &nbsp;             }
+<a name='251'>  251 &nbsp; 
+  252 &nbsp;             int index = -1;
+  253 &nbsp;             int position = separatorPosition + 1;
+  254 &nbsp;             int n = windowMenuWindows.length;
+  255 &nbsp; 
+  256 &nbsp;             for (int i = 0; i &lt; n; i++) {
+  257 &nbsp;                 if (windowMenuWindows[i] != null) {
+  258 &nbsp;                     // Slot is in use, try next
+  259 &nbsp;                     position++;
+  260 &nbsp;                 } else {
+<a name='261'>  261 &nbsp;                     // Found a free slot
+  262 &nbsp;                     index = i;
+  263 &nbsp;                     break;
+  264 &nbsp;                 }
+  265 &nbsp;             }
+  266 &nbsp; 
+  267 &nbsp;             if (index == -1) {
+  268 &nbsp;                 // Create a slot at the end
+  269 &nbsp;                 VMInternalFrame[] newArray = new VMInternalFrame[n + 1];
+  270 &nbsp;                 System.arraycopy(windowMenuWindows, 0, newArray, 0, n);
+<a name='271'>  271 &nbsp;                 windowMenuWindows = newArray;
+  272 &nbsp;                 index = n;
+  273 &nbsp;             }
+  274 &nbsp; 
+  275 &nbsp;             windowMenuWindows[index] = vmIF;
+  276 &nbsp; 
+  277 &nbsp;             String indexString = "" + (index+1);
+  278 &nbsp;             String vmName = vmIF.getVMPanel().getDisplayName();
+  279 &nbsp;             // Maybe truncate menu item string and end with "..."
+  280 &nbsp;             String text =
+<a name='281'>  281 &nbsp;                 SwingUtilities.layoutCompoundLabel(this,
+  282 &nbsp;                                         getGraphics().getFontMetrics(getFont()),
+  283 &nbsp;                                         indexString +  " " + vmName,
+  284 &nbsp;                                         null, 0, 0, 0, 0,
+  285 &nbsp;                                         viewR, iconR, textR, 0);
+  286 &nbsp;             JMenuItem mi = new JMenuItem(text);
+  287 &nbsp;             if (text.endsWith("...")) {
+  288 &nbsp;                 mi.setToolTipText(vmName);
+  289 &nbsp;             }
+  290 &nbsp; 
+<a name='291'>  291 &nbsp;             // Set mnemonic using last digit of number
+  292 &nbsp;             int nDigits = indexString.length();
+  293 &nbsp;             mi.setMnemonic(indexString.charAt(nDigits-1));
+  294 &nbsp;             mi.setDisplayedMnemonicIndex(nDigits-1);
+  295 &nbsp; 
+  296 &nbsp;             mi.putClientProperty("JConsole.vmIF", vmIF);
+  297 &nbsp;             mi.addActionListener(JConsole.this);
+  298 &nbsp;             vmIF.putClientProperty("JConsole.menuItem", mi);
+  299 &nbsp;             add(mi, position);
+  300 &nbsp;         }
+<a name='301'>  301 &nbsp; 
+  302 &nbsp;         private void remove(VMInternalFrame vmIF) {
+  303 &nbsp;             for (int i = 0; i &lt; windowMenuWindows.length; i++) {
+  304 &nbsp;                 if (windowMenuWindows[i] == vmIF) {
+  305 &nbsp;                     windowMenuWindows[i] = null;
+  306 &nbsp;                 }
+  307 &nbsp;             }
+  308 &nbsp;             JMenuItem mi = (JMenuItem)vmIF.getClientProperty("JConsole.menuItem");
+  309 &nbsp;             remove(mi);
+  310 &nbsp;             mi.putClientProperty("JConsole.vmIF", null);
+<a name='311'>  311 &nbsp;             vmIF.putClientProperty("JConsole.menuItem", null);
+  312 &nbsp; 
+  313 &nbsp;             if (separatorPosition == getMenuComponentCount() - 1) {
+  314 &nbsp;                 remove(getMenuComponent(getMenuComponentCount() - 1));
+  315 &nbsp;             }
+  316 &nbsp;         }
+  317 &nbsp;     }
+  318 &nbsp; 
+  319 &nbsp;     public void actionPerformed(ActionEvent ev) {
+  320 &nbsp;         Object src = ev.getSource();
+<a name='321'>  321 &nbsp;         if (src == hotspotMI) {
+  322 &nbsp;             showCreateMBeanDialog();
+  323 &nbsp;         }
+  324 &nbsp; 
+  325 &nbsp;         if (src == connectButton || src == connectMI) {
+  326 &nbsp;             VMPanel vmPanel = null;
+  327 &nbsp;             JInternalFrame vmIF = desktop.getSelectedFrame();
+  328 &nbsp;             if (vmIF instanceof VMInternalFrame) {
+  329 &nbsp;                 vmPanel = ((VMInternalFrame)vmIF).getVMPanel();
+  330 &nbsp;             }
+<a name='331'>  331 &nbsp;                 String hostName = "";
+  332 &nbsp;                 String url = "";
+  333 &nbsp;                 if (vmPanel != null) {
+  334 &nbsp;                     hostName = vmPanel.getHostName();
+  335 &nbsp;                     if(vmPanel.getUrl() != null)
+  336 &nbsp;                         url = vmPanel.getUrl();
+  337 &nbsp;                 }
+  338 &nbsp;                 showConnectDialog(url, hostName, 0, null, null, null);
+  339 &nbsp;         } else if (src == tileMI) {
+  340 &nbsp;             tileWindows();
+<a name='341'>  341 &nbsp;         } else if (src == cascadeMI) {
+  342 &nbsp;             cascadeWindows();
+  343 &nbsp;         } else if (src == minimizeAllMI) {
+  344 &nbsp;             for (VMInternalFrame vmIF : windows) {
+  345 &nbsp;                 try {
+  346 &nbsp;                     vmIF.setIcon(true);
+  347 &nbsp;                 } catch (PropertyVetoException ex) {
+  348 &nbsp;                     // Ignore
+  349 &nbsp;                 }
+  350 &nbsp;             }
+<a name='351'>  351 &nbsp;         } else if (src == restoreAllMI) {
+  352 &nbsp;             for (VMInternalFrame vmIF : windows) {
+  353 &nbsp;                 try {
+  354 &nbsp;                     vmIF.setIcon(false);
+  355 &nbsp;                 } catch (PropertyVetoException ex) {
+  356 &nbsp;                     // Ignore
+  357 &nbsp;                 }
+  358 &nbsp;             }
+  359 &nbsp;         } else if (src == exitMI) {
+  360 &nbsp;             System.exit(0);
+<a name='361'>  361 &nbsp;         } else if (src == userGuideMI) {
+  362 &nbsp;             AboutDialog.browseUserGuide(this);
+  363 &nbsp;         } else if (src == aboutMI) {
+  364 &nbsp;             AboutDialog.showAboutDialog(this);
+  365 &nbsp;         } else if (src instanceof JMenuItem) {
+  366 &nbsp;             JMenuItem mi = (JMenuItem)src;
+  367 &nbsp;             VMInternalFrame vmIF = (VMInternalFrame)mi.
+  368 &nbsp;                 getClientProperty("JConsole.vmIF");
+  369 &nbsp;             if (vmIF != null) {
+  370 &nbsp;                 try {
+<a name='371'>  371 &nbsp;                     vmIF.setIcon(false);
+  372 &nbsp;                     vmIF.setSelected(true);
+  373 &nbsp;                 } catch (PropertyVetoException ex) {
+  374 &nbsp;                     // Ignore
+  375 &nbsp;                 }
+  376 &nbsp;                 vmIF.moveToFront();
+  377 &nbsp;             }
+  378 &nbsp;         }
+  379 &nbsp;     }
+  380 &nbsp; 
+<a name='381'>  381 &nbsp; 
+  382 &nbsp;     public void tileWindows() {
+  383 &nbsp;         int w = -1;
+  384 &nbsp;         int h = -1;
+  385 &nbsp;         int n = 0;
+  386 &nbsp;         for (VMInternalFrame vmIF : windows) {
+  387 &nbsp;             if (!vmIF.isIcon()) {
+  388 &nbsp;                 n++;
+  389 &nbsp;                 if (w == -1) {
+  390 &nbsp;                     try {
+<a name='391'>  391 &nbsp;                         vmIF.setMaximum(true);
+  392 &nbsp;                         w = vmIF.getWidth();
+  393 &nbsp;                         h = vmIF.getHeight();
+  394 &nbsp;                     } catch (PropertyVetoException ex) {
+  395 &nbsp;                         // Ignore
+  396 &nbsp;                     }
+  397 &nbsp;                 }
+  398 &nbsp;             }
+  399 &nbsp;         }
+  400 &nbsp;         if (n &gt; 0 &amp;&amp; w &gt; 0 &amp;&amp; h &gt; 0) {
+<a name='401'>  401 &nbsp;             int rows = (int)Math.ceil(Math.sqrt(n));
+  402 &nbsp;             int cols = n / rows;
+  403 &nbsp;             if (rows * cols &lt; n) cols++;
+  404 &nbsp;             int x = 0;
+  405 &nbsp;             int y = 0;
+  406 &nbsp;             w /= cols;
+  407 &nbsp;             h /= rows;
+  408 &nbsp;             int col = 0;
+  409 &nbsp;             for (VMInternalFrame vmIF : windows) {
+  410 &nbsp;                 if (!vmIF.isIcon()) {
+<a name='411'>  411 &nbsp;                     try {
+  412 &nbsp;                         vmIF.setMaximum(n==1);
+  413 &nbsp;                     } catch (PropertyVetoException ex) {
+  414 &nbsp;                         // Ignore
+  415 &nbsp;                     }
+  416 &nbsp;                     if (n &gt; 1) {
+  417 &nbsp;                         vmIF.setBounds(x, y, w, h);
+  418 &nbsp;                     }
+  419 &nbsp;                     if (col &lt; cols-1) {
+  420 &nbsp;                         col++;
+<a name='421'>  421 &nbsp;                         x += w;
+  422 &nbsp;                     } else {
+  423 &nbsp;                         col = 0;
+  424 &nbsp;                         x = 0;
+  425 &nbsp;                         y += h;
+  426 &nbsp;                     }
+  427 &nbsp;                 }
+  428 &nbsp;             }
+  429 &nbsp;         }
+  430 &nbsp;     }
+<a name='431'>  431 &nbsp; 
+  432 &nbsp;     public void cascadeWindows() {
+  433 &nbsp;         int n = 0;
+  434 &nbsp;         int w = -1;
+  435 &nbsp;         int h = -1;
+  436 &nbsp;         for (VMInternalFrame vmIF : windows) {
+  437 &nbsp;             if (!vmIF.isIcon()) {
+  438 &nbsp;                 try {
+  439 &nbsp;                     vmIF.setMaximum(false);
+  440 &nbsp;                 } catch (PropertyVetoException ex) {
+<a name='441'>  441 &nbsp;                     // Ignore
+  442 &nbsp;                 }
+  443 &nbsp;                 n++;
+  444 &nbsp;                 vmIF.pack();
+  445 &nbsp;                 if (w == -1) {
+  446 &nbsp;                     try {
+  447 &nbsp;                         w = vmIF.getWidth();
+  448 &nbsp;                         h = vmIF.getHeight();
+  449 &nbsp;                         vmIF.setMaximum(true);
+  450 &nbsp;                         w = vmIF.getWidth() - w;
+<a name='451'>  451 &nbsp;                         h = vmIF.getHeight() - h;
+  452 &nbsp;                         vmIF.pack();
+  453 &nbsp;                     } catch (PropertyVetoException ex) {
+  454 &nbsp;                         // Ignore
+  455 &nbsp;                     }
+  456 &nbsp;                 }
+  457 &nbsp;             }
+  458 &nbsp;         }
+  459 &nbsp;         int x = 0;
+  460 &nbsp;         int y = 0;
+<a name='461'>  461 &nbsp;         int dX = (n &gt; 1) ? (w / (n - 1)) : 0;
+  462 &nbsp;         int dY = (n &gt; 1) ? (h / (n - 1)) : 0;
+  463 &nbsp;         for (VMInternalFrame vmIF : windows) {
+  464 &nbsp;             if (!vmIF.isIcon()) {
+  465 &nbsp;                 vmIF.setLocation(x, y);
+  466 &nbsp;                 vmIF.moveToFront();
+  467 &nbsp;                 x += dX;
+  468 &nbsp;                 y += dY;
+  469 &nbsp;             }
+  470 &nbsp;         }
+<a name='471'>  471 &nbsp;     }
+  472 &nbsp; 
+  473 &nbsp;     // Call on EDT
+  474 &nbsp;     void addHost(String hostName, int port,
+  475 &nbsp;                  String userName, String password) {
+  476 &nbsp;         addHost(hostName, port, userName, password, false);
+  477 &nbsp;     }
+  478 &nbsp; 
+  479 &nbsp;     // Call on EDT
+  480 &nbsp;     void addVmid(LocalVirtualMachine lvm) {
+<a name='481'>  481 &nbsp;         addVmid(lvm, false);
+  482 &nbsp;     }
+  483 &nbsp; 
+  484 &nbsp;     // Call on EDT
+  485 &nbsp;     void addVmid(final LocalVirtualMachine lvm, final boolean tile) {
+  486 &nbsp;         new Thread("JConsole.addVmid") {
+  487 &nbsp;             public void run() {
+  488 &nbsp;                 try {
+  489 &nbsp;                     addProxyClient(ProxyClient.getProxyClient(lvm), tile);
+  490 &nbsp;                 } catch (final SecurityException ex) {
+<a name='491'>  491 &nbsp;                     failed(ex, null, null, null);
+  492 &nbsp;                 } catch (final IOException ex) {
+  493 &nbsp;                     failed(ex, null, null, null);
+  494 &nbsp;                 }
+  495 &nbsp;             }
+  496 &nbsp;         }.start();
+  497 &nbsp;     }
+  498 &nbsp; 
+  499 &nbsp;     // Call on EDT
+  500 &nbsp;     void addUrl(final String url,
+<a name='501'>  501 &nbsp;                 final String userName,
+  502 &nbsp;                 final String password,
+  503 &nbsp;                 final boolean tile) {
+  504 &nbsp;         new Thread("JConsole.addUrl") {
+  505 &nbsp;             public void run() {
+  506 &nbsp;                 try {
+  507 &nbsp;                     addProxyClient(ProxyClient.getProxyClient(url, userName, password),
+  508 &nbsp;                                    tile);
+  509 &nbsp;                 } catch (final MalformedURLException ex) {
+  510 &nbsp;                     failed(ex, url, userName, password);
+<a name='511'>  511 &nbsp;                 } catch (final SecurityException ex) {
+  512 &nbsp;                     failed(ex, url, userName, password);
+  513 &nbsp;                 } catch (final IOException ex) {
+  514 &nbsp;                     failed(ex, url, userName, password);
+  515 &nbsp;                 }
+  516 &nbsp;             }
+  517 &nbsp;         }.start();
+  518 &nbsp;     }
+  519 &nbsp; 
+  520 &nbsp; 
+<a name='521'>  521 &nbsp;     // Call on EDT
+  522 &nbsp;     void addHost(final String hostName, final int port,
+  523 &nbsp;                  final String userName, final String password,
+  524 &nbsp;                  final boolean tile) {
+  525 &nbsp;         new Thread("JConsole.addHost") {
+  526 &nbsp;             public void run() {
+  527 &nbsp;                 try {
+  528 &nbsp;                     addProxyClient(ProxyClient.getProxyClient(hostName, port,
+  529 &nbsp;                                                               userName, password),
+  530 &nbsp;                                    tile);
+<a name='531'>  531 &nbsp;                 } catch (final IOException ex) {
+  532 &nbsp;                     dbgStackTrace(ex);
+  533 &nbsp;                     SwingUtilities.invokeLater(new Runnable() {
+  534 &nbsp;                         public void run() {
+  535 &nbsp;                             showConnectDialog(null, hostName, port,
+  536 &nbsp;                                               userName, password, errorMessage(ex));
+  537 &nbsp;                         }
+  538 &nbsp;                     });
+  539 &nbsp;                 }
+  540 &nbsp;             }
+<a name='541'>  541 &nbsp;         }.start();
+  542 &nbsp;     }
+  543 &nbsp; 
+  544 &nbsp; 
+  545 &nbsp;     // Call on worker thread
+  546 &nbsp;     void addProxyClient(final ProxyClient proxyClient, final boolean tile) {
+  547 &nbsp;         SwingUtilities.invokeLater(new Runnable() {
+  548 &nbsp;             public void run() {
+  549 &nbsp;                 VMPanel vmPanel = new VMPanel(proxyClient, updateInterval);
+  550 &nbsp;                 addFrame(vmPanel);
+<a name='551'>  551 &nbsp; 
+  552 &nbsp;                 if (tile) {
+  553 &nbsp;                     SwingUtilities.invokeLater(new Runnable() {
+  554 &nbsp;                         public void run() {
+  555 &nbsp;                             tileWindows();
+  556 &nbsp;                         }
+  557 &nbsp;                     });
+  558 &nbsp;                 }
+  559 &nbsp;                 vmPanel.connect();
+  560 &nbsp;             }
+<a name='561'>  561 &nbsp;         });
+  562 &nbsp;     }
+  563 &nbsp; 
+  564 &nbsp; 
+  565 &nbsp;     // Call on worker thread
+  566 &nbsp;     private void failed(final Exception ex,
+  567 &nbsp;                         final String url,
+  568 &nbsp;                         final String userName,
+  569 &nbsp;                         final String password) {
+  570 &nbsp;         SwingUtilities.invokeLater(new Runnable() {
+<a name='571'>  571 &nbsp;             public void run() {
+  572 &nbsp;                 dbgStackTrace(ex);
+  573 &nbsp;                 showConnectDialog(url,
+  574 &nbsp;                                   null,
+  575 &nbsp;                                   -1,
+  576 &nbsp;                                   userName,
+  577 &nbsp;                                   password,
+  578 &nbsp;                                   errorMessage(ex));
+  579 &nbsp;             }
+  580 &nbsp;         });
+<a name='581'>  581 &nbsp;     }
+  582 &nbsp; 
+  583 &nbsp; 
+  584 &nbsp;     private VMInternalFrame addFrame(VMPanel vmPanel) {
+  585 &nbsp;         final VMInternalFrame vmIF = new VMInternalFrame(vmPanel);
+  586 &nbsp; 
+  587 &nbsp;         for (VMInternalFrame f : windows) {
+  588 &nbsp;             try {
+  589 &nbsp;                 f.setMaximum(false);
+  590 &nbsp;             } catch (PropertyVetoException ex) {
+<a name='591'>  591 &nbsp;                 // Ignore
+  592 &nbsp;             }
+  593 &nbsp;         }
+  594 &nbsp;         desktop.add(vmIF);
+  595 &nbsp; 
+  596 &nbsp;         vmIF.setLocation(frameLoc, frameLoc);
+  597 &nbsp;         frameLoc += 30;
+  598 &nbsp;         vmIF.setVisible(true);
+  599 &nbsp;         windows.add(vmIF);
+  600 &nbsp;         if (windows.size() == 1) {
+<a name='601'>  601 &nbsp;             try {
+  602 &nbsp;                 vmIF.setMaximum(true);
+  603 &nbsp;             } catch (PropertyVetoException ex) {
+  604 &nbsp;                 // Ignore
+  605 &nbsp;             }
+  606 &nbsp;         }
+  607 &nbsp;         vmIF.addInternalFrameListener(this);
+  608 &nbsp;         windowMenu.add(vmIF);
+  609 &nbsp; 
+  610 &nbsp;         return vmIF;
+<a name='611'>  611 &nbsp;     }
+  612 &nbsp; 
+  613 &nbsp;     private void showConnectDialog(String url,
+  614 &nbsp;                                    String hostName,
+  615 &nbsp;                                    int port,
+  616 &nbsp;                                    String userName,
+  617 &nbsp;                                    String password,
+  618 &nbsp;                                    String msg) {
+  619 &nbsp;         if (connectDialog == null) {
+  620 &nbsp;             connectDialog = new ConnectDialog(this);
+<a name='621'>  621 &nbsp;         }
+  622 &nbsp;         connectDialog.setConnectionParameters(url,
+  623 &nbsp;                                               hostName,
+  624 &nbsp;                                               port,
+  625 &nbsp;                                               userName,
+  626 &nbsp;                                               password,
+  627 &nbsp;                                               msg);
+  628 &nbsp; 
+  629 &nbsp;         connectDialog.refresh();
+  630 &nbsp;         connectDialog.setVisible(true);
+<a name='631'>  631 &nbsp;         try {
+  632 &nbsp;             // Bring to front of other dialogs
+  633 &nbsp;             connectDialog.setSelected(true);
+  634 &nbsp;         } catch (PropertyVetoException e) {
+  635 &nbsp;         }
+  636 &nbsp;     }
+  637 &nbsp; 
+  638 &nbsp;     private void showCreateMBeanDialog() {
+  639 &nbsp;         if (createDialog == null) {
+  640 &nbsp;             createDialog = new CreateMBeanDialog(this);
+<a name='641'>  641 &nbsp;         }
+  642 &nbsp;         createDialog.setVisible(true);
+  643 &nbsp;         try {
+  644 &nbsp;             // Bring to front of other dialogs
+  645 &nbsp;             createDialog.setSelected(true);
+  646 &nbsp;         } catch (PropertyVetoException e) {
+  647 &nbsp;         }
+  648 &nbsp;     }
+  649 &nbsp; 
+  650 &nbsp;     private void removeVMInternalFrame(VMInternalFrame vmIF) {
+<a name='651'>  651 &nbsp;         windowMenu.remove(vmIF);
+  652 &nbsp;         desktop.remove(vmIF);
+  653 &nbsp;         desktop.repaint();
+  654 &nbsp;         vmIF.getVMPanel().cleanUp();
+  655 &nbsp;         vmIF.dispose();
+  656 &nbsp;     }
+  657 &nbsp; 
+  658 &nbsp;     private boolean isProxyClientUsed(ProxyClient client) {
+  659 &nbsp;         for(VMInternalFrame frame : windows) {
+  660 &nbsp;             ProxyClient cli = frame.getVMPanel().getProxyClient(false);
+<a name='661'>  661 &nbsp;             if(client == cli)
+  662 &nbsp;                 return true;
+  663 &nbsp;         }
+  664 &nbsp;         return false;
+  665 &nbsp;     }
+  666 &nbsp; 
+  667 &nbsp;     static boolean isValidRemoteString(String txt) {
+  668 &nbsp;         boolean valid = false;
+  669 &nbsp;         if (txt != null) {
+  670 &nbsp;             txt = txt.trim();
+<a name='671'>  671 &nbsp;             if (txt.startsWith(ROOT_URL)) {
+  672 &nbsp;                 if (txt.length() &gt; ROOT_URL.length()) {
+  673 &nbsp;                     valid = true;
+  674 &nbsp;                 }
+  675 &nbsp;             } else {
+  676 &nbsp;                 //---------------------------------------
+  677 &nbsp;                 // Supported host and port combinations:
+  678 &nbsp;                 //     hostname:port
+  679 &nbsp;                 //     IPv4Address:port
+  680 &nbsp;                 //     [IPv6Address]:port
+<a name='681'>  681 &nbsp;                 //---------------------------------------
+  682 &nbsp; 
+  683 &nbsp;                 // Is literal IPv6 address?
+  684 &nbsp;                 //
+  685 &nbsp;                 if (txt.startsWith("[")) {
+  686 &nbsp;                     int index = txt.indexOf("]:");
+  687 &nbsp;                     if (index != -1) {
+  688 &nbsp;                         // Extract literal IPv6 address
+  689 &nbsp;                         //
+  690 &nbsp;                         String address = txt.substring(1, index);
+<a name='691'>  691 &nbsp;                         if (IPAddressUtil.isIPv6LiteralAddress(address)) {
+  692 &nbsp;                             // Extract port
+  693 &nbsp;                             //
+  694 &nbsp;                             try {
+  695 &nbsp;                                 String portStr = txt.substring(index + 2);
+  696 &nbsp;                                 int port = Integer.parseInt(portStr);
+  697 &nbsp;                                 if (port &gt;= 0 &amp;&amp; port &lt;= 0xFFFF) {
+  698 &nbsp;                                     valid = true;
+  699 &nbsp;                                 }
+  700 &nbsp;                             } catch (NumberFormatException ex) {
+<a name='701'>  701 &nbsp;                                 valid = false;
+  702 &nbsp;                             }
+  703 &nbsp;                         }
+  704 &nbsp;                     }
+  705 &nbsp;                 } else {
+  706 &nbsp;                     String[] s = txt.split(":");
+  707 &nbsp;                     if (s.length == 2) {
+  708 &nbsp;                         try {
+  709 &nbsp;                             int port = Integer.parseInt(s[1]);
+  710 &nbsp;                             if (port &gt;= 0 &amp;&amp; port &lt;= 0xFFFF) {
+<a name='711'>  711 &nbsp;                                 valid = true;
+  712 &nbsp;                             }
+  713 &nbsp;                         } catch (NumberFormatException ex) {
+  714 &nbsp;                             valid = false;
+  715 &nbsp;                         }
+  716 &nbsp;                     }
+  717 &nbsp;                 }
+  718 &nbsp;             }
+  719 &nbsp;         }
+  720 &nbsp;         return valid;
+<a name='721'>  721 &nbsp;     }
+  722 &nbsp; 
+  723 &nbsp;     private String errorMessage(Exception ex) {
+  724 &nbsp;        String msg = Resources.getText("Connection failed");
+  725 &nbsp;        if (ex instanceof IOException || ex instanceof SecurityException) {
+  726 &nbsp;            Throwable cause = null;
+  727 &nbsp;            Throwable c = ex.getCause();
+  728 &nbsp;            while (c != null) {
+  729 &nbsp;                cause = c;
+  730 &nbsp;                c = c.getCause();
+<a name='731'>  731 &nbsp;            }
+  732 &nbsp;            if (cause instanceof ConnectException) {
+  733 &nbsp;                return msg + ": " + cause.getMessage();
+  734 &nbsp;            } else if (cause instanceof UnknownHostException) {
+  735 &nbsp;                return Resources.getText("Unknown Host", cause.getMessage());
+  736 &nbsp;            } else if (cause instanceof NoRouteToHostException) {
+  737 &nbsp;                return msg + ": " + cause.getMessage();
+  738 &nbsp;            } else if (cause instanceof FailedLoginException) {
+  739 &nbsp;                return msg + ": " + cause.getMessage();
+  740 &nbsp;            } else if (cause instanceof SSLHandshakeException) {
+<a name='741'>  741 &nbsp;                return msg + ": "+ cause.getMessage();
+  742 &nbsp;            }
+  743 &nbsp;         } else if (ex instanceof MalformedURLException) {
+  744 &nbsp;            return Resources.getText("Invalid URL", ex.getMessage());
+  745 &nbsp;         }
+  746 &nbsp;         return msg + ": " + ex.getMessage();
+  747 &nbsp;     }
+  748 &nbsp; 
+  749 &nbsp; 
+  750 &nbsp;     // InternalFrameListener interface
+<a name='751'>  751 &nbsp; 
+  752 &nbsp;     public void internalFrameClosing(InternalFrameEvent e) {
+  753 &nbsp;         VMInternalFrame vmIF = (VMInternalFrame)e.getInternalFrame();
+  754 &nbsp;         removeVMInternalFrame(vmIF);
+  755 &nbsp;         windows.remove(vmIF);
+  756 &nbsp;         ProxyClient client = vmIF.getVMPanel().getProxyClient(false);
+  757 &nbsp;         if(!isProxyClientUsed(client))
+  758 &nbsp;             client.markAsDead();
+  759 &nbsp;         if (windows.size() == 0) {
+  760 &nbsp;             showConnectDialog("", "", 0, null, null, null);
+<a name='761'>  761 &nbsp;         }
+  762 &nbsp;     }
+  763 &nbsp; 
+  764 &nbsp;     public void internalFrameOpened(InternalFrameEvent e) {}
+  765 &nbsp;     public void internalFrameClosed(InternalFrameEvent e) {}
+  766 &nbsp;     public void internalFrameIconified(InternalFrameEvent e) {}
+  767 &nbsp;     public void internalFrameDeiconified(InternalFrameEvent e) {}
+  768 &nbsp;     public void internalFrameActivated(InternalFrameEvent e) {}
+  769 &nbsp;     public void internalFrameDeactivated(InternalFrameEvent e) {}
+  770 &nbsp; 
+<a name='771'>  771 &nbsp; 
+  772 &nbsp;     private static void usage() {
+  773 &nbsp;         System.err.println(Resources.getText("zz usage text", "jconsole"));
+  774 &nbsp;     }
+  775 &nbsp; 
+  776 &nbsp;     private static void mainInit(final List&lt;String&gt; urls,
+  777 &nbsp;                                  final List&lt;String&gt; hostNames,
+  778 &nbsp;                                  final List&lt;Integer&gt; ports,
+  779 &nbsp;                                  final List&lt;LocalVirtualMachine&gt; vmids,
+  780 &nbsp;                                  final ProxyClient proxyClient,
+<a name='781'>  781 &nbsp;                                  final boolean noTile,
+  782 &nbsp;                                  final boolean hotspot) {
+  783 &nbsp; 
+  784 &nbsp; 
+  785 &nbsp;         // Always create Swing GUI on the Event Dispatching Thread
+  786 &nbsp;         SwingUtilities.invokeLater(new Runnable() {
+  787 &nbsp;                 public void run() {
+  788 &nbsp;                     JConsole jConsole = new JConsole(hotspot);
+  789 &nbsp; 
+  790 &nbsp;                     // Center the window on screen, taking into account screen
+<a name='791'>  791 &nbsp;                     // size and insets.
+  792 &nbsp;                     Toolkit toolkit = Toolkit.getDefaultToolkit();
+  793 &nbsp;                     GraphicsConfiguration gc = jConsole.getGraphicsConfiguration();
+  794 &nbsp;                     Dimension scrSize = toolkit.getScreenSize();
+  795 &nbsp;                     Insets scrInsets  = toolkit.getScreenInsets(gc);
+  796 &nbsp;                     Rectangle scrBounds =
+  797 &nbsp;                         new Rectangle(scrInsets.left, scrInsets.top,
+  798 &nbsp;                                       scrSize.width  - scrInsets.left - scrInsets.right,
+  799 &nbsp;                                       scrSize.height - scrInsets.top  - scrInsets.bottom);
+  800 &nbsp;                     int w = Math.min(900, scrBounds.width);
+<a name='801'>  801 &nbsp;                     int h = Math.min(750, scrBounds.height);
+  802 &nbsp;                     jConsole.setBounds(scrBounds.x + (scrBounds.width  - w) / 2,
+  803 &nbsp;                                        scrBounds.y + (scrBounds.height - h) / 2,
+  804 &nbsp;                                        w, h);
+  805 &nbsp; 
+  806 &nbsp;                     jConsole.setVisible(true);
+  807 &nbsp;                     jConsole.createMDI();
+  808 &nbsp; 
+  809 &nbsp;                     for (int i = 0; i &lt; hostNames.size(); i++) {
+  810 &nbsp;                         jConsole.addHost(hostNames.get(i), ports.get(i),
+<a name='811'>  811 &nbsp;                                          null, null,
+  812 &nbsp;                                          (i == hostNames.size() - 1) ?
+  813 &nbsp;                                          !noTile : false);
+  814 &nbsp;                     }
+  815 &nbsp; 
+  816 &nbsp;                     for (int i = 0; i &lt; urls.size(); i++) {
+  817 &nbsp;                         jConsole.addUrl(urls.get(i),
+  818 &nbsp;                                         null,
+  819 &nbsp;                                         null,
+  820 &nbsp;                                         (i == urls.size() - 1) ?
+<a name='821'>  821 &nbsp;                                         !noTile : false);
+  822 &nbsp;                     }
+  823 &nbsp; 
+  824 &nbsp;                     for (int i = 0; i &lt; vmids.size(); i++) {
+  825 &nbsp;                         jConsole.addVmid(vmids.get(i),
+  826 &nbsp;                                         (i == vmids.size() - 1) ?
+  827 &nbsp;                                         !noTile : false);
+  828 &nbsp;                     }
+  829 &nbsp; 
+  830 &nbsp;                     if (vmids.size() == 0 &amp;&amp;
+<a name='831'>  831 &nbsp;                         hostNames.size() == 0 &amp;&amp;
+  832 &nbsp;                         urls.size() == 0) {
+  833 &nbsp;                         jConsole.showConnectDialog(null,
+  834 &nbsp;                                                    null,
+  835 &nbsp;                                                    0,
+  836 &nbsp;                                                    null,
+  837 &nbsp;                                                    null,
+  838 &nbsp;                                                    null);
+  839 &nbsp;                     }
+  840 &nbsp;                 }
+<a name='841'>  841 &nbsp;             });
+  842 &nbsp;     }
+  843 &nbsp; 
+  844 &nbsp;     public static void main(String[] args) {
+  845 &nbsp;         boolean noTile = false, hotspot = false;
+  846 &nbsp;         int argIndex = 0;
+  847 &nbsp;         ProxyClient proxyClient = null;
+  848 &nbsp; 
+  849 &nbsp;         if (System.getProperty("jconsole.showOutputViewer") != null) {
+  850 &nbsp;             OutputViewer.init();
+<a name='851'>  851 &nbsp;         }
+  852 &nbsp; 
+  853 &nbsp;         while (args.length - argIndex &gt; 0 &amp;&amp; args[argIndex].startsWith("-")) {
+  854 &nbsp;             String arg = args[argIndex++];
+  855 &nbsp;             if (arg.equals("-h") ||
+  856 &nbsp;                 arg.equals("-help") ||
+  857 &nbsp;                 arg.equals("-?")) {
+  858 &nbsp; 
+  859 &nbsp;                 usage();
+  860 &nbsp;                 return;
+<a name='861'>  861 &nbsp;             } else if (arg.startsWith("-interval=")) {
+  862 &nbsp;                 try {
+  863 &nbsp;                     updateInterval = Integer.parseInt(arg.substring(10)) *
+  864 &nbsp;                         1000;
+  865 &nbsp;                 } catch (NumberFormatException ex) {
+  866 &nbsp;                     usage();
+  867 &nbsp;                     return;
+  868 &nbsp;                 }
+  869 &nbsp;             } else if (arg.equals("-pluginpath")) {
+  870 &nbsp;                 if (argIndex &lt; args.length &amp;&amp; !args[argIndex].startsWith("-")) {
+<a name='871'>  871 &nbsp;                     pluginPath = args[argIndex++];
+  872 &nbsp;                 } else {
+  873 &nbsp;                     // Invalid argument
+  874 &nbsp;                     usage();
+  875 &nbsp;                     return;
+  876 &nbsp;                 }
+  877 &nbsp;             } else if (arg.equals("-notile")) {
+  878 &nbsp;                 noTile = true;
+  879 &nbsp;             } else if (arg.equals("-version")) {
+  880 &nbsp;                 Version.print(System.err);
+<a name='881'>  881 &nbsp;                 return;
+  882 &nbsp;             } else if (arg.equals("-debug")) {
+  883 &nbsp;                 debug = true;
+  884 &nbsp;             } else if (arg.equals("-fullversion")) {
+  885 &nbsp;                 Version.printFullVersion(System.err);
+  886 &nbsp;                 return;
+  887 &nbsp;             } else {
+  888 &nbsp;                 // Unknown switch
+  889 &nbsp;                 usage();
+  890 &nbsp;                 return;
+<a name='891'>  891 &nbsp;             }
+  892 &nbsp;         }
+  893 &nbsp; 
+  894 &nbsp;         if (System.getProperty("jconsole.showUnsupported") != null) {
+  895 &nbsp;             hotspot = true;
+  896 &nbsp;         }
+  897 &nbsp; 
+  898 &nbsp;         List&lt;String&gt; urls = new ArrayList&lt;String&gt;();
+  899 &nbsp;         List&lt;String&gt; hostNames = new ArrayList&lt;String&gt;();
+  900 &nbsp;         List&lt;Integer&gt; ports = new ArrayList&lt;Integer&gt;();
+<a name='901'>  901 &nbsp;         List&lt;LocalVirtualMachine&gt; vms = new ArrayList&lt;LocalVirtualMachine&gt;();
+  902 &nbsp; 
+  903 &nbsp;         for (int i = argIndex; i &lt; args.length; i++) {
+  904 &nbsp;             String arg = args[i];
+  905 &nbsp;             if (isValidRemoteString(arg)) {
+  906 &nbsp;                 if (arg.startsWith(ROOT_URL)) {
+  907 &nbsp;                     urls.add(arg);
+  908 &nbsp;                 } else if (arg.matches(".*:[0-9]*")) {
+  909 &nbsp;                     int p = arg.lastIndexOf(':');
+  910 &nbsp;                     hostNames.add(arg.substring(0, p));
+<a name='911'>  911 &nbsp;                     try {
+  912 &nbsp;                         ports.add(Integer.parseInt(arg.substring(p+1)));
+  913 &nbsp;                     } catch (NumberFormatException ex) {
+  914 &nbsp;                         usage();
+  915 &nbsp;                         return;
+  916 &nbsp;                     }
+  917 &nbsp;                 }
+  918 &nbsp;             } else {
+  919 &nbsp;                 if (!isLocalAttachAvailable()) {
+  920 &nbsp;                     System.err.println("Local process monitoring is not supported");
+<a name='921'>  921 &nbsp;                     return;
+  922 &nbsp;                 }
+  923 &nbsp;                 try {
+  924 &nbsp;                     int vmid = Integer.parseInt(arg);
+  925 &nbsp;                     LocalVirtualMachine lvm =
+  926 &nbsp;                         LocalVirtualMachine.getLocalVirtualMachine(vmid);
+  927 &nbsp;                     if (lvm == null) {
+  928 &nbsp;                         System.err.println("Invalid process id:" + vmid);
+  929 &nbsp;                         return;
+  930 &nbsp;                     }
+<a name='931'>  931 &nbsp;                     vms.add(lvm);
+  932 &nbsp;                 } catch (NumberFormatException ex) {
+  933 &nbsp;                     usage();
+  934 &nbsp;                     return;
+  935 &nbsp;                 }
+  936 &nbsp;             }
+  937 &nbsp;         }
+  938 &nbsp; 
+  939 &nbsp;         mainInit(urls, hostNames, ports, vms, proxyClient, noTile, hotspot);
+  940 &nbsp;     }
+<a name='941'>  941 &nbsp; 
+  942 &nbsp;     public static boolean isDebug() {
+  943 &nbsp;         return debug;
+  944 &nbsp;     }
+  945 &nbsp; 
+  946 &nbsp;     private static void dbgStackTrace(Exception ex) {
+  947 &nbsp;         if (debug) {
+  948 &nbsp;             ex.printStackTrace();
+  949 &nbsp;         }
+  950 &nbsp;     }
+<a name='951'>  951 &nbsp; 
+  952 &nbsp;     private static final boolean localAttachmentSupported;
+  953 &nbsp;     static {
+  954 &nbsp;         boolean supported;
+  955 &nbsp;         try {
+  956 &nbsp;             Class.forName("com.sun.tools.attach.VirtualMachine");
+  957 &nbsp;             Class.forName("sun.management.ConnectorAddressLink");
+  958 &nbsp;             supported = true;
+  959 &nbsp;         } catch (NoClassDefFoundError x) {
+  960 &nbsp;             supported = false;
+<a name='961'>  961 &nbsp;         } catch (ClassNotFoundException x) {
+  962 &nbsp;             supported = false;
+  963 &nbsp;         }
+  964 &nbsp;         localAttachmentSupported = supported;
+  965 &nbsp;     }
+  966 &nbsp; 
+  967 &nbsp;     public static boolean isLocalAttachAvailable() {
+  968 &nbsp;         return localAttachmentSupported;
+  969 &nbsp;     }
+  970 &nbsp; 
+<a name='971'>  971 &nbsp; 
+  972 &nbsp;     private static ServiceLoader&lt;JConsolePlugin&gt; pluginService = null;
+  973 &nbsp; 
+  974 &nbsp;     // Return a list of newly instantiated JConsolePlugin objects
+  975 &nbsp;     static synchronized List&lt;JConsolePlugin&gt; getPlugins() {
+  976 &nbsp;         if (pluginService == null) {
+  977 &nbsp;             // First time loading and initializing the plugins
+  978 &nbsp;             initPluginService(pluginPath);
+  979 &nbsp;         } else {
+  980 &nbsp;             // reload the plugin so that new instances will be created
+<a name='981'>  981 &nbsp;             pluginService.reload();
+  982 &nbsp;         }
+  983 &nbsp; 
+  984 &nbsp;         List&lt;JConsolePlugin&gt; plugins = new ArrayList&lt;JConsolePlugin&gt;();
+  985 &nbsp;         for (JConsolePlugin p : pluginService) {
+  986 &nbsp;             plugins.add(p);
+  987 &nbsp;         }
+  988 &nbsp;         return plugins;
+  989 &nbsp;     }
+  990 &nbsp; 
+<a name='991'>  991 &nbsp;     private static void initPluginService(String pluginPath) {
+  992 &nbsp;         if (pluginPath.length() &gt; 0) {
+  993 &nbsp;             try {
+  994 &nbsp;                 ClassLoader pluginCL = new URLClassLoader(pathToURLs(pluginPath));
+  995 &nbsp;                 ServiceLoader&lt;JConsolePlugin&gt; plugins =
+  996 &nbsp;                     ServiceLoader.load(JConsolePlugin.class, pluginCL);
+  997 &nbsp;                 // validate all plugins
+  998 &nbsp;             for (JConsolePlugin p : plugins) {
+  999 &nbsp;                     if (isDebug()) {
+ 1000 &nbsp;                         System.out.println("Plugin " + p.getClass() + " loaded.");
+<a name='1001'> 1001 &nbsp;                     }
+ 1002 &nbsp;                 }
+ 1003 &nbsp;                 pluginService = plugins;
+ 1004 &nbsp;             } catch (ServiceConfigurationError e) {
+ 1005 &nbsp;                 // Error occurs during initialization of plugin
+ 1006 &nbsp;                 System.out.println(Resources.getText("Fail to load plugin",
+ 1007 &nbsp;                                    e.getMessage()));
+ 1008 &nbsp;             } catch (MalformedURLException e) {
+ 1009 &nbsp;                 if (JConsole.isDebug()) {
+ 1010 &nbsp;                     e.printStackTrace();
+<a name='1011'> 1011 &nbsp;                 }
+ 1012 &nbsp;                 System.out.println(Resources.getText("Invalid plugin path",
+ 1013 &nbsp;                                    e.getMessage()));
+ 1014 &nbsp;             }
+ 1015 &nbsp;         }
+ 1016 &nbsp; 
+ 1017 &nbsp;         if (pluginService == null) {
+ 1018 &nbsp;             initEmptyPlugin();
+ 1019 &nbsp;         }
+ 1020 &nbsp;     }
+<a name='1021'> 1021 &nbsp; 
+ 1022 &nbsp;     private static void initEmptyPlugin() {
+ 1023 &nbsp;         ClassLoader pluginCL = new URLClassLoader(new URL[0]);
+ 1024 &nbsp;         pluginService = ServiceLoader.load(JConsolePlugin.class, pluginCL);
+ 1025 &nbsp;     }
+ 1026 &nbsp; 
+ 1027 &nbsp;    /**
+ 1028 &nbsp;      * Utility method for converting a search path string to an array
+ 1029 &nbsp;      * of directory and JAR file URLs.
+ 1030 &nbsp;      *
+<a name='1031'> 1031 &nbsp;      * @param path the search path string
+ 1032 &nbsp;      * @return the resulting array of directory and JAR file URLs
+ 1033 &nbsp;      */
+ 1034 &nbsp;     private static URL[] pathToURLs(String path) throws MalformedURLException {
+ 1035 &nbsp;         String[] names = path.split(File.pathSeparator);
+ 1036 &nbsp;         URL[] urls = new URL[names.length];
+ 1037 &nbsp;         int count = 0;
+ 1038 &nbsp;         for (String f : names) {
+ 1039 &nbsp;             URL url = fileToURL(new File(f));
+ 1040 &nbsp;             urls[count++] = url;
+<a name='1041'> 1041 &nbsp;         }
+ 1042 &nbsp;         return urls;
+ 1043 &nbsp;     }
+ 1044 &nbsp; 
+ 1045 &nbsp;     /**
+ 1046 &nbsp;      * Returns the directory or JAR file URL corresponding to the specified
+ 1047 &nbsp;      * local file name.
+ 1048 &nbsp;      *
+ 1049 &nbsp;      * @param file the File object
+ 1050 &nbsp;      * @return the resulting directory or JAR file URL, or null if unknown
+<a name='1051'> 1051 &nbsp;      */
+ 1052 &nbsp;     private static URL fileToURL(File file) throws MalformedURLException {
+ 1053 &nbsp;         String name;
+ 1054 &nbsp;         try {
+ 1055 &nbsp;             name = file.getCanonicalPath();
+ 1056 &nbsp;         } catch (IOException e) {
+ 1057 &nbsp;             name = file.getAbsolutePath();
+ 1058 &nbsp;         }
+ 1059 &nbsp;         name = name.replace(File.separatorChar, '/');
+ 1060 &nbsp;         if (!name.startsWith("/")) {
+<a name='1061'> 1061 &nbsp;             name = "/" + name;
+ 1062 &nbsp;         }
+ 1063 &nbsp;         // If the file does not exist, then assume that it's a directory
+ 1064 &nbsp;         if (!file.isFile()) {
+ 1065 &nbsp;             name = name + "/";
+ 1066 &nbsp;         }
+ 1067 &nbsp;         return new URL("file", "", name);
+ 1068 &nbsp;     }
+ 1069 &nbsp; 
+ 1070 &nbsp; 
+<a name='1071'> 1071 &nbsp;     private static class FixedJRootPane extends JRootPane {
+ 1072 &nbsp;         public void updateUI() {
+ 1073 &nbsp;             updateLafValues();
+ 1074 &nbsp;             super.updateUI();
+ 1075 &nbsp;         }
+ 1076 &nbsp; 
+ 1077 &nbsp;         /**
+ 1078 &nbsp;          * The revalidate method seems to be the only one that gets
+ 1079 &nbsp;          * called whenever there is a change of L&amp;F or change of theme
+ 1080 &nbsp;          * in Windows L&amp;F and GTK L&amp;F.
+<a name='1081'> 1081 &nbsp;          */
+ 1082 &nbsp;         @Override
+ 1083 &nbsp;         public void revalidate() {
+ 1084 &nbsp;             // Workaround for Swing bug where the titledborder in both
+ 1085 &nbsp;             // GTK and Windows L&amp;F's use calculated colors instead of
+ 1086 &nbsp;             // the highlight/shadow colors from the theme.
+ 1087 &nbsp;             //
+ 1088 &nbsp;             // Putting null removes any previous override and causes a
+ 1089 &nbsp;             // fallback to the current L&amp;F's value.
+ 1090 &nbsp;             UIManager.put("TitledBorder.border", null);
+<a name='1091'> 1091 &nbsp;             Border border = UIManager.getBorder("TitledBorder.border");
+ 1092 &nbsp;             if (border instanceof BorderUIResource.EtchedBorderUIResource) {
+ 1093 &nbsp;                 Color highlight = UIManager.getColor("ToolBar.highlight");
+ 1094 &nbsp;                 Color shadow    = UIManager.getColor("ToolBar.shadow");
+ 1095 &nbsp;                 border = new BorderUIResource.EtchedBorderUIResource(highlight,
+ 1096 &nbsp;                                                                      shadow);
+ 1097 &nbsp;                 UIManager.put("TitledBorder.border", border);
+ 1098 &nbsp;             }
+ 1099 &nbsp; 
+ 1100 &nbsp;             if (IS_GTK) {
+<a name='1101'> 1101 &nbsp;                 // Workaround for Swing bug where the titledborder in
+ 1102 &nbsp;                 // GTK L&amp;F use hardcoded color and font for the title
+ 1103 &nbsp;                 // instead of getting them from the theme.
+ 1104 &nbsp;                 UIManager.put("TitledBorder.titleColor",
+ 1105 &nbsp;                               UIManager.getColor("Label.foreground"));
+ 1106 &nbsp;                 UIManager.put("TitledBorder.font",
+ 1107 &nbsp;                               UIManager.getFont("Label.font"));
+ 1108 &nbsp;             }
+ 1109 &nbsp;             super.revalidate();
+ 1110 &nbsp;         }
+<a name='1111'> 1111 &nbsp;     }
+ 1112 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/JConsole.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

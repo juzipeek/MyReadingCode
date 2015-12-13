@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: OverviewPanel.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/OverviewPanel.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2006, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/package-index.html>java.awt</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/package-index.html>java.awt.event</a>;
+   30 &nbsp; 
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/border/package-index.html>javax.swing.border</a>;
+   33 &nbsp; 
+   34 &nbsp; import static javax.swing.SwingConstants.*;
+   35 &nbsp; import static sun.tools.jconsole.JConsole.*;
+   36 &nbsp; import static sun.tools.jconsole.Resources.*;
+   37 &nbsp; import static sun.tools.jconsole.Utilities.*;
+   38 &nbsp; 
+   39 &nbsp; 
+   40 &nbsp; @SuppressWarnings("serial")
+<a name='41'>   41 &nbsp; abstract class OverviewPanel extends PlotterPanel {
+   42 &nbsp;     private static final Dimension PREFERRED_PLOTTER_SIZE = new Dimension(300, 200);
+   43 &nbsp;     private static final Dimension MINIMUM_PLOTTER_SIZE = new Dimension(200, 150);
+   44 &nbsp; 
+   45 &nbsp;     // This is the default view range for all the overview plotters
+   46 &nbsp;     static final int VIEW_RANGE = -1;   // Show all data
+   47 &nbsp; 
+   48 &nbsp;     static Color PLOTTER_COLOR = IS_GTK ? new Color(231, 111, 80) : null;
+   49 &nbsp; 
+   50 &nbsp;     private JLabel infoLabel;
+<a name='51'>   51 &nbsp; 
+   52 &nbsp;     public OverviewPanel(String title) {
+   53 &nbsp;         this(title, null, null, null);
+   54 &nbsp;     }
+   55 &nbsp; 
+   56 &nbsp;     public OverviewPanel(String title, String plotterKey,
+   57 &nbsp;                          String plotterName, Plotter.Unit plotterUnit) {
+   58 &nbsp;         super(title);
+   59 &nbsp;         setLayout(new BorderLayout(0, 0));
+   60 &nbsp; 
+<a name='61'>   61 &nbsp;         if (plotterKey != null &amp;&amp; plotterName != null) {
+   62 &nbsp;             Plotter plotter = new Plotter();
+   63 &nbsp;             plotter.setPreferredSize(PREFERRED_PLOTTER_SIZE);
+   64 &nbsp;             plotter.setMinimumSize(MINIMUM_PLOTTER_SIZE);
+   65 &nbsp;             plotter.setViewRange(VIEW_RANGE);
+   66 &nbsp;             if (plotterUnit != null) {
+   67 &nbsp;                 plotter.setUnit(plotterUnit);
+   68 &nbsp;             }
+   69 &nbsp;             plotter.createSequence(plotterKey, plotterName, PLOTTER_COLOR, true);
+   70 &nbsp;             setAccessibleName(plotter,
+<a name='71'>   71 &nbsp;                               getText("OverviewPanel.plotter.accessibleName",
+   72 &nbsp;                                       title));
+   73 &nbsp;             setPlotter(plotter);
+   74 &nbsp;         }
+   75 &nbsp;     }
+   76 &nbsp; 
+   77 &nbsp; 
+   78 &nbsp;     public JLabel getInfoLabel() {
+   79 &nbsp;         if (infoLabel == null) {
+   80 &nbsp;             infoLabel = new JLabel("", CENTER) {
+<a name='81'>   81 &nbsp;                 @Override
+   82 &nbsp;                 public void setText(String text) {
+   83 &nbsp;                     if (text.startsWith("&lt;html&gt;")) {
+   84 &nbsp;                         // Replace spaces with nbsp, except the
+   85 &nbsp;                         // last one of two or more (to allow wrapping)
+   86 &nbsp;                         StringBuilder buf = new StringBuilder();
+   87 &nbsp;                         char[] chars = text.toCharArray();
+   88 &nbsp;                         int n = chars.length;
+   89 &nbsp;                         for (int i = 0; i &lt; n; i++) {
+   90 &nbsp;                             if (chars[i] == ' '
+<a name='91'>   91 &nbsp;                                 &amp;&amp; ((i &lt; n-1 &amp;&amp; chars[i+1] == ' ')
+   92 &nbsp;                                     || ((i == 0 || chars[i-1] != ' ')
+   93 &nbsp;                                         &amp;&amp; (i == n-1 || chars[i+1] != ' ')))) {
+   94 &nbsp;                                 buf.append("&amp;nbsp;");
+   95 &nbsp;                             } else {
+   96 &nbsp;                                 buf.append(chars[i]);
+   97 &nbsp;                             }
+   98 &nbsp;                         }
+   99 &nbsp;                         text = buf.toString();
+  100 &nbsp;                     }
+<a name='101'>  101 &nbsp;                     super.setText(text);
+  102 &nbsp;                 }
+  103 &nbsp;             };
+  104 &nbsp; 
+  105 &nbsp;             if (IS_GTK) {
+  106 &nbsp;                 JPanel southPanel = new JPanel(new BorderLayout());
+  107 &nbsp;                 JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+  108 &nbsp;                 southPanel.add(separator, BorderLayout.NORTH);
+  109 &nbsp;                 southPanel.add(infoLabel, BorderLayout.SOUTH);
+  110 &nbsp;                 add(southPanel, BorderLayout.SOUTH);
+<a name='111'>  111 &nbsp;             } else {
+  112 &nbsp;                 add(infoLabel, BorderLayout.SOUTH);
+  113 &nbsp;             }
+  114 &nbsp;         }
+  115 &nbsp;         return infoLabel;
+  116 &nbsp;     }
+  117 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/OverviewPanel.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->

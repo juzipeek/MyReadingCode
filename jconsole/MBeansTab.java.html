@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- code.jsp -->
+
+
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>sun.tools.jconsole: MBeansTab.java</title>
+</head>
+<body style="padding:0 0 0 0;margin:0 0 0 0">
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MBeansTab.html">javadoc</a> | source]
+</div>
+<pre>
+<a name='1'>    1 &nbsp; /*
+    2 &nbsp;  * Copyright (c) 2004, 2008, Oracle and/or its affiliates. All rights reserved.
+    3 &nbsp;  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+    4 &nbsp;  *
+    5 &nbsp;  * This code is free software; you can redistribute it and/or modify it
+    6 &nbsp;  * under the terms of the GNU General Public License version 2 only, as
+    7 &nbsp;  * published by the Free Software Foundation.  Oracle designates this
+    8 &nbsp;  * particular file as subject to the "Classpath" exception as provided
+    9 &nbsp;  * by Oracle in the LICENSE file that accompanied this code.
+   10 &nbsp;  *
+<a name='11'>   11 &nbsp;  * This code is distributed in the hope that it will be useful, but WITHOUT
+   12 &nbsp;  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   13 &nbsp;  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   14 &nbsp;  * version 2 for more details (a copy is included in the LICENSE file that
+   15 &nbsp;  * accompanied this code).
+   16 &nbsp;  *
+   17 &nbsp;  * You should have received a copy of the GNU General Public License version
+   18 &nbsp;  * 2 along with this work; if not, write to the Free Software Foundation,
+   19 &nbsp;  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+   20 &nbsp;  *
+<a name='21'>   21 &nbsp;  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+   22 &nbsp;  * or visit www.oracle.com if you need additional information or have any
+   23 &nbsp;  * questions.
+   24 &nbsp;  */
+   25 &nbsp; 
+   26 &nbsp; <span class='kw'>package</span> <a href=/docs/api/sun/tools/jconsole/package-index.html>sun.tools.jconsole</a>;
+   27 &nbsp; 
+   28 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/BorderLayout.html>java.awt.BorderLayout</a>;
+   29 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/EventQueue.html>java.awt.EventQueue</a>;
+   30 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/MouseAdapter.html>java.awt.event.MouseAdapter</a>;
+<a name='31'>   31 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/MouseEvent.html>java.awt.event.MouseEvent</a>;
+   32 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/awt/event/MouseListener.html>java.awt.event.MouseListener</a>;
+   33 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/beans/package-index.html>java.beans</a>;
+   34 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/io/package-index.html>java.io</a>;
+   35 &nbsp; <span class='kw'>import</span> <a href=/docs/api/java/util/Set.html>java.util.Set</a>;
+   36 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/management/package-index.html>javax.management</a>;
+   37 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/package-index.html>javax.swing</a>;
+   38 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/event/package-index.html>javax.swing.event</a>;
+   39 &nbsp; <span class='kw'>import</span> <a href=/docs/api/javax/swing/tree/package-index.html>javax.swing.tree</a>;
+   40 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/tools/jconsole/ProxyClient/SnapshotMBeanServerConnection.html>sun.tools.jconsole.ProxyClient.SnapshotMBeanServerConnection</a>;
+<a name='41'>   41 &nbsp; <span class='kw'>import</span> <a href=/docs/api/sun/tools/jconsole/inspector/package-index.html>sun.tools.jconsole.inspector</a>;
+   42 &nbsp; 
+   43 &nbsp; <span class='kw'>import</span> <a href=/docs/api/com/sun/tools/jconsole/JConsoleContext.html>com.sun.tools.jconsole.JConsoleContext</a>;
+   44 &nbsp; 
+   45 &nbsp; @SuppressWarnings("serial")
+   46 &nbsp; public class MBeansTab extends Tab implements
+   47 &nbsp;         NotificationListener, PropertyChangeListener,
+   48 &nbsp;         TreeSelectionListener, TreeWillExpandListener {
+   49 &nbsp; 
+   50 &nbsp;     private XTree tree;
+<a name='51'>   51 &nbsp;     private XSheet sheet;
+   52 &nbsp;     private XDataViewer viewer;
+   53 &nbsp; 
+   54 &nbsp;     public static String getTabName() {
+   55 &nbsp;         return Resources.getText("MBeans");
+   56 &nbsp;     }
+   57 &nbsp; 
+   58 &nbsp;     public MBeansTab(final VMPanel vmPanel) {
+   59 &nbsp;         super(vmPanel, getTabName());
+   60 &nbsp;         addPropertyChangeListener(this);
+<a name='61'>   61 &nbsp;         setupTab();
+   62 &nbsp;     }
+   63 &nbsp; 
+   64 &nbsp;     public XDataViewer getDataViewer() {
+   65 &nbsp;         return viewer;
+   66 &nbsp;     }
+   67 &nbsp; 
+   68 &nbsp;     public XTree getTree() {
+   69 &nbsp;         return tree;
+   70 &nbsp;     }
+<a name='71'>   71 &nbsp; 
+   72 &nbsp;     public XSheet getSheet() {
+   73 &nbsp;         return sheet;
+   74 &nbsp;     }
+   75 &nbsp; 
+   76 &nbsp;     @Override
+   77 &nbsp;     public void dispose() {
+   78 &nbsp;         super.dispose();
+   79 &nbsp;         sheet.dispose();
+   80 &nbsp;     }
+<a name='81'>   81 &nbsp; 
+   82 &nbsp;     public int getUpdateInterval() {
+   83 &nbsp;         return vmPanel.getUpdateInterval();
+   84 &nbsp;     }
+   85 &nbsp; 
+   86 &nbsp;     private void buildMBeanServerView() {
+   87 &nbsp;         new SwingWorker&lt;Set&lt;ObjectName&gt;, Void&gt;() {
+   88 &nbsp;             @Override
+   89 &nbsp;             public Set&lt;ObjectName&gt; doInBackground() {
+   90 &nbsp;                 // Register listener for MBean registration/unregistration
+<a name='91'>   91 &nbsp;                 //
+   92 &nbsp;                 try {
+   93 &nbsp;                     getMBeanServerConnection().addNotificationListener(
+   94 &nbsp;                             MBeanServerDelegate.DELEGATE_NAME,
+   95 &nbsp;                             MBeansTab.this,
+   96 &nbsp;                             null,
+   97 &nbsp;                             null);
+   98 &nbsp;                 } catch (InstanceNotFoundException e) {
+   99 &nbsp;                     // Should never happen because the MBeanServerDelegate
+  100 &nbsp;                     // is always present in any standard MBeanServer
+<a name='101'>  101 &nbsp;                     //
+  102 &nbsp;                     if (JConsole.isDebug()) {
+  103 &nbsp;                         e.printStackTrace();
+  104 &nbsp;                     }
+  105 &nbsp;                 } catch (IOException e) {
+  106 &nbsp;                     if (JConsole.isDebug()) {
+  107 &nbsp;                         e.printStackTrace();
+  108 &nbsp;                     }
+  109 &nbsp;                     vmPanel.getProxyClient().markAsDead();
+  110 &nbsp;                     return null;
+<a name='111'>  111 &nbsp;                 }
+  112 &nbsp;                 // Retrieve MBeans from MBeanServer
+  113 &nbsp;                 //
+  114 &nbsp;                 Set&lt;ObjectName&gt; mbeans = null;
+  115 &nbsp;                 try {
+  116 &nbsp;                     mbeans = getMBeanServerConnection().queryNames(null, null);
+  117 &nbsp;                 } catch (IOException e) {
+  118 &nbsp;                     if (JConsole.isDebug()) {
+  119 &nbsp;                         e.printStackTrace();
+  120 &nbsp;                     }
+<a name='121'>  121 &nbsp;                     vmPanel.getProxyClient().markAsDead();
+  122 &nbsp;                     return null;
+  123 &nbsp;                 }
+  124 &nbsp;                 return mbeans;
+  125 &nbsp;             }
+  126 &nbsp;             @Override
+  127 &nbsp;             protected void done() {
+  128 &nbsp;                 try {
+  129 &nbsp;                     // Wait for mbsc.queryNames() result
+  130 &nbsp;                     Set&lt;ObjectName&gt; mbeans = get();
+<a name='131'>  131 &nbsp;                     // Do not display anything until the new tree has been built
+  132 &nbsp;                     //
+  133 &nbsp;                     tree.setVisible(false);
+  134 &nbsp;                     // Cleanup current tree
+  135 &nbsp;                     //
+  136 &nbsp;                     tree.removeAll();
+  137 &nbsp;                     // Add MBeans to tree
+  138 &nbsp;                     //
+  139 &nbsp;                     tree.addMBeansToView(mbeans);
+  140 &nbsp;                     // Display the new tree
+<a name='141'>  141 &nbsp;                     //
+  142 &nbsp;                     tree.setVisible(true);
+  143 &nbsp;                 } catch (Exception e) {
+  144 &nbsp;                     Throwable t = Utils.getActualException(e);
+  145 &nbsp;                     if (JConsole.isDebug()) {
+  146 &nbsp;                         System.err.println("Problem at MBean tree construction");
+  147 &nbsp;                         t.printStackTrace();
+  148 &nbsp;                     }
+  149 &nbsp;                 }
+  150 &nbsp;             }
+<a name='151'>  151 &nbsp;         }.execute();
+  152 &nbsp;     }
+  153 &nbsp; 
+  154 &nbsp;     public MBeanServerConnection getMBeanServerConnection() {
+  155 &nbsp;         return vmPanel.getProxyClient().getMBeanServerConnection();
+  156 &nbsp;     }
+  157 &nbsp; 
+  158 &nbsp;     public SnapshotMBeanServerConnection getSnapshotMBeanServerConnection() {
+  159 &nbsp;         return vmPanel.getProxyClient().getSnapshotMBeanServerConnection();
+  160 &nbsp;     }
+<a name='161'>  161 &nbsp; 
+  162 &nbsp;     @Override
+  163 &nbsp;     public void update() {
+  164 &nbsp;         // Ping the connection to see if it is still alive. At
+  165 &nbsp;         // some point the ProxyClient class should centralize
+  166 &nbsp;         // the connection aliveness monitoring and no longer
+  167 &nbsp;         // rely on the custom tabs to ping the connections.
+  168 &nbsp;         //
+  169 &nbsp;         try {
+  170 &nbsp;             getMBeanServerConnection().getDefaultDomain();
+<a name='171'>  171 &nbsp;         } catch (IOException ex) {
+  172 &nbsp;             vmPanel.getProxyClient().markAsDead();
+  173 &nbsp;         }
+  174 &nbsp;     }
+  175 &nbsp; 
+  176 &nbsp;     private void setupTab() {
+  177 &nbsp;         // set up the split pane with the MBean tree and MBean sheet panels
+  178 &nbsp;         setLayout(new BorderLayout());
+  179 &nbsp;         JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+  180 &nbsp;         mainSplit.setDividerLocation(160);
+<a name='181'>  181 &nbsp;         mainSplit.setBorder(BorderFactory.createEmptyBorder());
+  182 &nbsp; 
+  183 &nbsp;         // set up the MBean tree panel (left pane)
+  184 &nbsp;         tree = new XTree(this);
+  185 &nbsp;         tree.setCellRenderer(new XTreeRenderer());
+  186 &nbsp;         tree.getSelectionModel().setSelectionMode(
+  187 &nbsp;                 TreeSelectionModel.SINGLE_TREE_SELECTION);
+  188 &nbsp;         tree.addTreeSelectionListener(this);
+  189 &nbsp;         tree.addTreeWillExpandListener(this);
+  190 &nbsp;         tree.addMouseListener(ml);
+<a name='191'>  191 &nbsp;         JScrollPane theScrollPane = new JScrollPane(
+  192 &nbsp;                 tree,
+  193 &nbsp;                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+  194 &nbsp;                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+  195 &nbsp;         JPanel treePanel = new JPanel(new BorderLayout());
+  196 &nbsp;         treePanel.add(theScrollPane, BorderLayout.CENTER);
+  197 &nbsp;         mainSplit.add(treePanel, JSplitPane.LEFT, 0);
+  198 &nbsp; 
+  199 &nbsp;         // set up the MBean sheet panel (right pane)
+  200 &nbsp;         viewer = new XDataViewer(this);
+<a name='201'>  201 &nbsp;         sheet = new XSheet(this);
+  202 &nbsp;         mainSplit.add(sheet, JSplitPane.RIGHT, 0);
+  203 &nbsp; 
+  204 &nbsp;         add(mainSplit);
+  205 &nbsp;     }
+  206 &nbsp; 
+  207 &nbsp;     /* notification listener:  handleNotification */
+  208 &nbsp;     public void handleNotification(
+  209 &nbsp;             final Notification notification, Object handback) {
+  210 &nbsp;         EventQueue.invokeLater(new Runnable() {
+<a name='211'>  211 &nbsp;             public void run() {
+  212 &nbsp;                 if (notification instanceof MBeanServerNotification) {
+  213 &nbsp;                     ObjectName mbean =
+  214 &nbsp;                             ((MBeanServerNotification) notification).getMBeanName();
+  215 &nbsp;                     if (notification.getType().equals(
+  216 &nbsp;                             MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
+  217 &nbsp;                         tree.addMBeanToView(mbean);
+  218 &nbsp;                     } else if (notification.getType().equals(
+  219 &nbsp;                             MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
+  220 &nbsp;                         tree.removeMBeanFromView(mbean);
+<a name='221'>  221 &nbsp;                     }
+  222 &nbsp;                 }
+  223 &nbsp;             }
+  224 &nbsp;         });
+  225 &nbsp;     }
+  226 &nbsp; 
+  227 &nbsp;     /* property change listener:  propertyChange */
+  228 &nbsp;     public void propertyChange(PropertyChangeEvent evt) {
+  229 &nbsp;         if (JConsoleContext.CONNECTION_STATE_PROPERTY.equals(evt.getPropertyName())) {
+  230 &nbsp;             boolean connected = (Boolean) evt.getNewValue();
+<a name='231'>  231 &nbsp;             if (connected) {
+  232 &nbsp;                 buildMBeanServerView();
+  233 &nbsp;             } else {
+  234 &nbsp;                 sheet.dispose();
+  235 &nbsp;             }
+  236 &nbsp;         }
+  237 &nbsp;     }
+  238 &nbsp; 
+  239 &nbsp;     /* tree selection listener: valueChanged */
+  240 &nbsp;     public void valueChanged(TreeSelectionEvent e) {
+<a name='241'>  241 &nbsp;         DefaultMutableTreeNode node =
+  242 &nbsp;                 (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+  243 &nbsp;         sheet.displayNode(node);
+  244 &nbsp;     }
+  245 &nbsp;     /* tree mouse listener: mousePressed */
+  246 &nbsp;     private MouseListener ml = new MouseAdapter() {
+  247 &nbsp;         @Override
+  248 &nbsp;         public void mousePressed(MouseEvent e) {
+  249 &nbsp;             if (e.getClickCount() == 1) {
+  250 &nbsp;                 int selRow = tree.getRowForLocation(e.getX(), e.getY());
+<a name='251'>  251 &nbsp;                 if (selRow != -1) {
+  252 &nbsp;                     TreePath selPath =
+  253 &nbsp;                             tree.getPathForLocation(e.getX(), e.getY());
+  254 &nbsp;                     DefaultMutableTreeNode node =
+  255 &nbsp;                             (DefaultMutableTreeNode) selPath.getLastPathComponent();
+  256 &nbsp;                     if (sheet.isMBeanNode(node)) {
+  257 &nbsp;                         tree.expandPath(selPath);
+  258 &nbsp;                     }
+  259 &nbsp;                 }
+  260 &nbsp;             }
+<a name='261'>  261 &nbsp;         }
+  262 &nbsp;     };
+  263 &nbsp; 
+  264 &nbsp;     /* tree will expand listener: treeWillExpand */
+  265 &nbsp;     public void treeWillExpand(TreeExpansionEvent e)
+  266 &nbsp;             throws ExpandVetoException {
+  267 &nbsp;         TreePath path = e.getPath();
+  268 &nbsp;         if (!tree.hasBeenExpanded(path)) {
+  269 &nbsp;             DefaultMutableTreeNode node =
+  270 &nbsp;                     (DefaultMutableTreeNode) path.getLastPathComponent();
+<a name='271'>  271 &nbsp;             if (sheet.isMBeanNode(node) &amp;&amp; !tree.hasMetadataNodes(node)) {
+  272 &nbsp;                 tree.addMetadataNodes(node);
+  273 &nbsp;             }
+  274 &nbsp;         }
+  275 &nbsp;     }
+  276 &nbsp; 
+  277 &nbsp;     /* tree will expand listener: treeWillCollapse */
+  278 &nbsp;     public void treeWillCollapse(TreeExpansionEvent e)
+  279 &nbsp;             throws ExpandVetoException {
+  280 &nbsp;     }
+<a name='281'>  281 &nbsp; }
+
+</pre>
+<div style="width:100%;background-color:#ddeeff;border:1px solid #ccddee;margin:0 0 0 0;padding:2px 2px 2px 2px">
+<div style="float:right"><a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://images.del.icio.us/static/img/delicious.small.gif" border=0> Save This Page</a></div>
+<a href="/">Home</a> &#187; <a href="/projects/openjdk-7-code.html">openjdk-7</a> &#187; sun.tools &#187;  <a href='/docs/api/sun/tools/jconsole/package-index.html'>jconsole</a> &#187; 
+ [<a href="/docs/api/sun/tools/jconsole/MBeansTab.html">javadoc</a> | source]
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-138120-1");
+pageTracker._trackPageview();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!-- end -->
